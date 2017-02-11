@@ -1,5 +1,5 @@
 #include "src/input.h"
-#include "src/dt_math.h"
+#include "src/math.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,9 +1,5 @@
-#ifndef DT_MATH_H
-#define DT_MATH_H
-
-/*
- * necessary math for the raytracer
- */
+#ifndef MATH_H
+#define MATH_H
 
 typedef struct
 {

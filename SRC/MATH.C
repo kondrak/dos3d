@@ -1,4 +1,4 @@
-#include "src/dt_math.h"
+#include "src/math.h"
 
 // quick inverse sqrt()
 double qInvSqrt(double number)
