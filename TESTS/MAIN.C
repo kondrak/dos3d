@@ -1,10 +1,12 @@
-#include "src/input.h"
-#include "src/graphics.h"
-#include "src/math.h"
 #include <ctype.h>
+#include <conio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include "src/input.h"
+#include "tests/linedraw.h"
 
 static const int SCREEN_WIDTH  = 320;
 static const int SCREEN_HEIGHT = 200;
@@ -16,31 +18,25 @@ void Shutdown(int exitCode)
     exit(exitCode);
 }
 
-unsigned short *keysPressed;
-
-void drawCircle(int ox, int oy, int r)
-{
-    float l = 0.0f;
-    for(l; l < 2.0f*M_PI; l += 0.001f)
-    {
-      int color = (int)((l * 10.f) + 1) % 256;
-      drawLine(ox, oy, ox + r * cos(l), oy + r * sin(l), color);
-      drawPixel(ox + r * cos(l), oy + r * sin(l), color);
-      keysPressed = translateInput();
-      if(keysPressed[KEY_ESC]) return;
-    }
-}
-
-
 /* ***** */
+void selectTest(char *nextTest)
+{
+    setMode(0x03);
+    printf("Choose test (ESC to exit):\n");
+    printf("1. Bresenham line drawing\n");
+    printf("\nInput:\n");
+    *nextTest = getch();
+    setMode(0x13);
+}
 
 int main(int argc, char **argv)
 {
+    char nextTest;
     float invWidth, invHeight, aspectRatio, angle;
-    int x, y, renderFinished = 0;
+    int x, y, demoFinished = 0;
     int fov = 45;
 
-    keysPressed = translateInput();
+    unsigned short *keysPressed = translateInput();
     
     for (x = 0; x < argc; x++)
     {
@@ -52,18 +48,17 @@ int main(int argc, char **argv)
         }
     }
 
-    setMode(0x13);
-
+    selectTest(&nextTest);
+  
     // calculate the view
     invWidth = 1.0f / SCREEN_WIDTH;
     invHeight = 1.0f / SCREEN_HEIGHT;
     aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
     angle = tan(M_PI * 0.5 * fov / 180.);
 
-    while (!keysPressed[KEY_ESC])
+    while (1)
     {
-        // perform draw after vsync
-        if (!renderFinished)
+        if (!demoFinished)
         {
             for (x = 0; x < SCREEN_WIDTH; x++)
             {
@@ -73,17 +68,22 @@ int main(int argc, char **argv)
                 }
             }
 
-            drawCircle(160, 100, 95);
+            switch (nextTest)
+            {
+            case '1':
+                testBresenham(160, 103, 90);
+                break;
+            default:
+                Shutdown(0);
+            }
             
-            renderFinished = 1;
-            keysPressed = translateInput();
+            demoFinished = 1;
         }
         else
         {
-            keysPressed = translateInput();
+            getch();
+            selectTest(&nextTest);
+            demoFinished = 0;
         }
     }
-    
-    Shutdown(0);
-    return 0;
 }

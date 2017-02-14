@@ -1,5 +1,7 @@
 #include "src/graphics.h"
 
+#include <math.h>
+
 // pointer to VGA memory
 unsigned char *VGA = (unsigned char *)0xA0000000L;
 
@@ -47,5 +49,3 @@ void drawLine(int x0, int y0, int x1, int y1, unsigned char color)
         n  -= n >= ax ? ax  : 0;
     }
 }
-
-
