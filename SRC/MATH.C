@@ -1,4 +1,5 @@
 #include "src/math.h"
+#include <math.h>
 
 // quick inverse sqrt()
 double qInvSqrt(double number)
@@ -20,23 +21,34 @@ double qInvSqrt(double number)
 // vector dot product
 double dotProduct(const Vector3f *v1, const Vector3f *v2)
 {
-    return v1->m_x * v2->m_x + v1->m_y * v2->m_y + v1->m_z * v2->m_z;
+    return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
 }
+
+Vector3f crossProduct(const Vector3f *v1, const Vector3f *v2)
+{
+    Vector3f r;
+    r.x = v1->y*v2->z - v1->z*v2->y;
+    r.y = v1->z*v2->x - v1->x*v2->z;
+    r.z = v1->x*v2->y - v1->y*v2->x;
+
+    return r;
+}
+
 
 // inverse vector length
 double invLength(const Vector3f *v)
 {
-    return qInvSqrt(v->m_x*v->m_x + v->m_y*v->m_y + v->m_z*v->m_z);
+    return qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 }
 
 // normalize a vector
 void normalize(Vector3f *v)
 {
-    double l = qInvSqrt(v->m_x*v->m_x + v->m_y*v->m_y + v->m_z*v->m_z);
+    double l = qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 
-    v->m_x *= l;
-    v->m_y *= l;
-    v->m_z *= l;
+    v->x *= l;
+    v->y *= l;
+    v->z *= l;
 }
 
 // clamp RGB value to [0-255]
@@ -91,17 +103,17 @@ void matTranspose(Matrix4f *m)
     }
 }
 
-Vector3f matMulVec(Matrix4f *m, Vector3f *v)
+Vector3f matMulVec(const Matrix4f *m, const Vector3f *v)
 {
     Vector3f r;
-    r.m_x = m->m[0] * v->m_x + m->m[1] * v->m_y + m->m[2]  * v->m_z + m->m[3]  * 1.f;
-    r.m_y = m->m[4] * v->m_x + m->m[5] * v->m_y + m->m[6]  * v->m_z + m->m[7]  * 1.f;
-    r.m_z = m->m[8] * v->m_x + m->m[9] * v->m_y + m->m[10] * v->m_z + m->m[11] * 1.f;
+    r.x = m->m[0] * v->x + m->m[1] * v->y + m->m[2]  * v->z + m->m[3];
+    r.y = m->m[4] * v->x + m->m[5] * v->y + m->m[6]  * v->z + m->m[7];
+    r.z = m->m[8] * v->x + m->m[9] * v->y + m->m[10] * v->z + m->m[11];
 
     return r;
 }
 
-Matrix4f matMul(Matrix4f *m1, Matrix4f *m2)
+Matrix4f matMul(const Matrix4f *m1, const Matrix4f *m2)
 {
     Matrix4f r;
     r.m[0] = m1->m[0] * m2->m[0] + m1->m[1] * m2->m[4] + m1->m[2] * m2->m[8]  + m1->m[3] * m2->m[12];
@@ -127,7 +139,51 @@ Matrix4f matMul(Matrix4f *m1, Matrix4f *m2)
     return r;
 }
 
-Quaternion quatConjugate(Quaternion *q)
+void matPerspective(Matrix4f *m, const float fov, const float scrRatio, const float nearPlane, const float farPlane)
+{
+    float tanFov;
+    matZero(m);
+
+    tanFov = tan(0.5f * fov);
+    m->m[0]  = 1.f / (scrRatio * tanFov);
+    m->m[5]  = 1.f / tanFov;
+    m->m[10] = -(farPlane + nearPlane) / (farPlane - nearPlane);
+    m->m[11] = -1.f;
+    m->m[14] = -2.f * farPlane * nearPlane / (farPlane - nearPlane);
+}
+
+void matView(Matrix4f *m, const Vector3f *eye, const Vector3f *target, const Vector3f *up)
+{
+    Vector3f x,y,z;
+
+    z.x = target->x;
+    z.y = target->y;
+    z.z = target->z;
+    normalize(&z);
+    x = crossProduct(&z, up);
+    normalize(&x);
+    y = crossProduct(&x, &z);
+
+    matIdentity(m);
+
+    m->m[0] = x.x;
+    m->m[4] = x.y;
+    m->m[8] = x.z;
+
+    m->m[1] = y.x;
+    m->m[5] = y.y;
+    m->m[9] = y.z;
+
+    m->m[2] = -z.x;
+    m->m[6] = -z.y;
+    m->m[10] = -z.z;
+
+    m->m[12] = -dotProduct(&x, eye);
+    m->m[13] = -dotProduct(&y, eye);
+    m->m[14] = dotProduct(&z, eye);
+}
+
+Quaternion quatConjugate(const Quaternion *q)
 {
     Quaternion r;
     r.x = -q->x;
@@ -147,32 +203,32 @@ void quatNormalize(Quaternion *q)
     q->w *= l;
 }
 
-Vector3f quatMulVec(Quaternion *q, Vector3f *v)
+Vector3f quatMulVec(const Quaternion *q, const Vector3f *v)
 {
     Vector3f vn, r;
     Quaternion vq, cq, rq, rq2;
-    vn.m_x = v->m_x;
-    vn.m_y = v->m_y;
-    vn.m_z = v->m_z;
+    vn.x = v->x;
+    vn.y = v->y;
+    vn.z = v->z;
     normalize(&vn);
 
-    vq.x = vn.m_x;
-    vq.y = vn.m_y;
-    vq.z = vn.m_z;
+    vq.x = vn.x;
+    vq.y = vn.y;
+    vq.z = vn.z;
     vq.w = 0.f;
 
     cq = quatConjugate(q);
     rq = quatMul(&vq, &cq);
     rq2 = quatMul(q, &rq);
 
-    r.m_x = rq2.x;
-    r.m_y = rq2.y;
-    r.m_z = rq2.z;
+    r.x = rq2.x;
+    r.y = rq2.y;
+    r.z = rq2.z;
 
     return r;
 }
 
-Quaternion quatMul(Quaternion *q1, Quaternion *q2)
+Quaternion quatMul(const Quaternion *q1, const Quaternion *q2)
 {
     Quaternion r;
     r.x = q1->w*q2->x + q1->x*q2->w + q1->y*q2->z - q1->z*q2->y;

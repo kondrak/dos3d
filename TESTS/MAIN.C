@@ -7,6 +7,7 @@
 
 #include "src/input.h"
 #include "tests/linedraw.h"
+#include "tests/project.h"
 
 static const int SCREEN_WIDTH  = 320;
 static const int SCREEN_HEIGHT = 200;
@@ -24,6 +25,7 @@ void selectTest(char *nextTest)
     setMode(0x03);
     printf("Choose test (ESC to exit):\n");
     printf("1. Bresenham line drawing\n");
+    printf("2. Perspective projection\n");
     printf("\nInput:\n");
     *nextTest = getch();
     setMode(0x13);
@@ -72,6 +74,9 @@ int main(int argc, char **argv)
             {
             case '1':
                 testBresenham(160, 103, 90);
+                break;
+            case '2':
+                testProjection();
                 break;
             default:
                 Shutdown(0);
