@@ -8,6 +8,7 @@ extern "C" {
     void setMode(unsigned char mode);
     void drawPixel(int x, int y, unsigned char color);
     void drawLine(int x0, int y0, int x1, int y1, unsigned char color);
+    void clrScr(const int scrWidth, const int scrHeight);
 
 #ifdef __cplusplus
 }

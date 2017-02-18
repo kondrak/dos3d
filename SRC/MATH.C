@@ -19,30 +19,31 @@ double qInvSqrt(double number)
 }
 
 // vector dot product
-double dotProduct(const Vector3f *v1, const Vector3f *v2)
+double dotProduct(const Vector4f *v1, const Vector4f *v2)
 {
     return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
 }
 
-Vector3f crossProduct(const Vector3f *v1, const Vector3f *v2)
+Vector4f crossProduct(const Vector4f *v1, const Vector4f *v2)
 {
-    Vector3f r;
+    Vector4f r;
     r.x = v1->y*v2->z - v1->z*v2->y;
     r.y = v1->z*v2->x - v1->x*v2->z;
     r.z = v1->x*v2->y - v1->y*v2->x;
+    r.w = 1.f;
 
     return r;
 }
 
 
 // inverse vector length
-double invLength(const Vector3f *v)
+double invLength(const Vector4f *v)
 {
     return qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 }
 
 // normalize a vector
-void normalize(Vector3f *v)
+void normalize(Vector4f *v)
 {
     double l = qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 
@@ -103,12 +104,13 @@ void matTranspose(Matrix4f *m)
     }
 }
 
-Vector3f matMulVec(const Matrix4f *m, const Vector3f *v)
+Vector4f matMulVec(const Matrix4f *m, const Vector4f *v)
 {
-    Vector3f r;
+    Vector4f r;
     r.x = m->m[0] * v->x + m->m[1] * v->y + m->m[2]  * v->z + m->m[3];
     r.y = m->m[4] * v->x + m->m[5] * v->y + m->m[6]  * v->z + m->m[7];
     r.z = m->m[8] * v->x + m->m[9] * v->y + m->m[10] * v->z + m->m[11];
+    r.w = m->m[12] * v->x + m->m[13] * v->y + m->m[14] * v->z + m->m[15];
 
     return r;
 }
@@ -152,13 +154,14 @@ void matPerspective(Matrix4f *m, const float fov, const float scrRatio, const fl
     m->m[14] = -2.f * farPlane * nearPlane / (farPlane - nearPlane);
 }
 
-void matView(Matrix4f *m, const Vector3f *eye, const Vector3f *target, const Vector3f *up)
+void matView(Matrix4f *m, const Vector4f *eye, const Vector4f *target, const Vector4f *up)
 {
-    Vector3f x,y,z;
+    Vector4f x,y,z;
 
     z.x = target->x;
     z.y = target->y;
     z.z = target->z;
+    z.w = target->w;
     normalize(&z);
     x = crossProduct(&z, up);
     normalize(&x);
@@ -203,9 +206,9 @@ void quatNormalize(Quaternion *q)
     q->w *= l;
 }
 
-Vector3f quatMulVec(const Quaternion *q, const Vector3f *v)
+Vector4f quatMulVec(const Quaternion *q, const Vector4f *v)
 {
-    Vector3f vn, r;
+    Vector4f vn, r;
     Quaternion vq, cq, rq, rq2;
     vn.x = v->x;
     vn.y = v->y;

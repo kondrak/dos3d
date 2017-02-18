@@ -49,3 +49,8 @@ void drawLine(int x0, int y0, int x1, int y1, unsigned char color)
         n  -= n >= ax ? ax  : 0;
     }
 }
+
+void clrScr(const int scrWidth, const int scrHeight)
+{
+    memset(VGA, 0, scrWidth*scrHeight);
+}
