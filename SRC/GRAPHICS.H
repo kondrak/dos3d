@@ -6,9 +6,10 @@ extern "C" {
 #endif
 
     void setMode(unsigned char mode);
-    void drawPixel(int x, int y, unsigned char color);
-    void drawLine(int x0, int y0, int x1, int y1, unsigned char color);
-    void clrScr(const int scrWidth, const int scrHeight);
+    void drawPixel(int x, int y, unsigned char color, unsigned char *buffer);
+    void drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer);
+    void clrScrBuffer(unsigned char *buffer);
+    void updateScreen(unsigned char *buffer);
 
 #ifdef __cplusplus
 }

@@ -3,7 +3,9 @@
 #include <math.h>
 
 // pointer to VGA memory
-unsigned char *VGA = (unsigned char *)0xA0000000L;
+unsigned char far *VGA = (unsigned char far *)0xA0000000L;
+static const int SCREEN_WIDTH = 320;
+static const int SCREEN_HEIGHT = 200;
 
 // graphics mode setter
 void setMode(unsigned char mode)
@@ -15,13 +17,19 @@ void setMode(unsigned char mode)
     }
 }
 
-void drawPixel(int x, int y, unsigned char color)
+void drawPixel(int x, int y, unsigned char color, unsigned char *buffer)
 {
-    VGA[(y << 8) + (y << 6) + x] = color;
+    // naive "clipping"
+    if(x > SCREEN_WIDTH || x < 0 || y > SCREEN_HEIGHT || y < 0) return;
+
+    if(!buffer)
+        VGA[(y << 8) + (y << 6) + x] = color;
+    else
+        buffer[(y << 8) + (y << 6) + x] = color;
 }
 
 // Bresenham line drawing
-void drawLine(int x0, int y0, int x1, int y1, unsigned char color)
+void drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer)
 {
     int x = x1 - x0;
     int y = y1 - y0;
@@ -42,7 +50,7 @@ void drawLine(int x0, int y0, int x1, int y1, unsigned char color)
 
     while(i++ <= ax)
     {
-        drawPixel(x0, y0, color);
+        drawPixel(x0, y0, color, buffer);
         n  += ay;
         x0 += n >= ax ? dx1 : dx2;
         y0 += n >= ax ? dy1 : dy2;
@@ -50,7 +58,18 @@ void drawLine(int x0, int y0, int x1, int y1, unsigned char color)
     }
 }
 
-void clrScr(const int scrWidth, const int scrHeight)
+void clrScrBuffer(unsigned char *buffer)
 {
-    memset(VGA, 0, scrWidth*scrHeight);
+    if(!buffer)
+        memset(VGA, 0, SCREEN_WIDTH*SCREEN_HEIGHT);
+    else
+        memset(buffer, 0, SCREEN_WIDTH*SCREEN_HEIGHT);
+}
+
+void updateScreen(unsigned char *buffer)
+{
+    if(buffer)
+    {
+        memcpy(VGA, buffer, SCREEN_WIDTH*SCREEN_HEIGHT);
+    }
 }

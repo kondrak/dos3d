@@ -28,7 +28,6 @@ void selectTest(char *nextTest)
     printf("2. Perspective projection\n");
     printf("\nInput:\n");
     *nextTest = getch();
-    setMode(0x13);
 }
 
 int main(int argc, char **argv)
@@ -45,15 +44,19 @@ int main(int argc, char **argv)
             switch (nextTest)
             {
             case '1':
+                setMode(0x13);
                 testBresenham(160, 103, 90);
                 break;
             case '2':
+                setMode(0x13);
                 testProjection(SCREEN_WIDTH, SCREEN_HEIGHT);
                 break;
-            default:
+            case 27:
                 Shutdown(0);
+            default:
+                break;
             }
-            
+
             demoFinished = 1;
         }
         else

@@ -1,6 +1,7 @@
 #include "src/graphics.h"
 #include "src/math.h"
 
+#include <stdlib.h>
 #include <sys/timeb.h>
 
 // Projection test
@@ -17,6 +18,13 @@ void testProjection(int scrWidth, int scrHeight)
     float eyeZ = 1.f;
     float eyeRx = 0.f;
     float eyeRy = 0.f;
+    unsigned char *buffer = (unsigned char *)malloc(scrWidth*scrHeight);
+
+    if(!buffer)
+    {
+        printf("Out of memory!");
+        return;
+    }
 
     keysPressed = translateInput();
 
@@ -52,12 +60,14 @@ void testProjection(int scrWidth, int scrHeight)
             //printf("%.2f %.2f %.2f %.2f\n", square[i].x, square[i].y, square[i].z, square[i].w);
         }
 
-        clrScr(scrWidth, scrHeight);
+        clrScrBuffer(buffer);
 
-        drawLine(square[0].x, square[0].y, square[1].x, square[1].y, 3);
-        drawLine(square[1].x, square[1].y, square[3].x, square[3].y, 3);
-        drawLine(square[0].x, square[0].y, square[2].x, square[2].y, 3);
-        drawLine(square[2].x, square[2].y, square[3].x, square[3].y, 3);
+        drawLine(square[0].x, square[0].y, square[1].x, square[1].y, 3, buffer);
+        drawLine(square[1].x, square[1].y, square[3].x, square[3].y, 3, buffer);
+        drawLine(square[0].x, square[0].y, square[2].x, square[2].y, 3, buffer);
+        drawLine(square[2].x, square[2].y, square[3].x, square[3].y, 3, buffer);
+
+        updateScreen(buffer);
 
         keysPressed = translateInput();
 
@@ -84,12 +94,16 @@ void testProjection(int scrWidth, int scrHeight)
 
         if(keysPressed[KEY_PGDN])
             eyeRy += 0.0001f;
-
     }
     
     ftime(&startTime);
     ftime(&endTime);
 
+    //free(buffer);
+
     elapsed = (endTime.time - startTime.time)*1000 + endTime.millitm - startTime.millitm;
-    //printf("Projection: %ums", elapsed);
+
+    do {
+        keysPressed = translateInput();
+    } while(keysPressed[KEY_ESC]);
 }

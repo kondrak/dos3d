@@ -16,7 +16,7 @@ void testBresenham(int ox, int oy, int r)
     for(l = 0.0f; l < 2.0f*M_PI; l += 0.001f, numLines++)
     {
         int color = (int)((l * 10.f) + 1) % 256;
-        drawLine(ox, oy, ox + r * cos(l), oy + r * sin(l), color);
+        drawLine(ox, oy, ox + r * cos(l), oy + r * sin(l), color, NULL);
     }
     ftime(&endTime);
 
