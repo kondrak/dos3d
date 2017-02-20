@@ -99,7 +99,7 @@ void testProjection(int scrWidth, int scrHeight)
     ftime(&startTime);
     ftime(&endTime);
 
-    //free(buffer);
+    free(buffer);
 
     elapsed = (endTime.time - startTime.time)*1000 + endTime.millitm - startTime.millitm;
 
