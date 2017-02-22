@@ -35,6 +35,35 @@ Vector4f crossProduct(const Vector4f *v1, const Vector4f *v2)
     return r;
 }
 
+Vector4f vecAdd(const Vector4f *v1, const Vector4f *v2)
+{
+    Vector4f r;
+    r.x = v1->x + v2->x;
+    r.y = v1->y + v2->y;
+    r.z = v1->z + v2->z;
+    r.w = 1.f;
+    return r;
+}
+
+Vector4f vecSub(const Vector4f *v1, const Vector4f *v2)
+{
+    Vector4f r;
+    r.x = v1->x - v2->x;
+    r.y = v1->y - v2->y;
+    r.z = v1->z - v2->z;
+    r.w = 1.f;
+    return r;
+}
+
+Vector4f vecScale(const Vector4f *v, const float scale)
+{
+    Vector4f r;
+    r.x = v->x * scale;
+    r.y = v->y * scale;
+    r.z = v->z * scale;
+    r.w = 1.f;
+    return r;
+}
 
 // inverse vector length
 double invLength(const Vector4f *v)

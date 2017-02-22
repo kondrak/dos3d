@@ -4,21 +4,49 @@
 #include <stdlib.h>
 #include <sys/timeb.h>
 
+typedef struct
+{
+    Vector4f position;
+    Vector4f target;
+    Vector4f up;
+    Vector4f right;
+    Matrix4f view;
+    Matrix4f projection;
+} Camera;
+
 // Projection test
 void testProjection(int scrWidth, int scrHeight)
 {
     unsigned short *keysPressed;
     unsigned int elapsed, i,x,y;
     struct timeb startTime, endTime;
-    Matrix4f view, projection, vp;
-    Vector4f eye, target, up;
+    Vector4f vs, rs;
     Vector4f square[4];
-    float eyeX = 0;//-75.f;
-    float eyeY = 0;//-25.f;
-    float eyeZ = 1.f;
+    Camera cam;
+    Matrix4f vp;
     float eyeRx = 0.f;
     float eyeRy = 0.f;
     unsigned char *buffer = (unsigned char *)malloc(scrWidth*scrHeight);
+
+    cam.position.x = 0;//-75.f;
+    cam.position.y = 0;//-25.f;
+    cam.position.z = 1.f;
+    cam.position.w = 1.f;
+
+    cam.up.x = 0.f;
+    cam.up.y = 1.f;
+    cam.up.z = 0.f;
+    cam.up.w = 1.f;
+
+    cam.right.x = 1.f;
+    cam.right.y = 0.f;
+    cam.right.z = 0.f;
+    cam.right.w = 1.f;
+
+    cam.target.x = 0.f;
+    cam.target.y = 0.f;
+    cam.target.z = 0.f;
+    cam.target.w = 1.f;
 
     if(!buffer)
     {
@@ -38,14 +66,12 @@ void testProjection(int scrWidth, int scrHeight)
             square[i].w = 1.f;
         }
 
-        eye.w = 1.f;
-        eye.x = eyeX; eye.y = eyeY; eye.z = eyeZ;
-        target.x = eyeRx; target.y = eyeRy; target.z = -1.f; target.w = 1.f;
-        up.x = 0.f; up.y = 1.f; up.z = 0.f; up.w = 1.f;
+        cam.target.x = eyeRx; cam.target.y = eyeRy; cam.target.z = -1.f;
+        cam.target.w = 1.f;
 
-        matView(&view, &eye, &target, &up);
-        matPerspective(&projection, 75.f * M_PI /180.f, (float)scrWidth / (float)scrHeight, 0.1f, 5.f);
-        vp = matMul(&view, &projection);
+        matView(&cam.view, &cam.position, &cam.target, &cam.up);
+        matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)scrWidth / (float)scrHeight, 0.1f, 5.f);
+        vp = matMul(&cam.view, &cam.projection);
         matTranspose(&vp);
 
         for(i = 0; i < 4; i++)
@@ -71,17 +97,19 @@ void testProjection(int scrWidth, int scrHeight)
 
         keysPressed = translateInput();
 
+        vs = vecScale(&cam.target, 0.01f);
+        rs = vecScale(&cam.right, 0.1f);
         if(keysPressed[KEY_W])
-            eyeZ -= 0.01f;
+            cam.position = vecAdd(&cam.position, &vs);
 
         if(keysPressed[KEY_S])
-            eyeZ += 0.01f;
+            cam.position = vecSub(&cam.position, &vs);
 
         if(keysPressed[KEY_A])
-            eyeX -= 0.1f;
+            cam.position = vecSub(&cam.position, &rs);
 
         if(keysPressed[KEY_D])
-            eyeX += 0.1f;
+            cam.position = vecAdd(&cam.position, &rs);
 
         if(keysPressed[KEY_LEFT])
             eyeRx += 0.0001f;
