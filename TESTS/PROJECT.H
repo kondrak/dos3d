@@ -60,7 +60,7 @@ void testProjection(int scrWidth, int scrHeight)
         {
             square[i].x = 0 + 50*(i%2);
             square[i].y = 0 + 50*(i > 1 ? 1 : 0);
-            square[i].z = -8.f;
+            square[i].z = -80.f;
             square[i].w = 1.f;
         }
 
@@ -72,13 +72,10 @@ void testProjection(int scrWidth, int scrHeight)
         for(i = 0; i < 4; i++)
         {
             square[i] = matMulVec(&vp, &square[i]);
-            square[i].x /= square[i].w;
-            square[i].y /= square[i].w;
-            square[i].z /= square[i].w;
 
+            // translate position to screen pixels
             square[i].x = (square[i].x * (float)scrWidth)  / (2.0f * square[i].w) + (scrWidth >> 1);
             square[i].y = (square[i].y * (float)scrHeight) / (2.0f * square[i].w) + (scrHeight >> 1);
-            //printf("%.2f %.2f %.2f %.2f\n", square[i].x, square[i].y, square[i].z, square[i].w);
         }
 
         clrScrBuffer(buffer);
@@ -92,8 +89,9 @@ void testProjection(int scrWidth, int scrHeight)
 
         keysPressed = translateInput();
 
-        vs = vecScale(&cam.target, 0.01f);
+        vs = vecScale(&cam.target, 0.1f);
         rs = vecScale(&cam.right, 0.1f);
+
         if(keysPressed[KEY_W])
             cam.position = vecAdd(&cam.position, &vs);
 
@@ -108,14 +106,26 @@ void testProjection(int scrWidth, int scrHeight)
 
         if(keysPressed[KEY_LEFT])
         {
-            rotateVecAxisAngle(&cam.target, 0.0001f, cam.up.x, cam.up.y, cam.up.z);
+            rotateVecAxisAngle(&cam.target, 0.001f, cam.up.x, cam.up.y, cam.up.z);
             cam.right = crossProduct(&cam.target, &cam.up);
         }
 
         if(keysPressed[KEY_RIGHT])
         {
-            rotateVecAxisAngle(&cam.target, -0.0001f, cam.up.x, cam.up.y, cam.up.z);
+            rotateVecAxisAngle(&cam.target, -0.001f, cam.up.x, cam.up.y, cam.up.z);
             cam.right = crossProduct(&cam.target, &cam.up);
+        }
+
+        if(keysPressed[KEY_PGUP])
+        {
+            rotateVecAxisAngle(&cam.target, -0.001f, cam.right.x, cam.right.y, cam.right.z);
+            cam.right = crossProduct(&cam.target, &cam.up);
+        }
+
+        if(keysPressed[KEY_PGDN])
+        {
+            rotateVecAxisAngle(&cam.target, 0.001f, cam.right.x, cam.right.y, cam.right.z);
+            cam.up = crossProduct(&cam.right, &cam.target);
         }
     }
     
