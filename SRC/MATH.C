@@ -270,3 +270,33 @@ Quaternion quatMul(const Quaternion *q1, const Quaternion *q2)
 
     return r;
 }
+
+void rotateVecAxisAngle(Vector4f *v, const float angle, const float x, const float y, const float z)
+{
+    Quaternion q;
+    float hAngle = angle/2.f;
+    q.x = x * sin(hAngle);
+    q.y = y * sin(hAngle);
+    q.z = z * sin(hAngle);
+    q.w = cos(hAngle);
+
+    rotateVecQuat(v, &q);
+}
+
+void rotateVecQuat(Vector4f *v, const Quaternion *q)
+{
+    Quaternion r, qv, qc, viewQuat;
+
+    viewQuat.x = v->x;
+    viewQuat.y = v->y;
+    viewQuat.z = v->z;
+    viewQuat.w = 0.f;
+
+    qc = quatConjugate(q);
+    qv = quatMul(q, &viewQuat);
+    r = quatMul(&qv, &qc);
+
+    v->x = r.x;
+    v->y = r.y;
+    v->z = r.z;
+}

@@ -52,6 +52,9 @@ extern "C" {
     Vector4f quatMulVec(const Quaternion *q, const Vector4f *v);
     Quaternion quatMul(const Quaternion *q1, const Quaternion *q2);
 
+    // vector/quat
+    void rotateVecAxisAngle(Vector4f *v, const float angle, const float x, const float y, const float z);
+    void rotateVecQuat(Vector4f *v, const Quaternion *q);
 #ifdef __cplusplus
 }
 #endif

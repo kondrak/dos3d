@@ -24,12 +24,10 @@ void testProjection(int scrWidth, int scrHeight)
     Vector4f square[4];
     Camera cam;
     Matrix4f vp;
-    float eyeRx = 0.f;
-    float eyeRy = 0.f;
     unsigned char *buffer = (unsigned char *)malloc(scrWidth*scrHeight);
 
-    cam.position.x = 0;//-75.f;
-    cam.position.y = 0;//-25.f;
+    cam.position.x = 0;
+    cam.position.y = 0;
     cam.position.z = 1.f;
     cam.position.w = 1.f;
 
@@ -45,7 +43,7 @@ void testProjection(int scrWidth, int scrHeight)
 
     cam.target.x = 0.f;
     cam.target.y = 0.f;
-    cam.target.z = 0.f;
+    cam.target.z = -1.f;
     cam.target.w = 1.f;
 
     if(!buffer)
@@ -62,12 +60,9 @@ void testProjection(int scrWidth, int scrHeight)
         {
             square[i].x = 0 + 50*(i%2);
             square[i].y = 0 + 50*(i > 1 ? 1 : 0);
-            square[i].z = -8.f; //-8.f * (i%2 ? 1.1 : 1);
+            square[i].z = -8.f;
             square[i].w = 1.f;
         }
-
-        cam.target.x = eyeRx; cam.target.y = eyeRy; cam.target.z = -1.f;
-        cam.target.w = 1.f;
 
         matView(&cam.view, &cam.position, &cam.target, &cam.up);
         matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)scrWidth / (float)scrHeight, 0.1f, 5.f);
@@ -112,16 +107,16 @@ void testProjection(int scrWidth, int scrHeight)
             cam.position = vecAdd(&cam.position, &rs);
 
         if(keysPressed[KEY_LEFT])
-            eyeRx += 0.0001f;
+        {
+            rotateVecAxisAngle(&cam.target, 0.0001f, cam.up.x, cam.up.y, cam.up.z);
+            cam.right = crossProduct(&cam.target, &cam.up);
+        }
 
         if(keysPressed[KEY_RIGHT])
-            eyeRx -= 0.0001f;
-
-        if(keysPressed[KEY_PGUP])
-            eyeRy -= 0.0001f;
-
-        if(keysPressed[KEY_PGDN])
-            eyeRy += 0.0001f;
+        {
+            rotateVecAxisAngle(&cam.target, -0.0001f, cam.up.x, cam.up.y, cam.up.z);
+            cam.right = crossProduct(&cam.target, &cam.up);
+        }
     }
     
     ftime(&startTime);
