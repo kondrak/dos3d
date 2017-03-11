@@ -10,7 +10,8 @@ void testBresenham(int ox, int oy, int r)
     unsigned int elapsed, numLines = 0;
     struct timeb startTime, endTime;
 
-    printf("Bresenham drawing: please wait...\r");
+    fprintf(stdout, "Bresenham drawing: please wait...\r");
+    fflush(stdout);
 
     ftime(&startTime);
     for(l = 0.0f; l < 2.0f*M_PI; l += 0.001f, numLines++)
@@ -21,5 +22,6 @@ void testBresenham(int ox, int oy, int r)
     ftime(&endTime);
 
     elapsed = (endTime.time - startTime.time)*1000 + endTime.millitm - startTime.millitm;
-    printf("Bresenham drawing: %ums (%u lines)", elapsed, numLines);
+    fprintf(stdout, "Bresenham drawing: %ums (%u lines)", elapsed, numLines);
+    fflush(stdout);
 }

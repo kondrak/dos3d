@@ -18,7 +18,7 @@ typedef struct
 void testProjection(int scrWidth, int scrHeight)
 {
     unsigned short *keysPressed;
-    unsigned int elapsed, i,x,y;
+    unsigned int elapsed, i;
     struct timeb startTime, endTime;
     Vector4f vs, rs;
     Vector4f square[4];

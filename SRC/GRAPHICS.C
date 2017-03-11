@@ -1,9 +1,11 @@
 #include "src/graphics.h"
 
 #include <math.h>
+#include <memory.h>
+#include <stdlib.h>
 
 // pointer to VGA memory
-unsigned char far *VGA = (unsigned char far *)0xA0000000L;
+unsigned char *VGA = (unsigned char *)0xA0000;
 static const int SCREEN_WIDTH = 320;
 static const int SCREEN_HEIGHT = 200;
 

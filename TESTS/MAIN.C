@@ -33,7 +33,7 @@ void selectTest(char *nextTest)
 int main(int argc, char **argv)
 {
     char nextTest;
-    int x, y, demoFinished = 0;
+    int demoFinished = 0;
 
     selectTest(&nextTest);
   
