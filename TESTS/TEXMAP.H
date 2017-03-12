@@ -1,19 +1,20 @@
+#include "src/bitmap.h"
 #include "src/camera.h"
 #include "src/graphics.h"
 #include <stdlib.h>
 
 // helper function
-void setupCube(Vector4f *c);
+void setupTextureCube(Vector4f *c);
 
-// Perspective projection test: render a rotating wireframe cube
-void testPerspective()
+// Texture mapping test
+void testTextureMapping()
 {
     unsigned short *keysPressed;
-    float t = 0.f;
     Vector4f cube[16];
     Camera cam;
     Matrix4f model;
     Matrix4f modelViewProj;
+    BITMAP bmp = loadBitmap("brick.bmp");
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     if(!buffer)
@@ -22,13 +23,15 @@ void testPerspective()
         return;
     }
 
+    setPalette(bmp.palette);
+
     matIdentity(&model);
     matIdentity(&modelViewProj);
 
     // setup camera
     cam.position.x = 0;
     cam.position.y = 0;
-    cam.position.z = 150.f;
+    cam.position.z = 80.f;
     cam.position.w = 1.f;
 
     cam.up.x = 0.f;
@@ -47,7 +50,7 @@ void testPerspective()
     cam.target.w = 1.f;
 
     // setup world coordinates for pseudo-cube
-    setupCube(&cube);
+    setupTextureCube(&cube);
     // translate entire cube a bit
     model.m[12] = -20.f;
     model.m[13] = -20.f;
@@ -64,12 +67,10 @@ void testPerspective()
         modelViewProj = matMul(&cam.view, &cam.projection);
         modelViewProj = matMul(&model, &modelViewProj);
 
-        t += 0.001f;
         for(i = 0; i < 16; i++)
         {
             // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
-            rotateVecAxisAngle(&cube[i], 0.001f, 1.f, 1.f, 1.f);
-            model.m[14] = sin(t) * 80.f;
+            //rotateVecAxisAngle(&cube[i], 0.001f, 1.f, 1.f, 1.f);
             
             // calculate screen coordinates for transformed square vertices
             screenCube[i] = matMulVec(&modelViewProj, &cube[i]);
@@ -90,6 +91,7 @@ void testPerspective()
             drawLine(screenCube[4*i + 2].x, screenCube[4*i + 2].y, screenCube[4*i + 3].x, screenCube[4*i + 3].y, 3+i, buffer);
         }
 
+        drawBitmap(&bmp, 0, 0, buffer);
         updateScreen(buffer);
 
         keysPressed = translateInput();
@@ -103,7 +105,7 @@ void testPerspective()
 }
 
 
-void setupCube(Vector4f *c)
+void setupTextureCube(Vector4f *c)
 {
     int i;
     for(i = 0; i < 4; i++)

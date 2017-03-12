@@ -15,6 +15,7 @@ void testFirstPerson()
     Matrix4f viewProj;
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
+    // setup camera
     cam.position.x = 0;
     cam.position.y = 0;
     cam.position.z = 1.f;
@@ -56,7 +57,6 @@ void testFirstPerson()
         matView(&cam.view, &cam.position, &cam.target, &cam.up);
         matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
         viewProj = matMul(&cam.view, &cam.projection);
-        matTranspose(&viewProj);
 
         for(i = 0; i < 4; i++)
         {

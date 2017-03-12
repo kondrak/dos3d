@@ -136,10 +136,10 @@ void matTranspose(Matrix4f *m)
 Vector4f matMulVec(const Matrix4f *m, const Vector4f *v)
 {
     Vector4f r;
-    r.x = m->m[0] * v->x + m->m[1] * v->y + m->m[2]  * v->z + m->m[3];
-    r.y = m->m[4] * v->x + m->m[5] * v->y + m->m[6]  * v->z + m->m[7];
-    r.z = m->m[8] * v->x + m->m[9] * v->y + m->m[10] * v->z + m->m[11];
-    r.w = m->m[12] * v->x + m->m[13] * v->y + m->m[14] * v->z + m->m[15];
+    r.x = m->m[0] * v->x + m->m[4] * v->y + m->m[8]  * v->z + m->m[12] * v->w;
+    r.y = m->m[1] * v->x + m->m[5] * v->y + m->m[9]  * v->z + m->m[13] * v->w;
+    r.z = m->m[2] * v->x + m->m[6] * v->y + m->m[10] * v->z + m->m[14] * v->w;
+    r.w = m->m[3] * v->x + m->m[7] * v->y + m->m[11] * v->z + m->m[15] * v->w;
 
     return r;
 }

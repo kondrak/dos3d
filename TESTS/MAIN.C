@@ -10,6 +10,7 @@
 #include "tests/fpp.h"
 #include "tests/linedraw.h"
 #include "tests/project.h"
+#include "tests/texmap.h"
 
 // good bye
 void Shutdown(int exitCode)
@@ -25,7 +26,8 @@ void selectTest(char *nextTest)
     printf("Choose test (ESC to exit):\n");
     printf("1. Bresenham line drawing\n");
     printf("2. Perspective projection\n");
-    printf("3. First person WASD camera\n");
+    printf("3. Texture mapping\n");
+    printf("4. First person WASD camera\n");
     printf("\nInput:\n");
     *nextTest = getch();
 }
@@ -52,6 +54,10 @@ int main(int argc, char **argv)
                 testPerspective();
                 break;
             case '3':
+                setMode(0x13);
+                testTextureMapping();
+                break;
+            case '4':
                 setMode(0x13);
                 testFirstPerson();
                 break;
