@@ -1,12 +1,15 @@
 #include "src/camera.h"
 #include "src/graphics.h"
 #include <stdlib.h>
+#include <sys/timeb.h>
 
-// Perspective projection test
-void testPerspective()
+// First person WASD camera
+void testFirstPerson()
 {
     unsigned short *keysPressed;
-    unsigned int i;
+    unsigned int elapsed, i;
+    struct timeb startTime, endTime;
+    Vector4f ts, rs;
     Vector4f square[4];
     Camera cam;
     Matrix4f viewProj;
@@ -31,13 +34,13 @@ void testPerspective()
     cam.target.y = 0.f;
     cam.target.z = -1.f;
     cam.target.w = 1.f;
-
+    
     if(!buffer)
     {
         printf("Out of memory!");
         return;
     }
-
+    
     keysPressed = translateInput();
 
     while(!keysPressed[KEY_ESC])
@@ -74,9 +77,53 @@ void testPerspective()
         updateScreen(buffer);
 
         keysPressed = translateInput();
+
+        ts = vecScale(&cam.target, 0.1f);
+        rs = vecScale(&cam.right, 0.1f);
+
+        if(keysPressed[KEY_W])
+            cam.position = vecAdd(&cam.position, &ts);
+
+        if(keysPressed[KEY_S])
+            cam.position = vecSub(&cam.position, &ts);
+
+        if(keysPressed[KEY_A])
+            cam.position = vecSub(&cam.position, &rs);
+
+        if(keysPressed[KEY_D])
+            cam.position = vecAdd(&cam.position, &rs);
+
+        if(keysPressed[KEY_LEFT])
+        {
+            rotateVecAxisAngle(&cam.target, 0.001f, cam.up.x, cam.up.y, cam.up.z);
+            cam.right = crossProduct(&cam.target, &cam.up);
+        }
+
+        if(keysPressed[KEY_RIGHT])
+        {
+            rotateVecAxisAngle(&cam.target, -0.001f, cam.up.x, cam.up.y, cam.up.z);
+            cam.right = crossProduct(&cam.target, &cam.up);
+        }
+
+        if(keysPressed[KEY_PGUP])
+        {
+            rotateVecAxisAngle(&cam.target, -0.001f, cam.right.x, cam.right.y, cam.right.z);
+            cam.right = crossProduct(&cam.target, &cam.up);
+        }
+
+        if(keysPressed[KEY_PGDN])
+        {
+            rotateVecAxisAngle(&cam.target, 0.001f, cam.right.x, cam.right.y, cam.right.z);
+            cam.up = crossProduct(&cam.right, &cam.target);
+        }
     }
     
+    ftime(&startTime);
+    ftime(&endTime);
+
     free(buffer);
+
+    elapsed = (endTime.time - startTime.time)*1000 + endTime.millitm - startTime.millitm;
 
     do {
         keysPressed = translateInput();

@@ -4,6 +4,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+    #define SCREEN_WIDTH  320
+    #define SCREEN_HEIGHT 200
 
     void setMode(unsigned char mode);
     void drawPixel(int x, int y, unsigned char color, unsigned char *buffer);

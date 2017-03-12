@@ -5,9 +5,7 @@
 #include <stdlib.h>
 
 // pointer to VGA memory
-unsigned char *VGA = (unsigned char *)0xA0000;
-static const int SCREEN_WIDTH = 320;
-static const int SCREEN_HEIGHT = 200;
+static unsigned char *VGA = (unsigned char *)0xA0000;
 
 // graphics mode setter
 void setMode(unsigned char mode)

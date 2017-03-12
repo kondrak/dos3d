@@ -5,12 +5,11 @@
 #include <string.h>
 #include <math.h>
 
+#include "src/graphics.h"
 #include "src/input.h"
+#include "tests/fpp.h"
 #include "tests/linedraw.h"
 #include "tests/project.h"
-
-static const int SCREEN_WIDTH  = 320;
-static const int SCREEN_HEIGHT = 200;
 
 // good bye
 void Shutdown(int exitCode)
@@ -26,6 +25,7 @@ void selectTest(char *nextTest)
     printf("Choose test (ESC to exit):\n");
     printf("1. Bresenham line drawing\n");
     printf("2. Perspective projection\n");
+    printf("3. First person WASD camera\n");
     printf("\nInput:\n");
     *nextTest = getch();
 }
@@ -49,7 +49,11 @@ int main(int argc, char **argv)
                 break;
             case '2':
                 setMode(0x13);
-                testProjection(SCREEN_WIDTH, SCREEN_HEIGHT);
+                testPerspective();
+                break;
+            case '3':
+                setMode(0x13);
+                testFirstPerson();
                 break;
             case 27:
                 Shutdown(0);
