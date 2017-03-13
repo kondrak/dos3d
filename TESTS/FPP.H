@@ -69,10 +69,10 @@ void testFirstPerson()
 
         clrScrBuffer(buffer);
 
-        drawLine(square[0].x, square[0].y, square[1].x, square[1].y, 3, buffer);
-        drawLine(square[1].x, square[1].y, square[3].x, square[3].y, 3, buffer);
-        drawLine(square[0].x, square[0].y, square[2].x, square[2].y, 3, buffer);
-        drawLine(square[2].x, square[2].y, square[3].x, square[3].y, 3, buffer);
+        drawLineVec(&square[0], &square[1], 3, buffer);
+        drawLineVec(&square[1], &square[3], 3, buffer);
+        drawLineVec(&square[0], &square[2], 3, buffer);
+        drawLineVec(&square[2], &square[3], 3, buffer);
 
         updateScreen(buffer);
 

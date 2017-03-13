@@ -58,6 +58,11 @@ void drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char
     }
 }
 
+void drawLineVec(const Vector4f *from, const Vector4f *to, unsigned char color, unsigned char *buffer)
+{
+    drawLine(from->x, from->y, to->x, to->y, color, buffer);
+}
+
 void clrScrBuffer(unsigned char *buffer)
 {
     if(!buffer)
@@ -68,8 +73,5 @@ void clrScrBuffer(unsigned char *buffer)
 
 void updateScreen(unsigned char *buffer)
 {
-    if(buffer)
-    {
-        memcpy(VGA, buffer, SCREEN_WIDTH*SCREEN_HEIGHT);
-    }
+    memcpy(VGA, buffer, SCREEN_WIDTH*SCREEN_HEIGHT);
 }

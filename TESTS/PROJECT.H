@@ -84,10 +84,10 @@ void testPerspective()
         // render the cube walls
         for(i = 0; i < 4; i++)
         {
-            drawLine(screenCube[4*i + 0].x, screenCube[4*i + 0].y, screenCube[4*i + 1].x, screenCube[4*i + 1].y, 3+i, buffer);
-            drawLine(screenCube[4*i + 1].x, screenCube[4*i + 1].y, screenCube[4*i + 3].x, screenCube[4*i + 3].y, 3+i, buffer);
-            drawLine(screenCube[4*i + 0].x, screenCube[4*i + 0].y, screenCube[4*i + 2].x, screenCube[4*i + 2].y, 3+i, buffer);
-            drawLine(screenCube[4*i + 2].x, screenCube[4*i + 2].y, screenCube[4*i + 3].x, screenCube[4*i + 3].y, 3+i, buffer);
+            drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 1], 3+i, buffer);
+            drawLineVec(&screenCube[4*i + 1], &screenCube[4*i + 3], 3+i, buffer);
+            drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 2], 3+i, buffer);
+            drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, buffer);
         }
 
         updateScreen(buffer);
