@@ -62,14 +62,14 @@ void testTextureMapping()
     triangle.vertices[0].uv.u = 0;
     triangle.vertices[0].uv.v = 0;
     
-    triangle.vertices[1].position.x = 0;
+    triangle.vertices[1].position.x = 40;
     triangle.vertices[1].position.y = 40;
     triangle.vertices[1].position.z = 0;
     triangle.vertices[1].position.w = 1.f;
     triangle.vertices[1].uv.u = 1;
     triangle.vertices[1].uv.v = 1;
 
-    triangle.vertices[2].position.x = 40;
+    triangle.vertices[2].position.x = 0;
     triangle.vertices[2].position.y = 40;
     triangle.vertices[2].position.z = 0;
     triangle.vertices[2].position.w = 1.f;
@@ -97,31 +97,31 @@ void testTextureMapping()
         modelViewProj = matMul(&cam.view, &cam.projection);
         modelViewProj = matMul(&model, &modelViewProj);
 
-    t += 0.001f;
-    model.m[14] = sin(t) * 80.f;
+        t += 0.001f;
+        model.m[14] = sin(t) * 80.f;
 
-    for(i = 0; i < 3; i++)
-    {
-        screenTriangle.vertices[i].position = matMulVec(&modelViewProj, &triangle.vertices[i].position);
+        for(i = 0; i < 3; i++)
+        {
+            screenTriangle.vertices[i].position = matMulVec(&modelViewProj, &triangle.vertices[i].position);
             screenTriangle.vertices[i].position.x = (screenTriangle.vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle.vertices[i].position.w) + (SCREEN_WIDTH >> 1);
             screenTriangle.vertices[i].position.y = (screenTriangle.vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle.vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
-    }
+        }
         /*for(i = 0; i < 16; i++)
-        {
-            // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
-            rotateVecAxisAngle(&cube[i], 0.001f, 1.f, 1.f, 1.f);
-            model.m[14] = sin(t) * 80.f;
-            // calculate screen coordinates for transformed square vertices
-            screenCube[i] = matMulVec(&modelViewProj, &cube[i]);
+      {
+      // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
+      rotateVecAxisAngle(&cube[i], 0.001f, 1.f, 1.f, 1.f);
+      model.m[14] = sin(t) * 80.f;
+      // calculate screen coordinates for transformed square vertices
+      screenCube[i] = matMulVec(&modelViewProj, &cube[i]);
 
-            // translate position to screen pixels
-            screenCube[i].x = (screenCube[i].x * (float)SCREEN_WIDTH)  / (2.0f * screenCube[i].w) + (SCREEN_WIDTH >> 1);
-            screenCube[i].y = (screenCube[i].y * (float)SCREEN_HEIGHT) / (2.0f * screenCube[i].w) + (SCREEN_HEIGHT >> 1);
-    }
+      // translate position to screen pixels
+      screenCube[i].x = (screenCube[i].x * (float)SCREEN_WIDTH)  / (2.0f * screenCube[i].w) + (SCREEN_WIDTH >> 1);
+      screenCube[i].y = (screenCube[i].y * (float)SCREEN_HEIGHT) / (2.0f * screenCube[i].w) + (SCREEN_HEIGHT >> 1);
+      }
     */
         clrScrBuffer(buffer);
 
-    drawTriangle(&screenTriangle, buffer);
+        drawTriangle(&screenTriangle, buffer);
         // render the cube walls
         /*for(i = 0; i < 4; i++)
         {
