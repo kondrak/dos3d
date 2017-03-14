@@ -63,6 +63,81 @@ void drawLineVec(const Vector4f *from, const Vector4f *to, unsigned char color, 
     drawLine(from->x, from->y, to->x, to->y, color, buffer);
 }
 
+// only flat bottom triangle supported for now
+void drawTriangle(const Triangle *t, unsigned char *buffer)
+{
+    float invDy  = 1.f / (t->vertices[1].position.y - t->vertices[0].position.y);
+    float dxLeft  = (t->vertices[2].position.x - t->vertices[0].position.x) * invDy;
+    float dxRight = (t->vertices[1].position.x - t->vertices[0].position.x) * invDy;
+    float xLeft  = t->vertices[0].position.x;
+    float xRight = xLeft;
+    int x, y;
+
+    if(!t->texture)
+    {
+    for(y = t->vertices[0].position.y; y <= t->vertices[1].position.y; ++y)
+    {
+        drawLine(xLeft, y, xRight, y, t->color, buffer);
+        xLeft += dxLeft;
+        xRight += dxRight;
+    }
+    }
+    else
+    {
+    float texW = t->texture->width - 1;
+    float texH = t->texture->height - 1;
+    float duLeft = texW * (t->vertices[1].uv.u - t->vertices[0].uv.u) * invDy;
+    float dvLeft = texH * (t->vertices[1].uv.v - t->vertices[0].uv.v) * invDy;
+    float duRight = texW * (t->vertices[2].uv.u - t->vertices[0].uv.u) * invDy;
+    float dvRight = texH * (t->vertices[2].uv.v - t->vertices[0].uv.v) * invDy;
+
+    float uLeft = texW * t->vertices[0].uv.u;
+    float uRight = uLeft;
+    float vLeft = texH * t->vertices[0].uv.v;
+    float vRight = vLeft;
+    int startY = t->vertices[0].position.y;
+    int endY = t->vertices[1].position.y;
+
+    dxLeft  = (t->vertices[1].position.x - t->vertices[0].position.x) * invDy;
+    dxRight = (t->vertices[2].position.x - t->vertices[0].position.x) * invDy;
+
+    for(y = startY; y <= endY; ++y)
+    {
+        int startX = xLeft;
+        int endX  = xRight;
+        float u = uLeft;
+        float v = vLeft;
+        float du, dv;
+        float dx = endX - startX;
+        if(dx > 0)
+        {
+        du = (uRight - uLeft) / dx;
+        dv = (vRight - vLeft) / dx;
+        }
+        else
+        {
+        du = uRight - uLeft;
+        dv = vRight - vLeft;
+        }
+
+        for(x = startX; x <= endX; ++x)
+        {
+        byte pixel = t->texture->data[(int)u + ((int)v << 6)];
+        drawPixel(x, y, pixel, buffer);
+        u += du;
+        v += dv;
+        }
+
+        xLeft += dxLeft;
+        xRight += dxRight;
+        uLeft += duLeft;
+        uRight += duRight;
+        vLeft += dvLeft;
+        vRight += dvRight;
+    }
+    }
+}
+
 void clrScrBuffer(unsigned char *buffer)
 {
     if(!buffer)

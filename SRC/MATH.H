@@ -17,6 +17,12 @@ typedef struct
 
 typedef struct
 {
+    double u;
+    double v;
+} Vector2f;
+
+typedef struct
+{
     float m[16];
 } Matrix4f;
 

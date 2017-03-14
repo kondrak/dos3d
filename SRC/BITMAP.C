@@ -106,7 +106,7 @@ void drawTransparentBitmap(BITMAP *bmp, int x, int y, unsigned char *buffer)
          data = bmp->data[bitmap_offset];
          if (data) buffer[screen_offset+x+i] = data;
       }
-	  
+
       screen_offset += SCREEN_WIDTH;
    }
 }
