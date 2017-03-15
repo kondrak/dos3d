@@ -66,14 +66,14 @@ void drawLineVec(const Vector4f *from, const Vector4f *to, unsigned char color, 
 // only flat bottom triangle supported for now
 /*
 * Render counter clockwise (v0->v1->v2) for wanted effect.
-* v0
-* |\
-* | \
-* |  \
-* |   \
-* |    \
-* |     \
-* v2-----v1
+* v0         v0----v1
+* |\         |     /
+* | \        |    /
+* |  \       |   /
+* |   \      |  /
+* |    \     | /
+* |     \    |/
+* v2-----v1  v2
 */
 void drawTriangle(const Triangle *t, unsigned char *buffer)
 {
@@ -84,7 +84,7 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     v0 = &t->vertices[0];
     v1 = &t->vertices[1];
     v2 = &t->vertices[2];
-    invDy  = 1.f / (v1->position.y - v0->position.y);
+    invDy  = 1.f / (v2->position.y - v0->position.y);
     dxLeft  = (v2->position.x - v0->position.x) * invDy;
     dxRight = (v1->position.x - v0->position.x) * invDy;
     xLeft  = v0->position.x;

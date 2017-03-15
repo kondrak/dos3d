@@ -11,8 +11,9 @@ void testTextureMapping()
 {
     unsigned short *keysPressed;
     float t = 0.f;
+    int k;
     Vector4f cube[16];
-    Triangle triangle, screenTriangle;
+    Triangle triangle[2], screenTriangle[2];
     Camera cam;
     Matrix4f model;
     Matrix4f modelViewProj;
@@ -53,34 +54,60 @@ void testTextureMapping()
 
     // setup world coordinates for pseudo-cube
     //setupTextureCube(&cube);
-    triangle.color = 3;
-    triangle.texture = &bmp;
-    triangle.vertices[0].position.x = 0;
-    triangle.vertices[0].position.y = 0;
-    triangle.vertices[0].position.z = 0;
-    triangle.vertices[0].position.w = 1.f;
-    triangle.vertices[0].uv.u = 0;
-    triangle.vertices[0].uv.v = 0;
+    triangle[0].color = 3;
+    triangle[0].texture = &bmp;
+    triangle[0].vertices[0].position.x = 0;
+    triangle[0].vertices[0].position.y = 0;
+    triangle[0].vertices[0].position.z = 0;
+    triangle[0].vertices[0].position.w = 1.f;
+    triangle[0].vertices[0].uv.u = 0;
+    triangle[0].vertices[0].uv.v = 0;
     
-    triangle.vertices[1].position.x = 40;
-    triangle.vertices[1].position.y = 40;
-    triangle.vertices[1].position.z = 0;
-    triangle.vertices[1].position.w = 1.f;
-    triangle.vertices[1].uv.u = 1;
-    triangle.vertices[1].uv.v = 1;
+    triangle[0].vertices[1].position.x = 40;
+    triangle[0].vertices[1].position.y = 40;
+    triangle[0].vertices[1].position.z = 0;
+    triangle[0].vertices[1].position.w = 1.f;
+    triangle[0].vertices[1].uv.u = 1;
+    triangle[0].vertices[1].uv.v = 1;
 
-    triangle.vertices[2].position.x = 0;
-    triangle.vertices[2].position.y = 40;
-    triangle.vertices[2].position.z = 0;
-    triangle.vertices[2].position.w = 1.f;
-    triangle.vertices[2].uv.u = 0;
-    triangle.vertices[2].uv.v = 1;
+    triangle[0].vertices[2].position.x = 0;
+    triangle[0].vertices[2].position.y = 40;
+    triangle[0].vertices[2].position.z = 0;
+    triangle[0].vertices[2].position.w = 1.f;
+    triangle[0].vertices[2].uv.u = 0;
+    triangle[0].vertices[2].uv.v = 1;
 
-    screenTriangle.color = triangle.color;
-    screenTriangle.texture = triangle.texture;
-    screenTriangle.vertices[0].uv = triangle.vertices[0].uv;
-    screenTriangle.vertices[1].uv = triangle.vertices[1].uv;
-    screenTriangle.vertices[2].uv = triangle.vertices[2].uv;
+    triangle[1].color = 3;
+    triangle[1].texture = NULL; //&bmp;
+    triangle[1].vertices[0].position.x = 0;
+    triangle[1].vertices[0].position.y = 0;
+    triangle[1].vertices[0].position.z = 0;
+    triangle[1].vertices[0].position.w = 1.f;
+    triangle[1].vertices[0].uv.u = 0;
+    triangle[1].vertices[0].uv.v = 0;
+    
+    triangle[1].vertices[1].position.x = 40;
+    triangle[1].vertices[1].position.y = 0;
+    triangle[1].vertices[1].position.z = 0;
+    triangle[1].vertices[1].position.w = 1.f;
+    triangle[1].vertices[1].uv.u = 1;
+    triangle[1].vertices[1].uv.v = 1;
+
+    triangle[1].vertices[2].position.x = 40;
+    triangle[1].vertices[2].position.y = 40;
+    triangle[1].vertices[2].position.z = 0;
+    triangle[1].vertices[2].position.w = 1.f;
+    triangle[1].vertices[2].uv.u = 0;
+    triangle[1].vertices[2].uv.v = 1;
+    
+    for(k = 0; k < 2; k++)
+    {
+        screenTriangle[k].color = triangle[k].color;
+        screenTriangle[k].texture = triangle[k].texture;
+        screenTriangle[k].vertices[0].uv = triangle[k].vertices[0].uv;
+        screenTriangle[k].vertices[1].uv = triangle[k].vertices[1].uv;
+        screenTriangle[k].vertices[2].uv = triangle[k].vertices[2].uv;
+    }
     // translate entire cube a bit
     //model.m[12] = -20.f;
     model.m[13] = -20.f;
@@ -100,11 +127,14 @@ void testTextureMapping()
         t += 0.001f;
         model.m[14] = sin(t) * 80.f;
 
-        for(i = 0; i < 3; i++)
+        for(k = 0; k < 2; ++k)
         {
-            screenTriangle.vertices[i].position = matMulVec(&modelViewProj, &triangle.vertices[i].position);
-            screenTriangle.vertices[i].position.x = (screenTriangle.vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle.vertices[i].position.w) + (SCREEN_WIDTH >> 1);
-            screenTriangle.vertices[i].position.y = (screenTriangle.vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle.vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
+            for(i = 0; i < 3; i++)
+            {
+                screenTriangle[k].vertices[i].position = matMulVec(&modelViewProj, &triangle[k].vertices[i].position);
+                screenTriangle[k].vertices[i].position.x = (screenTriangle[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
+                screenTriangle[k].vertices[i].position.y = (screenTriangle[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
+            }
         }
         /*for(i = 0; i < 16; i++)
       {
@@ -121,7 +151,8 @@ void testTextureMapping()
     */
         clrScrBuffer(buffer);
 
-        drawTriangle(&screenTriangle, buffer);
+        drawTriangle(&screenTriangle[0], buffer);
+        drawTriangle(&screenTriangle[1], buffer);
         // render the cube walls
         /*for(i = 0; i < 4; i++)
         {
