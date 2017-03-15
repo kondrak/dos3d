@@ -64,18 +64,35 @@ void drawLineVec(const Vector4f *from, const Vector4f *to, unsigned char color, 
 }
 
 // only flat bottom triangle supported for now
+/*
+* Render counter clockwise (v0->v1->v2) for wanted effect.
+* v0
+* |\
+* | \
+* |  \
+* |   \
+* |    \
+* |     \
+* v2-----v1
+*/
 void drawTriangle(const Triangle *t, unsigned char *buffer)
 {
-    float invDy  = 1.f / (t->vertices[1].position.y - t->vertices[0].position.y);
-    float dxLeft  = (t->vertices[2].position.x - t->vertices[0].position.x) * invDy;
-    float dxRight = (t->vertices[1].position.x - t->vertices[0].position.x) * invDy;
-    float xLeft  = t->vertices[0].position.x;
-    float xRight = xLeft;
+    float invDy, dxLeft, dxRight, xLeft, xRight;
     int x, y;
+    const Vertex *v0, *v1, *v2;
+    
+    v0 = &t->vertices[0];
+    v1 = &t->vertices[1];
+    v2 = &t->vertices[2];
+    invDy  = 1.f / (v1->position.y - v0->position.y);
+    dxLeft  = (v2->position.x - v0->position.x) * invDy;
+    dxRight = (v1->position.x - v0->position.x) * invDy;
+    xLeft  = v0->position.x;
+    xRight = xLeft;
 
     if(!t->texture)
     {
-        for(y = t->vertices[0].position.y; y <= t->vertices[1].position.y; ++y)
+        for(y = v0->position.y; y <= v1->position.y; ++y)
         {
             drawLine(xLeft, y, xRight, y, t->color, buffer);
             xLeft += dxLeft;
@@ -86,17 +103,17 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     {
         float texW = t->texture->width - 1;
         float texH = t->texture->height - 1;
-        float duLeft = texW * (t->vertices[2].uv.u - t->vertices[0].uv.u) * invDy;
-        float dvLeft = texH * (t->vertices[2].uv.v - t->vertices[0].uv.v) * invDy;
-        float duRight = texW * (t->vertices[1].uv.u - t->vertices[0].uv.u) * invDy;
-        float dvRight = texH * (t->vertices[1].uv.v - t->vertices[0].uv.v) * invDy;
+        float duLeft =  texW * (v2->uv.u - v0->uv.u) * invDy;
+        float dvLeft =  texH * (v2->uv.v - v0->uv.v) * invDy;
+        float duRight = texW * (v1->uv.u - v0->uv.u) * invDy;
+        float dvRight = texH * (v1->uv.v - v0->uv.v) * invDy;
 
-        float uLeft = texW * t->vertices[0].uv.u;
+        float uLeft = texW * v0->uv.u;
         float uRight = uLeft;
-        float vLeft = texH * t->vertices[0].uv.v;
+        float vLeft = texH * v0->uv.v;
         float vRight = vLeft;
-        int startY = t->vertices[0].position.y;
-        int endY = t->vertices[1].position.y;
+        int startY = v0->position.y;
+        int endY = v1->position.y;
 
         for(y = startY; y <= endY; ++y)
         {
