@@ -23,9 +23,19 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     
     if(v1->position.y == v2->position.y)
         drawTriangleType(t, v0, v1, v2, buffer, FLAT_BOTTOM);
-    
-    if(v0->position.y == v1->position.y)
+    else if(v0->position.y == v1->position.y)
         drawTriangleType(t, v2, v1, v0, buffer, FLAT_TOP);
+    else
+    {
+        Vertex v3;
+        v3.position.x = v0->position.x + ((float)(v2->position.y - v0->position.y) / (float)(v1->position.y - v0->position.y)) * (v1->position.x - v0->position.x);
+        v3.position.y = v2->position.y;
+        v3.position.z = v2->position.z;
+        v3.uv.u = v1->uv.u * 0.5;
+        v3.uv.v = v1->uv.v * 0.5;
+        drawTriangleType(t, v0, &v3, v2, buffer, FLAT_BOTTOM);
+        drawTriangleType(t, v1, &v3, v2, buffer, FLAT_TOP);
+    }
 }
 
 
