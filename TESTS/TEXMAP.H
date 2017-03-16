@@ -1,6 +1,6 @@
 #include "src/bitmap.h"
 #include "src/camera.h"
-#include "src/graphics.h"
+#include "src/triangle.h"
 #include <stdlib.h>
 
 // helper function
@@ -26,15 +26,13 @@ void testTextureMapping()
         return;
     }
 
-    setPalette(bmp.palette);
-
     matIdentity(&model);
     matIdentity(&modelViewProj);
 
     // setup camera
     cam.position.x = 0;
     cam.position.y = 0;
-    cam.position.z = 150.f;
+    cam.position.z = 50.f;
     cam.position.w = 1.f;
 
     cam.up.x = 0.f;
@@ -54,7 +52,7 @@ void testTextureMapping()
 
     // setup world coordinates for pseudo-cube
     //setupTextureCube(&cube);
-    triangle[0].color = 3;
+    triangle[0].color = 4;
     triangle[0].texture = &bmp;
     triangle[0].vertices[0].position.x = 0;
     triangle[0].vertices[0].position.y = 0;
@@ -78,7 +76,7 @@ void testTextureMapping()
     triangle[0].vertices[2].uv.v = 1;
 
     triangle[1].color = 3;
-    triangle[1].texture = NULL; //&bmp;
+    triangle[1].texture = &bmp;
     triangle[1].vertices[0].position.x = 0;
     triangle[1].vertices[0].position.y = 0;
     triangle[1].vertices[0].position.z = 0;
@@ -91,13 +89,13 @@ void testTextureMapping()
     triangle[1].vertices[1].position.z = 0;
     triangle[1].vertices[1].position.w = 1.f;
     triangle[1].vertices[1].uv.u = 1;
-    triangle[1].vertices[1].uv.v = 1;
+    triangle[1].vertices[1].uv.v = 0;
 
     triangle[1].vertices[2].position.x = 40;
     triangle[1].vertices[2].position.y = 40;
     triangle[1].vertices[2].position.z = 0;
     triangle[1].vertices[2].position.w = 1.f;
-    triangle[1].vertices[2].uv.u = 0;
+    triangle[1].vertices[2].uv.u = 1;
     triangle[1].vertices[2].uv.v = 1;
     
     for(k = 0; k < 2; k++)
@@ -125,7 +123,7 @@ void testTextureMapping()
         modelViewProj = matMul(&model, &modelViewProj);
 
         t += 0.001f;
-        model.m[14] = sin(t) * 80.f;
+        //model.m[14] = sin(t) * 80.f;
 
         for(k = 0; k < 2; ++k)
         {
