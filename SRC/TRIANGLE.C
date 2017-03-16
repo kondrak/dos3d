@@ -14,13 +14,24 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
 void drawTriangle(const Triangle *t, unsigned char *buffer)
 {
     const Vertex *v0, *v1, *v2;
-    
+
     v0 = &t->vertices[0];
     v1 = &t->vertices[1];
     v2 = &t->vertices[2];
-    
-    // sort vertices here
-    
+
+    // sort vertices here so that v0 is topmost, then v1, then v2
+    if(v0->position.y > v1->position.y)
+    {
+        v0 = &t->vertices[1];
+        v1 = &t->vertices[0];
+    }
+
+    if(v0->position.y > v2->position.y)
+    {
+        v2 = v0;
+        v0 = &t->vertices[2];
+    }
+
     if(v1->position.y == v2->position.y)
         drawTriangleType(t, v0, v1, v2, buffer, FLAT_BOTTOM);
     else if(v0->position.y == v1->position.y)
@@ -28,6 +39,14 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     else
     {
         Vertex v3;
+
+        if(v2->position.y > v1->position.y)
+        {
+            const Vertex *tmp = v2;
+            v2 = v1;
+            v1 = tmp;
+        }
+
         v3.position.x = v0->position.x + ((float)(v2->position.y - v0->position.y) / (float)(v1->position.y - v0->position.y)) * (v1->position.x - v0->position.x);
         v3.position.y = v2->position.y;
         v3.position.z = v2->position.z;
