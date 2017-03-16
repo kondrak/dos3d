@@ -92,7 +92,7 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
 
     if(!t->texture)
     {
-        for(y = v0->position.y; y <= v1->position.y; ++y)
+        for(y = v0->position.y; y <= v2->position.y; ++y)
         {
             drawLine(xLeft, y, xRight, y, t->color, buffer);
             xLeft += dxLeft;
@@ -113,7 +113,7 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         float vLeft = texH * v0->uv.v;
         float vRight = vLeft;
         int startY = v0->position.y;
-        int endY = v1->position.y;
+        int endY = v2->position.y;
 
         for(y = startY; y <= endY; ++y)
         {
