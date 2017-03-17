@@ -71,8 +71,8 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
 */
 void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, const Vertex *v2, unsigned char *buffer, enum TriangleType type)
 {
-    float invDy, dxLeft, dxRight, xLeft, xRight;
-    int x, y, yDir = 1;
+    double invDy, dxLeft, dxRight, xLeft, xRight;
+    double x, y, yDir = 1;
     
     if(type == FLAT_BOTTOM)
     {
