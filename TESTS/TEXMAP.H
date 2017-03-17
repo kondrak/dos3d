@@ -32,7 +32,7 @@ void testTextureMapping()
     // setup camera
     cam.position.x = 0;
     cam.position.y = 0;
-    cam.position.z = 50.f;
+    cam.position.z = 150.f;
     cam.position.w = 1.f;
 
     cam.up.x = 0.f;
@@ -122,8 +122,8 @@ void testTextureMapping()
         modelViewProj = matMul(&cam.view, &cam.projection);
         modelViewProj = matMul(&model, &modelViewProj);
 
-        t += 0.001f;
-        //model.m[14] = sin(t) * 80.f;
+        t += 0.01f;
+        model.m[14] = sin(t) * 100.f;
 
         for(k = 0; k < 2; ++k)
         {

@@ -96,9 +96,9 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
             xLeft += dxLeft;
             xRight += dxRight;
             
-            if(type == FLAT_BOTTOM && y > v2->position.y)
+            if(type == FLAT_BOTTOM && y >= v2->position.y)
                 break;
-            else if(type == FLAT_TOP && y < v2->position.y)
+            else if(type == FLAT_TOP && y <= v2->position.y)
                 break;
         }
     }
@@ -164,9 +164,9 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
             vLeft += dvLeft;
             vRight += dvRight;
             
-           if(type == FLAT_BOTTOM && y > endY)
+           if(type == FLAT_BOTTOM && y >= endY)
                 break;
-            else if ( y < startY)
+            else if ( type == FLAT_TOP && y <= startY)
                 break;
         }
     }

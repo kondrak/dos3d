@@ -23,15 +23,15 @@ typedef struct
 
 typedef struct
 {
-    float m[16];
+    double m[16];
 } Matrix4f;
 
 typedef struct
 {
-    float x;
-    float y;
-    float z;
-    float w;
+    double x;
+    double y;
+    double z;
+    double w;
 } Quaternion;
 
 #ifdef __cplusplus
