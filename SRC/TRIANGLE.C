@@ -58,19 +58,19 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v3.uv.v = v1->uv.v * 0.5;
 
         // more degenerate triangle tests
-        if((int)v0->position.y == (int)v3.position.y)
-            return;
+        //if((int)v0->position.y == (int)v3.position.y)
+        //    return;
 
-        if((int)v0->position.y == (int)v2->position.y)
-            return;
+        //if((int)v0->position.y == (int)v2->position.y)
+        //    return;
 
         drawTriangleType(t, v0, &v3, v2, buffer, FLAT_BOTTOM);
 
-        if((int)v1->position.y == (int)v3.position.y)
-            return;
+        //if((int)v1->position.y == (int)v3.position.y)
+        //    return;
 
-        if((int)v1->position.y == (int)v2->position.y)
-            return;
+        //if((int)v1->position.y == (int)v2->position.y)
+        //    return;
 
         drawTriangleType(t, v1, &v3, v2, buffer, FLAT_TOP);
     }
@@ -111,14 +111,22 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
     {
         for(y = v0->position.y; ; y += yDir)
         {
+            // to avoid pixel wide gaps, render extra line at the junction between two final points
+            if(type == FLAT_TOP && y < v2->position.y)
+            {
+                //drawLine(xLeft-dxLeft, y, xRight-dxRight, y, t->color, buffer);
+                break;
+            }
+            else if(type == FLAT_BOTTOM && y > v2->position.y)
+            {
+                drawLine(xLeft-dxLeft, y, xRight-dxRight, y, t->color, buffer);
+                break;
+            }
+
             drawLine(xLeft, y, xRight, y, t->color, buffer);
             xLeft += dxLeft;
             xRight += dxRight;
 
-            if(type == FLAT_BOTTOM && y >= v2->position.y)
-                break;
-            else if(type == FLAT_TOP && y <= v2->position.y)
-                break;
         }
     }
     else
