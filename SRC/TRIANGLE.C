@@ -19,7 +19,7 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     v1 = &t->vertices[1];
     v2 = &t->vertices[2];
 
-    // sort vertices here so that v0 is topmost, then v1, then v2
+    // sort vertices so that v0 is topmost, then v1, then v2
     if(v0->position.y > v1->position.y)
     {
         v0 = &t->vertices[1];
@@ -31,6 +31,10 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v2 = v0;
         v0 = &t->vertices[2];
     }
+
+    // degenerate triangle?
+    if((int)v0->position.y == (int)v2->position.y)
+        return;
 
     if(v1->position.y == v2->position.y)
         drawTriangleType(t, v0, v1, v2, buffer, FLAT_BOTTOM);
@@ -52,7 +56,22 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v3.position.z = v2->position.z;
         v3.uv.u = v1->uv.u * 0.5;
         v3.uv.v = v1->uv.v * 0.5;
+
+        // more degenerate triangle tests
+        if((int)v0->position.y == (int)v3.position.y)
+            return;
+
+        if((int)v0->position.y == (int)v2->position.y)
+            return;
+
         drawTriangleType(t, v0, &v3, v2, buffer, FLAT_BOTTOM);
+
+        if((int)v1->position.y == (int)v3.position.y)
+            return;
+
+        if((int)v1->position.y == (int)v2->position.y)
+            return;
+
         drawTriangleType(t, v1, &v3, v2, buffer, FLAT_TOP);
     }
 }
@@ -95,7 +114,7 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
             drawLine(xLeft, y, xRight, y, t->color, buffer);
             xLeft += dxLeft;
             xRight += dxRight;
-            
+
             if(type == FLAT_BOTTOM && y >= v2->position.y)
                 break;
             else if(type == FLAT_TOP && y <= v2->position.y)
