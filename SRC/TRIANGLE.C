@@ -33,8 +33,8 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     }
 
     // degenerate triangle?
-    if((int)v0->position.y == (int)v2->position.y)
-        return;
+    //if((int)v0->position.y == (int)v2->position.y)
+    //    return;
 
     if(v1->position.y == v2->position.y)
         drawTriangleType(t, v0, v1, v2, buffer, FLAT_BOTTOM);
