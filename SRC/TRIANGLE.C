@@ -165,6 +165,11 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
             float du, dv;
             float dx = endX - startX;
 
+           if(type == FLAT_BOTTOM && y > v2->position.y)
+                break;
+            else if ( type == FLAT_TOP && y < v2->position.y)
+                break;
+
             if(dx > 0)
             {
                 du = (uRight - uLeft) / dx;
@@ -190,11 +195,6 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
             uRight += duRight;
             vLeft += dvLeft;
             vRight += dvRight;
-            
-           if(type == FLAT_BOTTOM && y >= endY)
-                break;
-            else if ( type == FLAT_TOP && y <= startY)
-                break;
         }
     }
 }
