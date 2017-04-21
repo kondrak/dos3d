@@ -44,7 +44,7 @@ void testTriangles()
     cam.target.z = -1.f;
     cam.target.w = 1.f;
 
-    // translate entire cube a bit
+    // translate view to screen center
     model.m[12] = -160.f;
     model.m[13] = -100.f;
 
@@ -96,7 +96,7 @@ void testTriangles()
 
         keysPressed = translateInput();
 
-        // pause triangle rendering when holding down space bar
+        // pause rendering when holding down space bar
         paused = keysPressed[KEY_SPACE];
     }
 
