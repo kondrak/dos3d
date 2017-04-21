@@ -65,10 +65,15 @@ void drawLineVec(const Vector4f *from, const Vector4f *to, unsigned char color, 
 
 void clrScrBuffer(unsigned char *buffer)
 {
+    clrScrBufferColor(buffer, 0);
+}
+
+void clrScrBufferColor(unsigned char *buffer, unsigned char color)
+{
     if(!buffer)
-        memset(VGA, 0, SCREEN_WIDTH*SCREEN_HEIGHT);
+        memset(VGA, color, SCREEN_WIDTH*SCREEN_HEIGHT);
     else
-        memset(buffer, 0, SCREEN_WIDTH*SCREEN_HEIGHT);
+        memset(buffer, color, SCREEN_WIDTH*SCREEN_HEIGHT);
 }
 
 void updateScreen(unsigned char *buffer)

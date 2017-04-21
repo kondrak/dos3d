@@ -20,6 +20,7 @@ extern "C" {
     void drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer);
     void drawLineVec(const Vector4f *from, const Vector4f *to, unsigned char color, unsigned char *buffer);
     void clrScrBuffer(unsigned char *buffer);
+    void clrScrBufferColor(unsigned char *buffer, unsigned char color);
     void updateScreen(unsigned char *buffer);
 
 #ifdef __cplusplus

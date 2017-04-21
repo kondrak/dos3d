@@ -27,6 +27,7 @@ enum KeyCode
     KEY_PGUP = 73,
     KEY_LEFT = 75,
     KEY_RIGHT = 77,
+    KEY_SPACE = 57,
     KEY_DOWN = 80,
     KEY_PGDN = 81
 };
