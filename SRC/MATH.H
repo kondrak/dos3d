@@ -44,6 +44,7 @@ extern "C" {
     Vector4f vecAdd(const Vector4f *v1, const Vector4f *v2);
     Vector4f vecSub(const Vector4f *v1, const Vector4f *v2);
     Vector4f vecScale(const Vector4f *v, const float scale);
+    double lengthSquare(const Vector4f *v);
     double invLength(const Vector4f *v);
     void   normalize(Vector4f *v);
     void   clamp(double *color);

@@ -65,6 +65,11 @@ Vector4f vecScale(const Vector4f *v, const float scale)
     return r;
 }
 
+double lengthSquare(const Vector4f *v)
+{
+    return (v->x*v->x + v->y*v->y + v->z*v->z);
+}
+
 // inverse vector length
 double invLength(const Vector4f *v)
 {
