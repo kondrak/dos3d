@@ -43,6 +43,8 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     else
     {
         Vertex v3;
+        Vector4f diff, diff2;
+        double l1, l2, ratio;
 
         if(v2->position.y > v1->position.y)
         {
@@ -54,8 +56,15 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v3.position.x = v0->position.x + ((float)(v2->position.y - v0->position.y) / (float)(v1->position.y - v0->position.y)) * (v1->position.x - v0->position.x);
         v3.position.y = v2->position.y;
         v3.position.z = v2->position.z;
-        v3.uv.u = v1->uv.u * 0.5;
-        v3.uv.v = v1->uv.v * 0.5;
+
+        diff = vecSub(&v3.position, &v0->position);
+        diff2 = vecSub(&v1->position, &v3.position);
+        l1 = lengthSquare(&diff);
+        l2 = lengthSquare(&diff2);
+        ratio = l1/(l1+l2);
+
+        v3.uv.u = v1->uv.u * ratio;
+        v3.uv.v = v1->uv.v * ratio;
 
         // more degenerate triangle tests
         //if((int)v0->position.y == (int)v3.position.y)
@@ -142,21 +151,10 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
         float uRight = uLeft;
         float vLeft = texH * v0->uv.v;
         float vRight = vLeft;
-        int startY = v0->position.y;
-        int endY = v2->position.y;
 
         setPalette(t->texture->palette);
         
-        if(type == FLAT_BOTTOM)
-            y = startY;
-        else
-        {
-            startY = v2->position.y;
-            endY   = v0->position.y;
-            y = endY;
-        }
-
-        for(; ; y += yDir)
+        for(y = v0->position.y; ; y += yDir)
         {
             int startX = xLeft;
             int endX  = xRight;
