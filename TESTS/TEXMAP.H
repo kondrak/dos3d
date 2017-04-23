@@ -1,6 +1,7 @@
 #include "src/bitmap.h"
 #include "src/camera.h"
 #include "src/triangle.h"
+#include "src/math.h"
 #include <stdlib.h>
 
 // helper function
@@ -11,13 +12,13 @@ void testTextureMapping()
 {
     unsigned short *keysPressed;
     float t = 0.f;
-    int k;
+    int k; float a = 0.001f;
     Vector4f cube[16];
     Triangle triangle[2], screenTriangle[2];
     Camera cam;
     Matrix4f model;
     Matrix4f modelViewProj;
-    BITMAP bmp = loadBitmap("brick.bmp");
+    BITMAP bmp = loadBitmap("wood.bmp");
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     if(!buffer)
@@ -32,7 +33,7 @@ void testTextureMapping()
     // setup camera
     cam.position.x = 0;
     cam.position.y = 0;
-    cam.position.z = 150.f;
+    cam.position.z = 80.f;
     cam.position.w = 1.f;
 
     cam.up.x = 0.f;
@@ -107,7 +108,7 @@ void testTextureMapping()
         screenTriangle[k].vertices[2].uv = triangle[k].vertices[2].uv;
     }
     // translate entire cube a bit
-    //model.m[12] = -20.f;
+    model.m[12] = -20.f;
     model.m[13] = -20.f;
 
     keysPressed = translateInput();
@@ -122,18 +123,50 @@ void testTextureMapping()
         modelViewProj = matMul(&cam.view, &cam.projection);
         modelViewProj = matMul(&model, &modelViewProj);
 
-        t += 0.01f;
-        model.m[14] = sin(t) * 100.f;
+        t += 0.001f;
+       // model.m[14] = sin(t) * 100.f;
 
         for(k = 0; k < 2; ++k)
         {
             for(i = 0; i < 3; i++)
             {
+                //rotateVecAxisAngle(&triangle[k].vertices[i].position, 0.001f, 1.f, 1.f, 1.f);
                 screenTriangle[k].vertices[i].position = matMulVec(&modelViewProj, &triangle[k].vertices[i].position);
                 screenTriangle[k].vertices[i].position.x = (screenTriangle[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
                 screenTriangle[k].vertices[i].position.y = (screenTriangle[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
             }
         }
+        
+        if(keysPressed[KEY_A])
+        {
+                for(k = 0; k < 2; ++k)
+            {
+            for(i = 0; i < 3; i++)
+            {
+                rotateVecAxisAngle(&triangle[k].vertices[i].position, 0.001f, 0.f, 1.f, 0.f);
+                screenTriangle[k].vertices[i].position = matMulVec(&modelViewProj, &triangle[k].vertices[i].position);
+                screenTriangle[k].vertices[i].position.x = (screenTriangle[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
+                screenTriangle[k].vertices[i].position.y = (screenTriangle[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
+            }
+        }
+        }
+        
+        if(keysPressed[KEY_D])
+        {
+                for(k = 0; k < 2; ++k)
+            {
+            for(i = 0; i < 3; i++)
+            {
+                rotateVecAxisAngle(&triangle[k].vertices[i].position, -0.001f, 0.f, 1.f, 0.f);
+                screenTriangle[k].vertices[i].position = matMulVec(&modelViewProj, &triangle[k].vertices[i].position);
+                screenTriangle[k].vertices[i].position.x = (screenTriangle[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
+                screenTriangle[k].vertices[i].position.y = (screenTriangle[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
+            }
+        }
+        }
+        
+        //a += 0.001f;
+       // printf("%.2f\n", a);
         /*for(i = 0; i < 16; i++)
       {
       // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
@@ -149,7 +182,7 @@ void testTextureMapping()
     */
         clrScrBuffer(buffer);
 
-        drawTriangle(&screenTriangle[0], buffer);
+        //drawTriangle(&screenTriangle[0], buffer);
         drawTriangle(&screenTriangle[1], buffer);
         // render the cube walls
         /*for(i = 0; i < 4; i++)

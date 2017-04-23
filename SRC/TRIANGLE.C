@@ -73,15 +73,23 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         //if((int)v0->position.y == (int)v2->position.y)
         //    return;
 
-        drawTriangleType(t, v0, &v3, v2, buffer, FLAT_BOTTOM);
+        // todo: properly sort triangles left->right
+        if(v3.position.x < v2->position.x)
+        {
+            drawTriangleType(t, v0, v2, &v3, buffer, FLAT_BOTTOM);
+            drawTriangleType(t, v1, v2, &v3, buffer, FLAT_TOP);
+        }
+        else
+        {
+            drawTriangleType(t, v0, &v3, v2, buffer, FLAT_BOTTOM);
+            drawTriangleType(t, v1, &v3, v2, buffer, FLAT_TOP);
+        }
 
         //if((int)v1->position.y == (int)v3.position.y)
         //    return;
 
         //if((int)v1->position.y == (int)v2->position.y)
         //    return;
-
-        drawTriangleType(t, v1, &v3, v2, buffer, FLAT_TOP);
     }
 }
 
@@ -101,7 +109,7 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
 {
     double invDy, dxLeft, dxRight, xLeft, xRight;
     double x, y, yDir = 1;
-    
+
     if(type == FLAT_BOTTOM)
     {
         invDy  = 1.f / (v2->position.y - v0->position.y);
@@ -153,7 +161,7 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
         float vRight = vLeft;
 
         setPalette(t->texture->palette);
-        
+
         for(y = v0->position.y; ; y += yDir)
         {
             int startX = xLeft;
