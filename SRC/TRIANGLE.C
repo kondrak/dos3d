@@ -13,63 +13,76 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
 // draw the triangle!
 void drawTriangle(const Triangle *t, unsigned char *buffer)
 {
-    const Vertex *v0, *v1, *v2;
+    Vertex v0, v1, v2;
 
-    v0 = &t->vertices[0];
-    v1 = &t->vertices[1];
-    v2 = &t->vertices[2];
+    v0 = t->vertices[0];
+    v1 = t->vertices[1];
+    v2 = t->vertices[2];
 
     // sort vertices so that v0 is topmost, then v1, then v2
-    if(v0->position.y > v1->position.y)
+    if(v0.position.y > v1.position.y)
     {
-        v0 = &t->vertices[1];
-        v1 = &t->vertices[0];
+        v0 = t->vertices[1];
+        v1 = t->vertices[0];
     }
 
-    if(v0->position.y > v2->position.y)
+    if(v0.position.y > v2.position.y)
     {
         v2 = v0;
-        v0 = &t->vertices[2];
+        v0 = t->vertices[2];
     }
 
     // degenerate triangle?
     //if((int)v0->position.y == (int)v2->position.y)
     //    return;
 
-    if(v1->position.y == v2->position.y)
-        drawTriangleType(t, v0, v1, v2, buffer, FLAT_BOTTOM);
-    else if(v0->position.y == v1->position.y)
-        drawTriangleType(t, v2, v1, v0, buffer, FLAT_TOP);
+    if(v1.position.y == v2.position.y)
+        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM);
+    else if(v0.position.y == v1.position.y)
+        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP);
     else
     {
         Vertex v3;
         Vector4f diff, diff2;
-        double l1, l2, ratio;
+        double ratioU = 1, ratioV = 1, u1, u2, vv1, vv2;
 
-        if(v2->position.y > v1->position.y)
+        if(v2.position.y > v1.position.y)
         {
-            const Vertex *tmp = v2;
+            Vertex tmp = v2;
             v2 = v1;
             v1 = tmp;
         }
 
-        v3.position.x = v0->position.x + ((float)(v2->position.y - v0->position.y) / (float)(v1->position.y - v0->position.y)) * (v1->position.x - v0->position.x);
-        v3.position.y = v2->position.y;
-        v3.position.z = v2->position.z;
+        v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
+        v3.position.y = v2.position.y;
+        v3.position.z = v2.position.z;
 
-        diff = vecSub(&v3.position, &v0->position);
-        diff2 = vecSub(&v1->position, &v3.position);
-        l1 = lengthSquare(&diff);
-        l2 = lengthSquare(&diff2);
-        ratio = l1/(l1+l2);
+        diff = vecSub(&v3.position, &v0.position);
+        diff2 = vecSub(&v1.position, &v3.position);
+        u1 = v3.position.x - v0.position.x;
+        u2 = v1.position.x - v3.position.x;
+        if(u1+u2 != 0)
+            ratioU = u1 / (u1 + u2);
+            
+        vv1 = v3.position.y - v0.position.y;
+        vv2 = v1.position.y - v3.position.y;
+        if(vv1 + vv2 != 0)
+            ratioV = vv1 / (vv1 + vv2);
 
-        v3.uv.u = v1->uv.u * ratio;
-        v3.uv.v = v1->uv.v * ratio;
+        v3.uv.u = v1.uv.u * ratioU;
+        v3.uv.v = v1.uv.v * ratioV;
 
-        if(v3.position.x == v1->position.x)
+        if(v3.position.x < v2.position.x)
         {
-            v3.uv.u = v1->uv.u;
+            Vertex tmp = v2;
+            v2 = v3;
+            v3 = tmp;
         }
+
+        //fprintf(stdout, "%.2f %.2f %.2f %.2f\r", u1, u2, ratioU, ratioV);
+        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\r", v1.uv.u, v1.uv.v, v3.uv.u, v3.uv.v, v2.uv.u, v2.uv.v);
+        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1.position.x, v1.position.y, v3.position.x, v3.position.y, v2.position.x, v2.position.y);
+        //fflush(stdout);
 
         // more degenerate triangle tests
         //if((int)v0->position.y == (int)v3.position.y)
@@ -78,26 +91,12 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         //if((int)v0->position.y == (int)v2->position.y)
         //    return;
 
-        // todo: properly sort triangles left->right
-        if(v3.position.x < v2->position.x)
-        {
-           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0->uv.u, v0->uv.v, v2->uv.u, v2->uv.v, v3.uv.u, v3.uv.v);
-           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1->uv.u, v1->uv.v, v2->uv.u, v2->uv.v, v3.uv.u, v3.uv.v);
-            
-            //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0->position.x, v0->position.y, v2->position.x, v2->position.y, v3.position.x, v3.position.y);
-           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1->position.x, v1->position.y, v2->position.x, v2->position.y, v3.position.x, v3.position.y);
-            drawTriangleType(t, v0, v2, &v3, buffer, FLAT_BOTTOM);
-            drawTriangleType(t, v1, v2, &v3, buffer, FLAT_TOP);
-        }
-        else
-        {
-            //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0->uv.u, v0->uv.v, v3.uv.u, v3.uv.v, v2->uv.u, v2->uv.v);
-            //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1->uv.u, v1->uv.v, v3.uv.u, v3.uv.v, v2->uv.u, v2->uv.v);
-           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0->position.x, v0->position.y, v3.position.x, v3.position.y, v2->position.x, v2->position.y);
-           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1->position.x, v1->position.y, v3.position.x, v3.position.y, v2->position.x, v2->position.y);
-            drawTriangleType(t, v0, &v3, v2, buffer, FLAT_BOTTOM);
-            drawTriangleType(t, v1, &v3, v2, buffer, FLAT_TOP);
-        }
+        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0.uv.u, v0.uv.v, v3.uv.u, v3.uv.v, v2.uv.u, v2.uv.v);
+        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1.uv.u, v1.uv.v, v3.uv.u, v3.uv.v, v2.uv.u, v2.uv.v);
+        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0.position.x, v0.position.y, v3.position.x, v3.position.y, v2.position.x, v2.position.y);
+        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1.position.x, v1.position.y, v3.position.x, v3.position.y, v2.position.x, v2.position.y);
+        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM);
+        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP);
         
        // fflush(stdout);
 

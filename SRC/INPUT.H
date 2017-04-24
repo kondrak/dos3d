@@ -22,6 +22,8 @@ enum KeyCode
     KEY_A = 30,
     KEY_S = 31,
     KEY_D = 32,
+    KEY_F = 33,
+    KEY_G = 34,
     KEY_ENTER = 28,
     KEY_UP = 72,
     KEY_PGUP = 73,

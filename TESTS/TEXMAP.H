@@ -33,7 +33,7 @@ void testTextureMapping()
     // setup camera
     cam.position.x = 0;
     cam.position.y = 0;
-    cam.position.z = 80.f;
+    cam.position.z = 100.f;
     cam.position.w = 1.f;
 
     cam.up.x = 0.f;
@@ -143,7 +143,7 @@ void testTextureMapping()
             {
             for(i = 0; i < 3; i++)
             {
-                rotateVecAxisAngle(&triangle[k].vertices[i].position, 0.001f, 0.f, 1.f, 0.f);
+                rotateVecAxisAngle(&triangle[k].vertices[i].position, 0.01f, 0.f, 1.f, 0.f);
                 screenTriangle[k].vertices[i].position = matMulVec(&modelViewProj, &triangle[k].vertices[i].position);
                 screenTriangle[k].vertices[i].position.x = (screenTriangle[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
                 screenTriangle[k].vertices[i].position.y = (screenTriangle[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
@@ -157,7 +157,35 @@ void testTextureMapping()
             {
             for(i = 0; i < 3; i++)
             {
-                rotateVecAxisAngle(&triangle[k].vertices[i].position, -0.001f, 0.f, 1.f, 0.f);
+                rotateVecAxisAngle(&triangle[k].vertices[i].position, -0.01f, 0.f, 1.f, 0.f);
+                screenTriangle[k].vertices[i].position = matMulVec(&modelViewProj, &triangle[k].vertices[i].position);
+                screenTriangle[k].vertices[i].position.x = (screenTriangle[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
+                screenTriangle[k].vertices[i].position.y = (screenTriangle[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
+            }
+        }
+        }
+        
+        if(keysPressed[KEY_F])
+        {
+                for(k = 0; k < 2; ++k)
+            {
+            for(i = 0; i < 3; i++)
+            {
+                rotateVecAxisAngle(&triangle[k].vertices[i].position, -0.01f, 1.f, 0.f, 0.f);
+                screenTriangle[k].vertices[i].position = matMulVec(&modelViewProj, &triangle[k].vertices[i].position);
+                screenTriangle[k].vertices[i].position.x = (screenTriangle[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
+                screenTriangle[k].vertices[i].position.y = (screenTriangle[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
+            }
+        }
+        }
+        
+        if(keysPressed[KEY_G])
+        {
+                for(k = 0; k < 2; ++k)
+            {
+            for(i = 0; i < 3; i++)
+            {
+                rotateVecAxisAngle(&triangle[k].vertices[i].position, 0.01f, 1.f, 0.f, 0.f);
                 screenTriangle[k].vertices[i].position = matMulVec(&modelViewProj, &triangle[k].vertices[i].position);
                 screenTriangle[k].vertices[i].position.x = (screenTriangle[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
                 screenTriangle[k].vertices[i].position.y = (screenTriangle[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
@@ -182,7 +210,7 @@ void testTextureMapping()
     */
         clrScrBuffer(buffer);
 
-        //drawTriangle(&screenTriangle[0], buffer);
+        drawTriangle(&screenTriangle[0], buffer);
         drawTriangle(&screenTriangle[1], buffer);
         // render the cube walls
         /*for(i = 0; i < 4; i++)
