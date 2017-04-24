@@ -1,5 +1,5 @@
 #include "src/triangle.h"
-
+#include <stdio.h>
 // simplest case: will plot either a flat bottom or flat top triangles
 enum TriangleType
 {
@@ -66,6 +66,11 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v3.uv.u = v1->uv.u * ratio;
         v3.uv.v = v1->uv.v * ratio;
 
+        if(v3.position.x == v1->position.x)
+        {
+            v3.uv.u = v1->uv.u;
+        }
+
         // more degenerate triangle tests
         //if((int)v0->position.y == (int)v3.position.y)
         //    return;
@@ -76,14 +81,25 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         // todo: properly sort triangles left->right
         if(v3.position.x < v2->position.x)
         {
+           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0->uv.u, v0->uv.v, v2->uv.u, v2->uv.v, v3.uv.u, v3.uv.v);
+           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1->uv.u, v1->uv.v, v2->uv.u, v2->uv.v, v3.uv.u, v3.uv.v);
+            
+            //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0->position.x, v0->position.y, v2->position.x, v2->position.y, v3.position.x, v3.position.y);
+           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1->position.x, v1->position.y, v2->position.x, v2->position.y, v3.position.x, v3.position.y);
             drawTriangleType(t, v0, v2, &v3, buffer, FLAT_BOTTOM);
             drawTriangleType(t, v1, v2, &v3, buffer, FLAT_TOP);
         }
         else
         {
+            //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0->uv.u, v0->uv.v, v3.uv.u, v3.uv.v, v2->uv.u, v2->uv.v);
+            //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1->uv.u, v1->uv.v, v3.uv.u, v3.uv.v, v2->uv.u, v2->uv.v);
+           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0->position.x, v0->position.y, v3.position.x, v3.position.y, v2->position.x, v2->position.y);
+           // fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1->position.x, v1->position.y, v3.position.x, v3.position.y, v2->position.x, v2->position.y);
             drawTriangleType(t, v0, &v3, v2, buffer, FLAT_BOTTOM);
             drawTriangleType(t, v1, &v3, v2, buffer, FLAT_TOP);
         }
+        
+       // fflush(stdout);
 
         //if((int)v1->position.y == (int)v3.position.y)
         //    return;
@@ -172,7 +188,18 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
             float dx = endX - startX;
 
            if(type == FLAT_BOTTOM && y > v2->position.y)
+           {
+                u -= du;
+                v -= dv;
+                for(x = startX-dxLeft; x <= endX-dxRight; ++x)
+                {
+                    byte pixel = t->texture->data[(int)u + ((int)v << 6)];
+                    drawPixel(x, y, pixel, buffer);
+                    u += du;
+                    v += dv;
+                }
                 break;
+           }
             else if ( type == FLAT_TOP && y < v2->position.y)
                 break;
 
