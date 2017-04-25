@@ -19,17 +19,24 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     v1 = t->vertices[1];
     v2 = t->vertices[2];
 
+    if(v2.position.y > v1.position.y)
+    {
+        v2 = t->vertices[1];
+        v1 = t->vertices[2];
+    }
+
     // sort vertices so that v0 is topmost, then v1, then v2
     if(v0.position.y > v1.position.y)
     {
-        v0 = t->vertices[1];
+        v0 = v1;
         v1 = t->vertices[0];
     }
 
     if(v0.position.y > v2.position.y)
     {
+        Vertex tmp = v2;
         v2 = v0;
-        v0 = t->vertices[2];
+        v0 = tmp;
     }
 
     // degenerate triangle?
@@ -45,13 +52,6 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         Vertex v3;
         Vector4f diff, diff2;
         double ratioU = 1, ratioV = 1, u1, u2, vv1, vv2;
-
-        if(v2.position.y > v1.position.y)
-        {
-            Vertex tmp = v2;
-            v2 = v1;
-            v1 = tmp;
-        }
 
         v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
         v3.position.y = v2.position.y;
@@ -72,6 +72,12 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v3.uv.u = v1.uv.u * ratioU;
         v3.uv.v = v1.uv.v * ratioV;
 
+        if(v0.uv.u > v1.uv.u)
+            v3.uv.u = v0.uv.u * (1.0 - ratioU);
+
+        if(v0.uv.v > v1.uv.v)
+            v3.uv.v = v0.uv.v * (1.0 - ratioV);
+
         if(v3.position.x < v2.position.x)
         {
             Vertex tmp = v2;
@@ -79,10 +85,10 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
             v3 = tmp;
         }
 
-        //fprintf(stdout, "%.2f %.2f %.2f %.2f\r", u1, u2, ratioU, ratioV);
+        fprintf(stdout, "%.2f %.2f %.2f %.2f\r", v0.uv.u, v0.uv.v, v1.uv.u, v1.uv.v);
         //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\r", v1.uv.u, v1.uv.v, v3.uv.u, v3.uv.v, v2.uv.u, v2.uv.v);
         //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1.position.x, v1.position.y, v3.position.x, v3.position.y, v2.position.x, v2.position.y);
-        //fflush(stdout);
+        fflush(stdout);
 
         // more degenerate triangle tests
         //if((int)v0->position.y == (int)v3.position.y)
