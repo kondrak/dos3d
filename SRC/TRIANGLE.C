@@ -1,5 +1,5 @@
 #include "src/triangle.h"
-#include <stdio.h>
+
 // simplest case: will plot either a flat bottom or flat top triangles
 enum TriangleType
 {
@@ -19,13 +19,13 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     v1 = t->vertices[1];
     v2 = t->vertices[2];
 
+    // sort vertices so that v0 is topmost, then v1, then v2
     if(v2.position.y > v1.position.y)
     {
         v2 = t->vertices[1];
         v1 = t->vertices[2];
     }
 
-    // sort vertices so that v0 is topmost, then v1, then v2
     if(v0.position.y > v1.position.y)
     {
         v0 = v1;
@@ -51,26 +51,24 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     {
         Vertex v3;
         Vector4f diff, diff2;
-        double ratioU = 1, ratioV = 1, u1, u2, vv1, vv2;
+        double ratioU = 1, ratioV = 1;
 
         v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
         v3.position.y = v2.position.y;
         v3.position.z = v2.position.z;
 
-        diff = vecSub(&v3.position, &v0.position);
-        diff2 = vecSub(&v1.position, &v3.position);
-        u1 = v3.position.x - v0.position.x;
-        u2 = v1.position.x - v3.position.x;
-        if(u1+u2 != 0)
-            ratioU = u1 / (u1 + u2);
-            
-        vv1 = v3.position.y - v0.position.y;
-        vv2 = v1.position.y - v3.position.y;
-        if(vv1 + vv2 != 0)
-            ratioV = vv1 / (vv1 + vv2);
+        diff = vecSub(&v1.position, &v0.position);
+        diff2 = vecSub(&v3.position, &v0.position);
 
-        v3.uv.u = v1.uv.u * ratioU;
-        v3.uv.v = v1.uv.v * ratioV;
+        if(diff.x != 0)
+            ratioU = diff2.x / diff.x;
+
+        if(diff.y != 0)
+            ratioV = diff2.y / diff.y;
+
+        // lerp the UV mapping for the triangle
+        v3.uv.u = v1.uv.u * ratioU + v0.uv.u * (1.0 - ratioU);
+        v3.uv.v = v1.uv.v * ratioV + v0.uv.v * (1.0 - ratioV);
 
         if(v0.uv.u > v1.uv.u)
             v3.uv.u = v0.uv.u * (1.0 - ratioU);
@@ -85,11 +83,6 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
             v3 = tmp;
         }
 
-        fprintf(stdout, "%.2f %.2f %.2f %.2f\r", v0.uv.u, v0.uv.v, v1.uv.u, v1.uv.v);
-        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\r", v1.uv.u, v1.uv.v, v3.uv.u, v3.uv.v, v2.uv.u, v2.uv.v);
-        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1.position.x, v1.position.y, v3.position.x, v3.position.y, v2.position.x, v2.position.y);
-        fflush(stdout);
-
         // more degenerate triangle tests
         //if((int)v0->position.y == (int)v3.position.y)
         //    return;
@@ -97,15 +90,9 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         //if((int)v0->position.y == (int)v2->position.y)
         //    return;
 
-        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0.uv.u, v0.uv.v, v3.uv.u, v3.uv.v, v2.uv.u, v2.uv.v);
-        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1.uv.u, v1.uv.v, v3.uv.u, v3.uv.v, v2.uv.u, v2.uv.v);
-        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v0.position.x, v0.position.y, v3.position.x, v3.position.y, v2.position.x, v2.position.y);
-        //fprintf(stdout, "%.2f %.2f %.2f %.2f %.2f %.2f\n\r", v1.position.x, v1.position.y, v3.position.x, v3.position.y, v2.position.x, v2.position.y);
         drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM);
         drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP);
         
-       // fflush(stdout);
-
         //if((int)v1->position.y == (int)v3.position.y)
         //    return;
 
