@@ -39,10 +39,6 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v0 = tmp;
     }
 
-    // degenerate triangle?
-    //if((int)v0->position.y == (int)v2->position.y)
-    //    return;
-
     if(v1.position.y == v2.position.y)
         drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM);
     else if(v0.position.y == v1.position.y)
@@ -70,12 +66,6 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v3.uv.u = v1.uv.u * ratioU + v0.uv.u * (1.0 - ratioU);
         v3.uv.v = v1.uv.v * ratioV + v0.uv.v * (1.0 - ratioV);
 
-        if(v0.uv.u > v1.uv.u)
-            v3.uv.u = v0.uv.u * (1.0 - ratioU);
-
-        if(v0.uv.v > v1.uv.v)
-            v3.uv.v = v0.uv.v * (1.0 - ratioV);
-
         if(v3.position.x < v2.position.x)
         {
             Vertex tmp = v2;
@@ -83,21 +73,8 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
             v3 = tmp;
         }
 
-        // more degenerate triangle tests
-        //if((int)v0->position.y == (int)v3.position.y)
-        //    return;
-
-        //if((int)v0->position.y == (int)v2->position.y)
-        //    return;
-
         drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM);
         drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP);
-        
-        //if((int)v1->position.y == (int)v3.position.y)
-        //    return;
-
-        //if((int)v1->position.y == (int)v2->position.y)
-        //    return;
     }
 }
 
