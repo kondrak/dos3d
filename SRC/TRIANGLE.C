@@ -1,5 +1,7 @@
 #include "src/triangle.h"
 
+#define VERTEX_SWAP(v1, v2) { Vertex s = v2; v2 = v1; v1 = s; }
+
 // simplest case: will plot either a flat bottom or flat top triangles
 enum TriangleType
 {
@@ -33,11 +35,7 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     }
 
     if(v0.position.y > v2.position.y)
-    {
-        Vertex tmp = v2;
-        v2 = v0;
-        v0 = tmp;
-    }
+        VERTEX_SWAP(v0, v2)
 
     if(v1.position.y == v2.position.y)
         drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM);
@@ -66,12 +64,9 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v3.uv.u = v1.uv.u * ratioU + v0.uv.u * (1.0 - ratioU);
         v3.uv.v = v1.uv.v * ratioV + v0.uv.v * (1.0 - ratioV);
 
+        // this swap is done to maintain consistent renderer behavior (counter clockwise rendering)
         if(v3.position.x < v2.position.x)
-        {
-            Vertex tmp = v2;
-            v2 = v3;
-            v3 = tmp;
-        }
+            VERTEX_SWAP(v3, v2)
 
         drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM);
         drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP);
