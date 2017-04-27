@@ -47,9 +47,8 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         Vector4f diff, diff2;
         double ratioU = 1, ratioV = 1;
 
+        v3.position   = v2.position;
         v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
-        v3.position.y = v2.position.y;
-        v3.position.z = v2.position.z;
 
         diff = vecSub(&v1.position, &v0.position);
         diff2 = vecSub(&v3.position, &v0.position);
