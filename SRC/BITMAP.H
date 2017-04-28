@@ -22,6 +22,7 @@ void rotatePalette(byte *palette);
 BITMAP loadBitmap(const char* filename);
 void drawBitmap(BITMAP* bmp, int x, int y, unsigned char *buffer);
 void drawTransparentBitmap(BITMAP *bmp,int x,int y, unsigned char *buffer);
+void freeBitmap(BITMAP *bmp);
 
 #ifdef __cplusplus
 }

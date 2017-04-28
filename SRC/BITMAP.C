@@ -111,6 +111,11 @@ void drawTransparentBitmap(BITMAP *bmp, int x, int y, unsigned char *buffer)
    }
 }
 
+void freeBitmap(BITMAP *bmp)
+{
+    free(bmp->data);
+}
+
 void setPalette(byte *palette)
 {
    int i;
