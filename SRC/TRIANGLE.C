@@ -21,7 +21,7 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     v1 = t->vertices[1];
     v2 = t->vertices[2];
 
-    // sort vertices so that v0 is topmost, then v1, then v2
+    // sort vertices so that v0 is topmost, then v2, then v1
     if(v2.position.y > v1.position.y)
     {
         v2 = t->vertices[1];
@@ -37,18 +37,23 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
     if(v0.position.y > v2.position.y)
         VERTEX_SWAP(v0, v2)
 
+    // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
         drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM);
     else if(v0.position.y == v1.position.y)
         drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP);
     else
     {
+        // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
+        // For this, we need to calculate a new vertex, v3 and interpolate its UV coordinates.
         Vertex v3;
         Vector4f diff, diff2;
         double ratioU = 1, ratioV = 1;
 
-        v3.position   = v2.position;
         v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
+        v3.position.y = v2.position.y;
+        // todo: interpolate z!
+        v3.position.z = v2.position.z;
 
         diff = vecSub(&v1.position, &v0.position);
         diff2 = vecSub(&v3.position, &v0.position);
@@ -63,7 +68,7 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         v3.uv.u = v1.uv.u * ratioU + v0.uv.u * (1.0 - ratioU);
         v3.uv.v = v1.uv.v * ratioV + v0.uv.v * (1.0 - ratioV);
 
-        // this swap is done to maintain consistent renderer behavior (counter clockwise rendering)
+        // this swap is done to maintain consistent renderer behavior
         if(v3.position.x < v2.position.x)
             VERTEX_SWAP(v3, v2)
 
@@ -74,7 +79,6 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
 
 
 /*
-* Render counter clockwise (v0->v1->v2) for wanted effect.
 * v0         v0----v1
 * |\         |     /
 * | \        |    /
