@@ -10,8 +10,9 @@ typedef struct
     Triangle tris[2];
 } TexQuad;
 
-// helper function
+// helper functions
 void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh);
+void drawTexQuad(TexQuad *q, unsigned char *buffer);
 
 // Texture mapping test
 void testTextureMapping()
@@ -131,8 +132,7 @@ void testTextureMapping()
 
         clrScrBuffer(buffer);
 
-        drawTriangle(&screenQuad.tris[0], buffer);
-        drawTriangle(&screenQuad.tris[1], buffer);
+        drawTexQuad(&screenQuad, buffer);
         updateScreen(buffer);
 
         keysPressed = translateInput();
@@ -190,4 +190,10 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh)
     q->tris[1].vertices[2].position.w = 1.f;
     q->tris[1].vertices[2].uv.u = 1;
     q->tris[1].vertices[2].uv.v = 0;
+}
+
+void drawTexQuad(TexQuad *q, unsigned char *buffer)
+{
+    drawTriangle(&q->tris[0], buffer);
+    drawTriangle(&q->tris[1], buffer);
 }
