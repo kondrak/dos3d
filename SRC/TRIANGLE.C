@@ -133,8 +133,9 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
     {
         float texW = t->texture->width - 1;
         float texH = t->texture->height - 1;
-        float duLeft =  texW * (v2->uv.u - v0->uv.u) * invDy;
-        float dvLeft =  texH * (v2->uv.v - v0->uv.v) * invDy;
+        int   texArea = texW * texH;
+        float duLeft  = texW * (v2->uv.u - v0->uv.u) * invDy;
+        float dvLeft  = texH * (v2->uv.v - v0->uv.v) * invDy;
         float duRight = texW * (v1->uv.u - v0->uv.u) * invDy;
         float dvRight = texH * (v1->uv.v - v0->uv.v) * invDy;
 
@@ -183,7 +184,8 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
 
             for(x = startX; x <= endX; ++x)
             {
-                byte pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
+                // add modulus for proper effect in case u or v are > 1
+                byte pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
                 drawPixel(x, y, pixel, buffer);
                 u += du;
                 v += dv;
