@@ -111,6 +111,40 @@ void drawTransparentBitmap(BITMAP *bmp, int x, int y, unsigned char *buffer)
    }
 }
 
+BITMAP resizeBitmap(BITMAP* bmp, int w, int h)
+{
+    int cx,cy;
+    float scaleX = (float)w / bmp->width;
+    float scaleY = (float)h / bmp->height;
+    BITMAP resized;
+    resized.width = w;
+    resized.height = h;
+    memcpy(resized.palette, bmp->palette, sizeof(byte)*256*3);
+
+    if ((resized.data = (byte *) malloc((word)(w*h))) == NULL)
+    {
+        printf("Error allocating memory for resized bitmap!.\n");
+        exit(1);
+    }
+
+    // rescale bitmap using nearest neighbour
+    for(cy = 0; cy < h; cy++)
+    {
+        for(cx = 0; cx < w; cx++)
+        {
+            int p = cy * w + cx;
+            int nearest = (((int)(cy / scaleY) * bmp->width) + ((int)(cx / scaleX)));
+
+            resized.data[p] = bmp->data[nearest];
+            resized.data[p+1] = bmp->data[nearest+1];
+            resized.data[p+2] = bmp->data[nearest+2];
+        }
+    }
+
+    freeBitmap(bmp);
+    return resized;
+}
+
 void freeBitmap(BITMAP *bmp)
 {
     free(bmp->data);
