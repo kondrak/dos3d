@@ -21,7 +21,7 @@ void setMode(unsigned char mode)
 void drawPixel(int x, int y, unsigned char color, unsigned char *buffer)
 {
     // naive "clipping"
-    if(x > SCREEN_WIDTH || x < 0 || y > SCREEN_HEIGHT || y < 0) return;
+    if(x >= SCREEN_WIDTH || x < 0 || y >= SCREEN_HEIGHT || y < 0) return;
 
     if(!buffer)
         VGA[(y << 8) + (y << 6) + x] = color;

@@ -7,6 +7,7 @@
 
 #include "src/graphics.h"
 #include "src/input.h"
+#include "tests/3dscene.h"
 #include "tests/fpp.h"
 #include "tests/linedraw.h"
 #include "tests/project.h"
@@ -32,6 +33,7 @@ void selectTest(char *nextTest)
     printf("4. Quad rendering\n");
     printf("5. Texture mapping\n");
     printf("6. First person WASD camera\n");
+    printf("7. Test 3D scene\n");
     printf("\nInput:\n");
     *nextTest = getch();
 }
@@ -73,6 +75,9 @@ int main(int argc, char **argv)
                 setMode(0x13);
                 testFirstPerson();
                 break;
+            case '7':
+                setMode(0x13);
+                test3DScene();
             case 27:
                 Shutdown(0);
             default:

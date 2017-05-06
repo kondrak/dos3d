@@ -16,6 +16,7 @@ extern "C" {
     } Triangle;
 
     void drawTriangle(const Triangle *t, unsigned char *buffer);
+    void drawTriangleColorKey(const Triangle *t, unsigned char *buffer, short colorKey);
 
 #ifdef __cplusplus
 }

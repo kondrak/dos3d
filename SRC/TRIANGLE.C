@@ -10,10 +10,16 @@ enum TriangleType
 };
 
 // internal triangle renderer based on triangle type
-void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, const Vertex *v2, unsigned char *buffer, enum TriangleType type);
+void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, const Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey);
+
+void drawTriangle(const Triangle *t, unsigned char *buffer)
+{
+    // don't use color keying
+    drawTriangleColorKey(t, buffer, -1);
+}
 
 // draw the triangle!
-void drawTriangle(const Triangle *t, unsigned char *buffer)
+void drawTriangleColorKey(const Triangle *t, unsigned char *buffer, short colorKey)
 {
     Vertex v0, v1, v2;
 
@@ -39,9 +45,9 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
 
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
-        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM);
+        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey);
     else if(v0.position.y == v1.position.y)
-        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP);
+        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey);
     else
     {
         // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
@@ -72,8 +78,8 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
         if(v3.position.x < v2.position.x)
             VERTEX_SWAP(v3, v2)
 
-        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM);
-        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP);
+        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey);
+        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey);
     }
 }
 
@@ -88,10 +94,11 @@ void drawTriangle(const Triangle *t, unsigned char *buffer)
 * |     \    |/
 * v2-----v1  v2
 */
-void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, const Vertex *v2, unsigned char *buffer, enum TriangleType type)
+void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, const Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey)
 {
     double invDy, dxLeft, dxRight, xLeft, xRight;
     double x, y, yDir = 1;
+    int useColorKey = colorKey != -1 ? 1 : 0;
 
     if(type == FLAT_BOTTOM)
     {
@@ -162,7 +169,9 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
                 for(x = startX-dxLeft; x <= endX-dxRight; ++x)
                 {
                     unsigned char pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
-                    drawPixel(x, y, pixel, buffer);
+
+                    if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
+                        drawPixel(x, y, pixel, buffer);
                     u += du;
                     v += dv;
                 }
@@ -186,7 +195,9 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
             {
                 // add modulus for proper effect in case u or v are > 1
                 unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
-                drawPixel(x, y, pixel, buffer);
+
+                if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
+                    drawPixel(x, y, pixel, buffer);
                 u += du;
                 v += dv;
             }

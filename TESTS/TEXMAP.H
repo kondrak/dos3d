@@ -22,7 +22,7 @@ void testTextureMapping()
     Camera cam;
     Matrix4f model;
     Matrix4f modelViewProj;
-    Bitmap bmp = loadBitmap("wood.bmp");
+    Bitmap bmp = loadBitmap("images/wood.bmp");
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     if(!buffer)
