@@ -2,7 +2,7 @@
 #include <math.h>
 
 // internal: quick inverse sqrt()
-double __qInvSqrt(double number)
+double qInvSqrt(double number)
 {
     long i;
     float x2, y;
@@ -78,13 +78,13 @@ double mth_lengthSquare(const mth_Vector4 *v)
 /* ***** */
 double mth_invLength(const mth_Vector4 *v)
 {
-    return __qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
+    return qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 }
 
 /* ***** */
 void mth_normalize(mth_Vector4 *v)
 {
-    double l = __qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
+    double l = qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 
     v->x *= l;
     v->y *= l;
@@ -260,7 +260,7 @@ mth_Vector4 mth_quatMulVec(const mth_Quaternion *q, const mth_Vector4 *v)
 /* ***** */
 void mth_quatNormalize(mth_Quaternion *q)
 {
-    double l = __qInvSqrt(q->x*q->x + q->y*q->y + q->z*q->z + q->w*q->w);
+    double l = qInvSqrt(q->x*q->x + q->y*q->y + q->z*q->z + q->w*q->w);
     q->x *= l;
     q->y *= l;
     q->z *= l;

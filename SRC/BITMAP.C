@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 // internal: skips file sections when loading a bitmap
-static void __fskip(FILE *fp, int num_bytes)
+static void fskip(FILE *fp, int num_bytes)
 {
     int i;
     for (i = 0; i < num_bytes; i++)
@@ -37,13 +37,13 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
 
     /* read in the width and height of the image, and the
        number of colors used; ignore the rest */
-    __fskip(fp, 16);
+    fskip(fp, 16);
     fread(&bmp.width, sizeof(unsigned short), 1, fp);
-    __fskip(fp, 2);
+    fskip(fp, 2);
     fread(&bmp.height, sizeof(unsigned short), 1, fp);
-    __fskip(fp, 22);
+    fskip(fp, 22);
     fread(&num_colors, sizeof(unsigned short), 1, fp);
-    __fskip(fp, 6);
+    fskip(fp, 6);
 
     // assume we are working with an 8-bit file
     if(!num_colors) num_colors = 256;
@@ -152,6 +152,24 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, unsigned char *buffer)
 }
 
 /* ***** */
+void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, unsigned char *buffer)
+{
+    int j;
+    int screenOffset = (y<<8)+(y<<6)+x;
+    int texArea = bmp->width * bmp->height;
+    int bmpOffset = 0;
+
+    for(j = 0; j < bmp->height; j++)
+    {
+        memcpy(&buffer[screenOffset], &bmp->data[(bmpOffset + xOffset + yOffset * bmp->width) % texArea], bmp->width - xOffset);
+        memcpy(&buffer[screenOffset + bmp->width - xOffset], &bmp->data[(bmpOffset + yOffset * bmp->width) % texArea], xOffset);
+
+        bmpOffset    += bmp->width;
+        screenOffset += SCREEN_WIDTH;
+    }
+}
+
+/* ***** */
 void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, unsigned char *buffer, const short colorKey)
 {
     int i,j;
@@ -168,7 +186,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, unsigned char *
             if(data != (unsigned char)colorKey)
                 buffer[screenOffset+x+i] = data;
         }
-      screenOffset += SCREEN_WIDTH;
+        screenOffset += SCREEN_WIDTH;
     }
 }
 

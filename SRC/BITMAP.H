@@ -31,6 +31,9 @@ extern "C" {
     // draw bitmap to buffer (no color keying)
     void gfx_drawBitmap(const gfx_Bitmap* bmp, int x, int y, unsigned char *buffer);
 
+    // draw bitmap to buffer with offsets (no color keying)
+    void gfx_drawBitmapOffset(const gfx_Bitmap* bmp, int x, int y, int xOffset, int yOffset, unsigned char *buffer);
+
     // draw bitmap to buffer with colorKey as the tranpsarent color
     void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, unsigned char *buffer, const short colorKey);
 

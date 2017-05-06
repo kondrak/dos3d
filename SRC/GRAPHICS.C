@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 // pointer to VGA memory
-static unsigned char *__VGA = (unsigned char *)0xA0000;
+static unsigned char *VGA = (unsigned char *)0xA0000;
 
 /* ***** */
 void gfx_setMode(unsigned char mode)
@@ -25,7 +25,7 @@ void gfx_drawPixel(int x, int y, unsigned char color, unsigned char *buffer)
     if(x >= SCREEN_WIDTH || x < 0 || y >= SCREEN_HEIGHT || y < 0) return;
 
     if(!buffer)
-        __VGA[(y << 8) + (y << 6) + x] = color;
+        VGA[(y << 8) + (y << 6) + x] = color;
     else
         buffer[(y << 8) + (y << 6) + x] = color;
 }
@@ -77,7 +77,7 @@ void gfx_clrBuffer(unsigned char *buffer)
 void gfx_clrBufferColor(unsigned char *buffer, unsigned char color)
 {
     if(!buffer)
-        memset(__VGA, color, SCREEN_WIDTH*SCREEN_HEIGHT);
+        memset(VGA, color, SCREEN_WIDTH*SCREEN_HEIGHT);
     else
         memset(buffer, color, SCREEN_WIDTH*SCREEN_HEIGHT);
 }
@@ -85,7 +85,7 @@ void gfx_clrBufferColor(unsigned char *buffer, unsigned char color)
 /* ***** */
 void gfx_updateScreen(unsigned char *buffer)
 {
-    memcpy(__VGA, buffer, SCREEN_WIDTH*SCREEN_HEIGHT);
+    memcpy(VGA, buffer, SCREEN_WIDTH*SCREEN_HEIGHT);
 }
 
 /* ***** */

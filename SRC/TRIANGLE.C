@@ -10,7 +10,7 @@ enum TriangleType
 };
 
 // internal: perform triangle rendering based on its type
-static void __drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey);
+static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey);
 
 /* ***** */
 void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer)
@@ -46,9 +46,9 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
 
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
-        __drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey);
+        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey);
     else if(v0.position.y == v1.position.y)
-        __drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey);
+        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey);
     else
     {
         // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
@@ -81,8 +81,8 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
             VERTEX_SWAP(v3, v2)
 
         // draw the composition of both triangles to form the desired shape
-        __drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey);
-        __drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey);
+        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey);
+        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey);
     }
 }
 
@@ -99,7 +99,7 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
  * |     \    |/
  * v2-----v1  v2
  */
-static void __drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const short colorKey)
+static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const short colorKey)
 {
     double invDy, dxLeft, dxRight, xLeft, xRight;
     double x, y, yDir = 1;

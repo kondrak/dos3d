@@ -176,8 +176,10 @@ void updateScene(Scene *s, mth_Matrix4 *mvp)
 void drawScene(Scene *s, unsigned char *buffer)
 {
     int w;
-    // background: Doom 1 sky texture
-    gfx_drawBitmap(&s->textures[0], 0, 0, buffer);
+    static unsigned int bgOffset = 0;
+    // background: Doom 1 sky texture, scrolling horizontally
+    gfx_drawBitmapOffset(&s->textures[0], 0, 0, bgOffset % s->textures[0].width, 0, buffer);
+    bgOffset++;
 
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
