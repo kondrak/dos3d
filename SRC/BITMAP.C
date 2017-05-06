@@ -15,14 +15,11 @@ void fskip(FILE *fp, int num_bytes)
 Bitmap loadBitmap(const char* filename)
 {
     Bitmap bmp;
-    Bitmap *b;
     FILE *fp;
     long index;
     int x;
     unsigned short num_colors;
-   
-    b = &bmp;
-   
+
     if((fp = fopen(filename, "rb")) == NULL)
     {
         printf("Error opening file %s.\n",filename);
@@ -40,9 +37,9 @@ Bitmap loadBitmap(const char* filename)
     /* read in the width and height of the image, and the
         number of colors used; ignore the rest */
     fskip(fp, 16);
-    fread(&b->width, sizeof(unsigned short), 1, fp);
+    fread(&bmp.width, sizeof(unsigned short), 1, fp);
     fskip(fp, 2);
-    fread(&b->height, sizeof(unsigned short), 1, fp);
+    fread(&bmp.height, sizeof(unsigned short), 1, fp);
     fskip(fp, 22);
     fread(&num_colors, sizeof(unsigned short), 1, fp);
     fskip(fp, 6);
@@ -50,7 +47,7 @@ Bitmap loadBitmap(const char* filename)
     /* assume we are working with an 8-bit file */
     if(num_colors==0) num_colors=256;
 
-    if((b->data = (unsigned char *)malloc(b->width*b->height)) == NULL)
+    if((bmp.data = (unsigned char *)malloc(bmp.width*bmp.height)) == NULL)
     {
         fclose(fp);
         printf("Error allocating memory for file %s.\n",filename);
@@ -60,16 +57,16 @@ Bitmap loadBitmap(const char* filename)
     /* read the palette information */
     for(index = 0; index < num_colors; index++)
     {
-        b->palette[(int)(index*3+2)] = fgetc(fp) >> 2;
-        b->palette[(int)(index*3+1)] = fgetc(fp) >> 2;
-        b->palette[(int)(index*3+0)] = fgetc(fp) >> 2;
+        bmp.palette[(int)(index*3+2)] = fgetc(fp) >> 2;
+        bmp.palette[(int)(index*3+1)] = fgetc(fp) >> 2;
+        bmp.palette[(int)(index*3+0)] = fgetc(fp) >> 2;
         x = fgetc(fp);
     }
 
     /* read the bitmap */
-    for(index = (b->height-1) * b->width; index >= 0; index -= b->width)
-        for(x = 0; x < b->width; x++)
-            b->data[ index + x ] = (unsigned char)fgetc(fp);
+    for(index = (bmp.height-1) * bmp.width; index >= 0; index -= bmp.width)
+        for(x = 0; x < bmp.width; x++)
+            bmp.data[ index + x ] = (unsigned char)fgetc(fp);
 
     fclose(fp);
     return bmp;
