@@ -55,12 +55,12 @@ void testTextureMapping()
     cam.target.z = -1.f;
     cam.target.w = 1.f;
 
-    // translate entire cube a bit
-    model.m[12] = -20.f;
-    model.m[13] = -20.f;
+    // additional camera translation
+    //model.m[12] = -20.f;
+    //model.m[13] = -20.f;
 
     quad.texture = &bmp;
-    setupTexQuad(&quad, 0, 0, 40, 40);
+    setupTexQuad(&quad, -20, -20, 20, 20);
 
     screenQuad.texture = quad.texture;
     screenQuad.tris[0] = quad.tris[0];
@@ -98,7 +98,7 @@ void testTextureMapping()
             }
         }
 
-        if(keysPressed[KEY_F])
+        if(keysPressed[KEY_W])
         {
             for(k = 0; k < 2; ++k)
             {
@@ -109,7 +109,7 @@ void testTextureMapping()
             }
         }
 
-        if(keysPressed[KEY_G])
+        if(keysPressed[KEY_S])
         {
             for(k = 0; k < 2; ++k)
             {
@@ -131,7 +131,6 @@ void testTextureMapping()
         }
 
         clrScrBuffer(buffer);
-
         drawTexQuad(&screenQuad, buffer);
         updateScreen(buffer);
 
