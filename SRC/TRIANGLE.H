@@ -12,7 +12,7 @@ extern "C" {
     {
         Vertex vertices[3];
         int color;
-        BITMAP *texture;
+        Bitmap *texture;
     } Triangle;
 
     void drawTriangle(const Triangle *t, unsigned char *buffer);

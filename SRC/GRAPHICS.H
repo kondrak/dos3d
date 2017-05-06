@@ -22,6 +22,7 @@ extern "C" {
     void clrScrBuffer(unsigned char *buffer);
     void clrScrBufferColor(unsigned char *buffer, unsigned char color);
     void updateScreen(unsigned char *buffer);
+    void vsync();
 
 #ifdef __cplusplus
 }

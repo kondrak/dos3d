@@ -6,7 +6,7 @@
 
 typedef struct
 {
-    BITMAP *texture;
+    Bitmap *texture;
     Triangle tris[2];
 } TexQuad;
 
@@ -22,7 +22,7 @@ void testTextureMapping()
     Camera cam;
     Matrix4f model;
     Matrix4f modelViewProj;
-    BITMAP bmp = loadBitmap("wood.bmp");
+    Bitmap bmp = loadBitmap("wood.bmp");
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     if(!buffer)

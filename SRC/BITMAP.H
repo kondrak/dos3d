@@ -5,25 +5,22 @@
 extern "C" {
 #endif
 
-typedef unsigned char byte;
-typedef unsigned short word;
-
 typedef struct
 {
-   word width;
-   word height;
-   byte palette[256*3];
-   byte *data;
-} BITMAP;
+    unsigned short width;
+    unsigned short height;
+    unsigned char palette[256*3];
+    unsigned char *data;
+} Bitmap;
 
-void setPalette(byte *palette);
-void rotatePalette(byte *palette);
+void setPalette(unsigned char *palette);
 
-BITMAP loadBitmap(const char* filename);
-void drawBitmap(BITMAP* bmp, int x, int y, unsigned char *buffer);
-void drawTransparentBitmap(BITMAP *bmp,int x, int y, unsigned char *buffer);
-BITMAP resizeBitmap(BITMAP *bmp, int w, int h);
-void freeBitmap(BITMAP *bmp);
+Bitmap loadBitmap(const char* filename);
+void drawBitmap(Bitmap* bmp, int x, int y, unsigned char *buffer);
+void drawTransparentBitmap(Bitmap *bmp,int x, int y, unsigned char *buffer);
+Bitmap bitmapFromAtlas(Bitmap *atlas, int x, int y, int w, int h);
+Bitmap resizeBitmap(Bitmap *bmp, int w, int h);
+void freeBitmap(Bitmap *bmp);
 
 #ifdef __cplusplus
 }

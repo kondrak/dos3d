@@ -1,5 +1,6 @@
 #include "src/graphics.h"
 
+#include <conio.h>
 #include <math.h>
 #include <memory.h>
 #include <stdlib.h>
@@ -79,4 +80,10 @@ void clrScrBufferColor(unsigned char *buffer, unsigned char color)
 void updateScreen(unsigned char *buffer)
 {
     memcpy(VGA, buffer, SCREEN_WIDTH*SCREEN_HEIGHT);
+}
+
+void vsync()
+{
+    while((inp(0x03da) & 8));
+    while(!(inp(0x03da) & 8));
 }

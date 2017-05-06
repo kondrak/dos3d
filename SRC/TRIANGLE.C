@@ -161,7 +161,7 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
                 v -= dv;
                 for(x = startX-dxLeft; x <= endX-dxRight; ++x)
                 {
-                    byte pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
+                    unsigned char pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
                     drawPixel(x, y, pixel, buffer);
                     u += du;
                     v += dv;
@@ -185,7 +185,7 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
             for(x = startX; x <= endX; ++x)
             {
                 // add modulus for proper effect in case u or v are > 1
-                byte pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
+                unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
                 drawPixel(x, y, pixel, buffer);
                 u += du;
                 v += dv;
