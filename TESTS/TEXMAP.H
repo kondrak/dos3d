@@ -17,7 +17,7 @@ void drawTexQuad(TexQuad *q, unsigned char *buffer);
 // Texture mapping test
 void testTextureMapping()
 {
-    unsigned short *keysPressed;
+    const unsigned short *keysPressed;
     TexQuad quad, screenQuad;
     gfx_Camera cam;
     mth_Matrix4 model;

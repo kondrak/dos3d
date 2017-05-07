@@ -25,7 +25,7 @@ extern "C" {
     void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer);
 
     // draw triangle to buffer with colorKey as the tranpsarent color
-    void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, short colorKey);
+    void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, const short colorKey);
 
 #ifdef __cplusplus
 }

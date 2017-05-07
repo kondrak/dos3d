@@ -14,7 +14,7 @@ void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh);
 // Quad rendering test
 void testQuads()
 {
-    unsigned short *keysPressed;
+    const unsigned short *keysPressed;
     gfx_Camera cam;
     int i,k , paused = 0, numQuads = 0;
     Quad quad, screenQuad;

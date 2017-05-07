@@ -8,7 +8,7 @@ void setupCube(mth_Vector4 *c);
 // Perspective projection test: render a rotating wireframe cube
 void testPerspective()
 {
-    unsigned short *keysPressed;
+    const unsigned short *keysPressed;
     float t = 0.f;
     mth_Vector4 cube[16];
     gfx_Camera cam;

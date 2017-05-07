@@ -9,7 +9,7 @@ void testBresenham(int ox, int oy, int r)
 {
     float l;
     unsigned int elapsed, numLines = 0;
-    unsigned short *keysPressed = kbd_getInput();
+    const unsigned short *keysPressed = kbd_getInput();
     struct timeb startTime, endTime;
 
     fprintf(stdout, "Bresenham drawing: please wait...\r");

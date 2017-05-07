@@ -33,6 +33,7 @@ void gfx_drawPixel(int x, int y, unsigned char color, unsigned char *buffer)
 /* ***** */
 void gfx_drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer)
 {
+    // Bresenham line drawing
     int x = x1 - x0;
     int y = y1 - y0;
     int ax = abs(x), ay = abs(y);

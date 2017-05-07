@@ -99,7 +99,7 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
  * |     \    |/
  * v2-----v1  v2
  */
-static void __drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey)
+static void __drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const short colorKey)
 {
     double invDy, dxLeft, dxRight, xLeft, xRight;
     double x, y, yDir = 1;

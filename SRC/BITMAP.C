@@ -74,12 +74,13 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
 }
 
 /* ***** */
-gfx_Bitmap gfx_bitmapFromAtlas(gfx_Bitmap *atlas, int x, int y, int w, int h)
+gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int h)
 {
     int cx, cy, p;
     gfx_Bitmap subImage;
     subImage.width  = w;
     subImage.height = h;
+    // retain the palette of the atlas
     memcpy(subImage.palette, atlas->palette, sizeof(unsigned char)*256*3);
     
     if ((subImage.data = (unsigned char *) malloc(w*h)) == NULL)
@@ -136,7 +137,7 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
 }
 
 /* ***** */
-void gfx_drawBitmap(gfx_Bitmap *bmp, int x, int y, unsigned char *buffer)
+void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, unsigned char *buffer)
 {
     int j;
     int screenOffset = (y<<8)+(y<<6)+x;
@@ -151,7 +152,7 @@ void gfx_drawBitmap(gfx_Bitmap *bmp, int x, int y, unsigned char *buffer)
 }
 
 /* ***** */
-void gfx_drawBitmapColorKey(gfx_Bitmap *bmp, int x, int y, unsigned char *buffer, short colorKey)
+void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, unsigned char *buffer, const short colorKey)
 {
     int i,j;
     int screenOffset = (y<<8)+(y<<6);
@@ -163,6 +164,7 @@ void gfx_drawBitmapColorKey(gfx_Bitmap *bmp, int x, int y, unsigned char *buffer
         for(i = 0; i < bmp->width; i++, bmpOffset++)
         {
             data = bmp->data[bmpOffset];
+            // skip a pixel if it's the same color as colorKey
             if(data != (unsigned char)colorKey)
                 buffer[screenOffset+x+i] = data;
         }

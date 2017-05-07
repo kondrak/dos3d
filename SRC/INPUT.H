@@ -41,7 +41,7 @@ extern "C" {
 #endif
 
     // returns an integer array with each bit representing a keypress, mapped to KeyCode enum
-    unsigned short *kbd_getInput(void);
+    const unsigned short *kbd_getInput();
 
 #ifdef __cplusplus
 }

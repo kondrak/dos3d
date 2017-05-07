@@ -4,7 +4,7 @@
 static unsigned short __keys[0x81];
 
 // faster keyhit detector than kbhit()
-unsigned short *kbd_getInput()
+const unsigned short *kbd_getInput()
 {
     unsigned char c, al, ah;
 

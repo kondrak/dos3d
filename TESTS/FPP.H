@@ -5,7 +5,7 @@
 // First person WASD camera
 void testFirstPerson()
 {
-    unsigned short *keysPressed;
+    const unsigned short *keysPressed;
     unsigned int i;
     mth_Vector4 ts, rs;
     mth_Vector4 square[4];

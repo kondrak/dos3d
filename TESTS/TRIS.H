@@ -6,7 +6,7 @@
 // Triangle rendering test
 void testTriangles()
 {
-    unsigned short *keysPressed;
+    const unsigned short *keysPressed;
     gfx_Camera cam;
     int i, paused = 0, numTris = 0;
     gfx_Triangle triangle, screenTriangle;

@@ -34,7 +34,7 @@ void freeScene(Scene *s);
 // Render a simple scene
 void test3DScene()
 {
-    unsigned short *keysPressed;
+    const unsigned short *keysPressed;
     Scene scene;
     gfx_Camera cam;
     mth_Matrix4 model;
