@@ -1,18 +1,16 @@
 #include "src/camera.h"
 #include "src/graphics.h"
 #include <stdlib.h>
-#include <sys/timeb.h>
 
 // First person WASD camera
 void testFirstPerson()
 {
     unsigned short *keysPressed;
-    unsigned int elapsed, i;
-    struct timeb startTime, endTime;
-    Vector4f ts, rs;
-    Vector4f square[4];
-    Camera cam;
-    Matrix4f viewProj;
+    unsigned int i;
+    mth_Vector4 ts, rs;
+    mth_Vector4 square[4];
+    gfx_Camera cam;
+    mth_Matrix4 viewProj;
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     // setup camera
@@ -39,10 +37,10 @@ void testFirstPerson()
     if(!buffer)
     {
         printf("Out of memory!");
-        return;
+        exit(1);
     }
     
-    keysPressed = translateInput();
+    keysPressed = kbd_getInput();
 
     while(!keysPressed[KEY_ESC])
     {
@@ -54,78 +52,69 @@ void testFirstPerson()
             square[i].w = 1.f;
         }
 
-        matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
-        viewProj = matMul(&cam.view, &cam.projection);
+        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
+        viewProj = mth_matMul(&cam.view, &cam.projection);
 
         for(i = 0; i < 4; i++)
         {
-            square[i] = matMulVec(&viewProj, &square[i]);
+            square[i] = mth_matMulVec(&viewProj, &square[i]);
 
             // translate position to screen pixels
             square[i].x = (square[i].x * (float)SCREEN_WIDTH)  / (2.0f * square[i].w) + (SCREEN_WIDTH >> 1);
             square[i].y = (square[i].y * (float)SCREEN_HEIGHT) / (2.0f * square[i].w) + (SCREEN_HEIGHT >> 1);
         }
 
-        clrScrBuffer(buffer);
+        gfx_clrBuffer(buffer);
 
-        drawLineVec(&square[0], &square[1], 3, buffer);
-        drawLineVec(&square[1], &square[3], 3, buffer);
-        drawLineVec(&square[0], &square[2], 3, buffer);
-        drawLineVec(&square[2], &square[3], 3, buffer);
+        gfx_drawLineVec(&square[0], &square[1], 3, buffer);
+        gfx_drawLineVec(&square[1], &square[3], 3, buffer);
+        gfx_drawLineVec(&square[0], &square[2], 3, buffer);
+        gfx_drawLineVec(&square[2], &square[3], 3, buffer);
 
-        updateScreen(buffer);
+        gfx_updateScreen(buffer);
 
-        keysPressed = translateInput();
+        keysPressed = kbd_getInput();
 
-        ts = vecScale(&cam.target, 0.1f);
-        rs = vecScale(&cam.right, 0.1f);
+        ts = mth_vecScale(&cam.target, 0.1f);
+        rs = mth_vecScale(&cam.right, 0.1f);
 
         if(keysPressed[KEY_W])
-            cam.position = vecAdd(&cam.position, &ts);
+            cam.position = mth_vecAdd(&cam.position, &ts);
 
         if(keysPressed[KEY_S])
-            cam.position = vecSub(&cam.position, &ts);
+            cam.position = mth_vecSub(&cam.position, &ts);
 
         if(keysPressed[KEY_A])
-            cam.position = vecSub(&cam.position, &rs);
+            cam.position = mth_vecSub(&cam.position, &rs);
 
         if(keysPressed[KEY_D])
-            cam.position = vecAdd(&cam.position, &rs);
+            cam.position = mth_vecAdd(&cam.position, &rs);
 
         if(keysPressed[KEY_LEFT])
         {
-            rotateVecAxisAngle(&cam.target, 0.001f, cam.up.x, cam.up.y, cam.up.z);
-            cam.right = crossProduct(&cam.target, &cam.up);
+            mth_rotateVecAxisAngle(&cam.target, 0.001f, cam.up.x, cam.up.y, cam.up.z);
+            cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
         if(keysPressed[KEY_RIGHT])
         {
-            rotateVecAxisAngle(&cam.target, -0.001f, cam.up.x, cam.up.y, cam.up.z);
-            cam.right = crossProduct(&cam.target, &cam.up);
+            mth_rotateVecAxisAngle(&cam.target, -0.001f, cam.up.x, cam.up.y, cam.up.z);
+            cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
         if(keysPressed[KEY_PGUP])
         {
-            rotateVecAxisAngle(&cam.target, -0.001f, cam.right.x, cam.right.y, cam.right.z);
-            cam.right = crossProduct(&cam.target, &cam.up);
+            mth_rotateVecAxisAngle(&cam.target, -0.001f, cam.right.x, cam.right.y, cam.right.z);
+            cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
         if(keysPressed[KEY_PGDN])
         {
-            rotateVecAxisAngle(&cam.target, 0.001f, cam.right.x, cam.right.y, cam.right.z);
-            cam.up = crossProduct(&cam.right, &cam.target);
+            mth_rotateVecAxisAngle(&cam.target, 0.001f, cam.right.x, cam.right.y, cam.right.z);
+            cam.up = mth_crossProduct(&cam.right, &cam.target);
         }
     }
-    
-    ftime(&startTime);
-    ftime(&endTime);
 
     free(buffer);
-
-    elapsed = (endTime.time - startTime.time)*1000 + endTime.millitm - startTime.millitm;
-
-    do {
-        keysPressed = translateInput();
-    } while(keysPressed[KEY_ESC]);
 }

@@ -15,18 +15,10 @@
 #include "tests/texmap.h"
 #include "tests/tris.h"
 
-// good bye
-void Shutdown(int exitCode)
+void printMenu()
 {
-    setMode(0x03);
-    exit(exitCode);
-}
-
-/* ***** */
-void selectTest(char *nextTest)
-{
-    setMode(0x03);
-    printf("Choose test (ESC to exit):\n");
+    gfx_setMode(0x03);
+    printf("*** DOS3D software renderer test suite ***\n");
     printf("1. Bresenham line drawing\n");
     printf("2. Perspective projection\n");
     printf("3. Triangle rendering\n");
@@ -34,62 +26,74 @@ void selectTest(char *nextTest)
     printf("5. Texture mapping\n");
     printf("6. First person WASD camera\n");
     printf("7. Test 3D scene\n");
+    printf("\nq. Exit!\n");
     printf("\nInput:\n");
-    *nextTest = getch();
 }
 
 int main(int argc, char **argv)
 {
-    char nextTest;
     int demoFinished = 0;
+    unsigned short *keysPressed = kbd_getInput();
 
-    selectTest(&nextTest);
+    printMenu();
   
-    while (1)
+    while(1)
     {
         if (!demoFinished)
         {
-            switch (nextTest)
+            if(keysPressed[KEY_1])
             {
-            case '1':
-                setMode(0x13);
+                gfx_setMode(0x13);
                 testBresenham(160, 103, 90);
-                break;
-            case '2':
-                setMode(0x13);
-                testPerspective();
-                break;
-            case '3':
-                setMode(0x13);
-                testTriangles();
-                break;
-            case '4':
-                setMode(0x13);
-                testQuads();
-                break;
-            case '5':
-                setMode(0x13);
-                testTextureMapping();
-                break;
-            case '6':
-                setMode(0x13);
-                testFirstPerson();
-                break;
-            case '7':
-                setMode(0x13);
-                test3DScene();
-            case 27:
-                Shutdown(0);
-            default:
-                break;
+                demoFinished = 1;
             }
-
-            demoFinished = 1;
+            if(keysPressed[KEY_2])
+            {
+                gfx_setMode(0x13);
+                testPerspective();
+                demoFinished = 1;
+            }
+            if(keysPressed[KEY_3])
+            {
+                gfx_setMode(0x13);
+                testTriangles();
+                demoFinished = 1;
+            }
+            if(keysPressed[KEY_4])
+            {
+                gfx_setMode(0x13);
+                testQuads();
+                demoFinished = 1;
+            }
+            if(keysPressed[KEY_5])
+            {
+                gfx_setMode(0x13);
+                testTextureMapping();
+                demoFinished = 1;
+            }
+            if(keysPressed[KEY_6])
+            {
+                gfx_setMode(0x13);
+                testFirstPerson();
+                demoFinished = 1;
+            }
+            if(keysPressed[KEY_7])
+            {
+                gfx_setMode(0x13);
+                test3DScene();
+                demoFinished = 1;
+            }
+            if(keysPressed[KEY_Q])
+            {
+                gfx_setMode(0x03);
+                exit(0);
+            }
+            
+            keysPressed = kbd_getInput();
         }
         else
         {
-            getch();
-            selectTest(&nextTest);
+            printMenu();
             demoFinished = 0;
         }
     }

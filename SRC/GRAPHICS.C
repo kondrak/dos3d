@@ -6,10 +6,10 @@
 #include <stdlib.h>
 
 // pointer to VGA memory
-static unsigned char *VGA = (unsigned char *)0xA0000;
+static unsigned char *__VGA = (unsigned char *)0xA0000;
 
-// graphics mode setter
-void setMode(unsigned char mode)
+/* ***** */
+void gfx_setMode(unsigned char mode)
 {
     _asm {
         mov ah, 0x00
@@ -18,19 +18,20 @@ void setMode(unsigned char mode)
     }
 }
 
-void drawPixel(int x, int y, unsigned char color, unsigned char *buffer)
+/* ***** */
+void gfx_drawPixel(int x, int y, unsigned char color, unsigned char *buffer)
 {
     // naive "clipping"
     if(x >= SCREEN_WIDTH || x < 0 || y >= SCREEN_HEIGHT || y < 0) return;
 
     if(!buffer)
-        VGA[(y << 8) + (y << 6) + x] = color;
+        __VGA[(y << 8) + (y << 6) + x] = color;
     else
         buffer[(y << 8) + (y << 6) + x] = color;
 }
 
-// Bresenham line drawing
-void drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer)
+/* ***** */
+void gfx_drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer)
 {
     int x = x1 - x0;
     int y = y1 - y0;
@@ -51,7 +52,7 @@ void drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char
 
     while(i++ <= ax)
     {
-        drawPixel(x0, y0, color, buffer);
+        gfx_drawPixel(x0, y0, color, buffer);
         n  += ay;
         x0 += n >= ax ? dx1 : dx2;
         y0 += n >= ax ? dy1 : dy2;
@@ -59,30 +60,47 @@ void drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char
     }
 }
 
-void drawLineVec(const Vector4f *from, const Vector4f *to, unsigned char color, unsigned char *buffer)
+/* ***** */
+void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, unsigned char color, unsigned char *buffer)
 {
-    drawLine(from->x, from->y, to->x, to->y, color, buffer);
+    gfx_drawLine(from->x, from->y, to->x, to->y, color, buffer);
 }
 
-void clrScrBuffer(unsigned char *buffer)
+/* ***** */
+void gfx_clrBuffer(unsigned char *buffer)
 {
-    clrScrBufferColor(buffer, 0);
+    gfx_clrBufferColor(buffer, 0);
 }
 
-void clrScrBufferColor(unsigned char *buffer, unsigned char color)
+/* ***** */
+void gfx_clrBufferColor(unsigned char *buffer, unsigned char color)
 {
     if(!buffer)
-        memset(VGA, color, SCREEN_WIDTH*SCREEN_HEIGHT);
+        memset(__VGA, color, SCREEN_WIDTH*SCREEN_HEIGHT);
     else
         memset(buffer, color, SCREEN_WIDTH*SCREEN_HEIGHT);
 }
 
-void updateScreen(unsigned char *buffer)
+/* ***** */
+void gfx_updateScreen(unsigned char *buffer)
 {
-    memcpy(VGA, buffer, SCREEN_WIDTH*SCREEN_HEIGHT);
+    memcpy(__VGA, buffer, SCREEN_WIDTH*SCREEN_HEIGHT);
 }
 
-void vsync()
+/* ***** */
+void gfx_setPalette(unsigned char *palette)
+{
+    int i;
+    outp(0x03c8, 0);
+
+    for(i = 0; i < 256*3; ++i)
+    {
+        outp(0x03c9, palette[i]);
+    }
+}
+
+/* ***** */
+void gfx_vSync()
 {
     while((inp(0x03da) & 8));
     while(!(inp(0x03da) & 8));

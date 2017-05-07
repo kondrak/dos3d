@@ -4,19 +4,28 @@
 #include "src/bitmap.h"
 #include "src/graphics.h"
 
+/*
+ * Triangle definition and rendering.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
     typedef struct
     {
-        Vertex vertices[3];
         int color;
-        Bitmap *texture;
-    } Triangle;
+        gfx_Vertex  vertices[3];
+        gfx_Bitmap *texture;
+    } gfx_Triangle;
 
-    void drawTriangle(const Triangle *t, unsigned char *buffer);
-    void drawTriangleColorKey(const Triangle *t, unsigned char *buffer, short colorKey);
+    /* *** Interface *** */
+
+    // draw triangle to buffer (no color keying)
+    void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer);
+
+    // draw triangle to buffer with colorKey as the tranpsarent color
+    void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, short colorKey);
 
 #ifdef __cplusplus
 }

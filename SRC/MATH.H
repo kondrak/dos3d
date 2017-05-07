@@ -3,71 +3,125 @@
 
 #include <math.h>
 
+/*
+ * Common math functions and structures.
+ */
+
 #ifndef M_PI
 #define M_PI 3.141592654
 #endif
-
-typedef struct
-{
-    double x;
-    double y;
-    double z;
-    double w;
-} Vector4f;
-
-typedef struct
-{
-    double u;
-    double v;
-} Vector2f;
-
-typedef struct
-{
-    double m[16];
-} Matrix4f;
-
-typedef struct
-{
-    double x;
-    double y;
-    double z;
-    double w;
-} Quaternion;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    // vectors
-    double dotProduct(const Vector4f *v1, const Vector4f *v2);
-    Vector4f crossProduct(const Vector4f *v1, const Vector4f *v2);
-    Vector4f vecAdd(const Vector4f *v1, const Vector4f *v2);
-    Vector4f vecSub(const Vector4f *v1, const Vector4f *v2);
-    Vector4f vecScale(const Vector4f *v, const float scale);
-    double lengthSquare(const Vector4f *v);
-    double invLength(const Vector4f *v);
-    void   normalize(Vector4f *v);
-    void   clamp(double *color);
+    // 4D vector
+    typedef struct
+    {
+        double x;
+        double y;
+        double z;
+        double w;
+    } mth_Vector4;
 
-    // matrix
-    void matIdentity(Matrix4f *m);
-    void matZero(Matrix4f *m);
-    void matOne(Matrix4f *m);
-    void matTranspose(Matrix4f *m);
-    Vector4f matMulVec(const Matrix4f *m, const Vector4f *v);
-    Matrix4f matMul(const Matrix4f *m1, const Matrix4f *m2);
-    void matPerspective(Matrix4f *m, const float fov, const float scrRatio, const float nearPlane, const float farPlane);
-    void matView(Matrix4f *m, const Vector4f *eye, const Vector4f *target, const Vector4f *up);
+    // 2D vector
+    typedef struct
+    {
+        double u;
+        double v;
+    } mth_Vector2;
+
+    // 4x4 matrix
+    typedef struct
+    {
+        double m[16];
+    } mth_Matrix4;
 
     // quaternion
-    Quaternion quatConjugate(const Quaternion *q);
-    void quatNormalize(Quaternion *q);
-    Vector4f quatMulVec(const Quaternion *q, const Vector4f *v);
-    Quaternion quatMul(const Quaternion *q1, const Quaternion *q2);
+    typedef struct
+    {
+        double x;
+        double y;
+        double z;
+        double w;
+    } mth_Quaternion;
 
-    // vector/quat
-    void rotateVecAxisAngle(Vector4f *v, const float angle, const float x, const float y, const float z);
-    void rotateVecQuat(Vector4f *v, const Quaternion *q);
+    /* *** Interface *** */
+
+    /*
+     * vector operations
+     */
+
+    // v1 x v2 cross product
+    mth_Vector4 mth_crossProduct(const mth_Vector4 *v1, const mth_Vector4 *v2);
+
+    // v1 + v2
+    mth_Vector4 mth_vecAdd(const mth_Vector4 *v1, const mth_Vector4 *v2);
+
+    // v1 - v2
+    mth_Vector4 mth_vecSub(const mth_Vector4 *v1, const mth_Vector4 *v2);
+
+    // scale vector
+    mth_Vector4 mth_vecScale(const mth_Vector4 *v, const float scale);
+
+    // v1 * v2 dot product
+    double mth_dotProduct(const mth_Vector4 *v1, const mth_Vector4 *v2);
+
+    // return lenght squared of vector v
+    double mth_lengthSquare(const mth_Vector4 *v);
+
+    // return inverse length of vector v
+    double mth_invLength(const mth_Vector4 *v);
+
+    // normalize vector v
+    void mth_normalize(mth_Vector4 *v);
+
+    /*
+     * matrix operations
+     */
+
+    // m * v multiplication
+    mth_Vector4 mth_matMulVec(const mth_Matrix4 *m, const mth_Vector4 *v);
+
+    // m1 * m2 multiplication
+    mth_Matrix4 mth_matMul(const mth_Matrix4 *m1, const mth_Matrix4 *m2);
+
+    // set matrix m to identity
+    void mth_matIdentity(mth_Matrix4 *m);
+
+    // transpose matrix m
+    void mth_matTranspose(mth_Matrix4 *m);
+
+    // turn matrix m into perspective matrix
+    void mth_matPerspective(mth_Matrix4 *m, const float fov, const float scrRatio, const float nearPlane, const float farPlane);
+
+    // turn matrix m into view matrix
+    void mth_matView(mth_Matrix4 *m, const mth_Vector4 *eye, const mth_Vector4 *target, const mth_Vector4 *up);
+
+    /*
+     * quaternion operations
+     */
+
+    // q1 * q2 multiplication
+    mth_Quaternion mth_quatMul(const mth_Quaternion *q1, const mth_Quaternion *q2);
+
+    // return conjugate of quaternion q
+    mth_Quaternion mth_quatConjugate(const mth_Quaternion *q);
+
+    // q * v multiplication
+    mth_Vector4 mth_quatMulVec(const mth_Quaternion *q, const mth_Vector4 *v);
+
+    // normalize quaternion q
+    void mth_quatNormalize(mth_Quaternion *q);
+
+    /* vector<->quaternion operations */
+
+    // rotate vector using axis and angle
+    void mth_rotateVecAxisAngle(mth_Vector4 *v, const float angle, const float x, const float y, const float z);
+
+    // rotate vector using a quaternion
+    void mth_rotateVecQuat(mth_Vector4 *v, const mth_Quaternion *q);
+
 #ifdef __cplusplus
 }
 #endif

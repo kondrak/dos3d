@@ -1,6 +1,6 @@
 #include "src/triangle.h"
 
-#define VERTEX_SWAP(v1, v2) { Vertex s = v2; v2 = v1; v1 = s; }
+#define VERTEX_SWAP(v1, v2) { gfx_Vertex s = v2; v2 = v1; v1 = s; }
 
 // simplest case: will plot either a flat bottom or flat top triangles
 enum TriangleType
@@ -9,19 +9,20 @@ enum TriangleType
     FLAT_TOP
 };
 
-// internal triangle renderer based on triangle type
-void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, const Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey);
+// internal: perform triangle rendering based on its type
+static void __drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey);
 
-void drawTriangle(const Triangle *t, unsigned char *buffer)
+/* ***** */
+void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer)
 {
-    // don't use color keying
-    drawTriangleColorKey(t, buffer, -1);
+    // draw triangle to screen buffer without any color keying
+    gfx_drawTriangleColorKey(t, buffer, -1);
 }
 
-// draw the triangle!
-void drawTriangleColorKey(const Triangle *t, unsigned char *buffer, short colorKey)
+/* ***** */
+void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, short colorKey)
 {
-    Vertex v0, v1, v2;
+    gfx_Vertex v0, v1, v2;
 
     v0 = t->vertices[0];
     v1 = t->vertices[1];
@@ -45,24 +46,25 @@ void drawTriangleColorKey(const Triangle *t, unsigned char *buffer, short colorK
 
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
-        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey);
+        __drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey);
     else if(v0.position.y == v1.position.y)
-        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey);
+        __drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey);
     else
     {
         // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
         // For this, we need to calculate a new vertex, v3 and interpolate its UV coordinates.
-        Vertex v3;
-        Vector4f diff, diff2;
+        gfx_Vertex v3;
+        mth_Vector4 diff, diff2;
         double ratioU = 1, ratioV = 1;
 
         v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
         v3.position.y = v2.position.y;
-        // todo: interpolate z!
+        // todo: interpolate z for proper perspective texture mapping!
         v3.position.z = v2.position.z;
+        v3.position.w = v2.position.w;
 
-        diff = vecSub(&v1.position, &v0.position);
-        diff2 = vecSub(&v3.position, &v0.position);
+        diff  = mth_vecSub(&v1.position, &v0.position);
+        diff2 = mth_vecSub(&v3.position, &v0.position);
 
         if(diff.x != 0)
             ratioU = diff2.x / diff.x;
@@ -78,23 +80,26 @@ void drawTriangleColorKey(const Triangle *t, unsigned char *buffer, short colorK
         if(v3.position.x < v2.position.x)
             VERTEX_SWAP(v3, v2)
 
-        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey);
-        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey);
+        // draw the composition of both triangles to form the desired shape
+        __drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey);
+        __drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey);
     }
 }
 
 
 /*
-* v0         v0----v1
-* |\         |     /
-* | \        |    /
-* |  \       |   /
-* |   \      |  /
-* |    \     | /
-* |     \    |/
-* v2-----v1  v2
-*/
-void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, const Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey)
+ * Depending on the triangle type, the order of processed vertices is as follows:
+ *
+ * v0         v0----v1
+ * |\         |     /
+ * | \        |    /
+ * |  \       |   /
+ * |   \      |  /
+ * |    \     | /
+ * |     \    |/
+ * v2-----v1  v2
+ */
+static void __drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey)
 {
     double invDy, dxLeft, dxRight, xLeft, xRight;
     double x, y, yDir = 1;
@@ -118,20 +123,19 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
     {
         for(y = v0->position.y; ; y += yDir)
         {
-            // to avoid pixel wide gaps, render extra line at the junction between two final points
             if(type == FLAT_TOP && y < v2->position.y)
             {
-                //drawLine(xLeft-dxLeft, y, xRight-dxRight, y, t->color, buffer);
                 break;
             }
             else if(type == FLAT_BOTTOM && y > v2->position.y)
             {
-                drawLine(xLeft-dxLeft, y, xRight-dxRight, y, t->color, buffer);
+                // to avoid pixel wide gaps, render extra line at the junction between two final points
+                gfx_drawLine(xLeft-dxLeft, y, xRight-dxRight, y, t->color, buffer);
                 break;
             }
 
-            drawLine(xLeft, y, xRight, y, t->color, buffer);
-            xLeft += dxLeft;
+            gfx_drawLine(xLeft, y, xRight, y, t->color, buffer);
+            xLeft  += dxLeft;
             xRight += dxRight;
 
         }
@@ -151,19 +155,19 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
         float vLeft = texH * v0->uv.v;
         float vRight = vLeft;
 
-        setPalette(t->texture->palette);
+        gfx_setPalette(t->texture->palette);
 
         for(y = v0->position.y; ; y += yDir)
         {
             int startX = xLeft;
-            int endX  = xRight;
+            int endX = xRight;
             float u = uLeft;
             float v = vLeft;
             float du, dv;
             float dx = endX - startX;
 
-           if(type == FLAT_BOTTOM && y > v2->position.y)
-           {
+            if(type == FLAT_BOTTOM && y > v2->position.y)
+            {
                 u -= du;
                 v -= dv;
                 for(x = startX-dxLeft; x <= endX-dxRight; ++x)
@@ -171,12 +175,12 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
                     unsigned char pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
 
                     if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                        drawPixel(x, y, pixel, buffer);
+                        gfx_drawPixel(x, y, pixel, buffer);
                     u += du;
                     v += dv;
                 }
                 break;
-           }
+            }
             else if ( type == FLAT_TOP && y < v2->position.y)
                 break;
 
@@ -193,20 +197,20 @@ void drawTriangleType(const Triangle *t, const Vertex *v0, const Vertex *v1, con
 
             for(x = startX; x <= endX; ++x)
             {
-                // add modulus for proper effect in case u or v are > 1
+                // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
                 unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
                 if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                    drawPixel(x, y, pixel, buffer);
+                    gfx_drawPixel(x, y, pixel, buffer);
                 u += du;
                 v += dv;
             }
 
-            xLeft += dxLeft;
+            xLeft  += dxLeft;
             xRight += dxRight;
-            uLeft += duLeft;
+            uLeft  += duLeft;
             uRight += duRight;
-            vLeft += dvLeft;
+            vLeft  += dvLeft;
             vRight += dvRight;
         }
     }

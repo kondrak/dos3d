@@ -6,7 +6,7 @@
 typedef struct
 {
     int color;
-    Triangle tris[2];
+    gfx_Triangle tris[2];
 } Quad;
 
 void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh);
@@ -15,21 +15,21 @@ void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh);
 void testQuads()
 {
     unsigned short *keysPressed;
-    Camera cam;
+    gfx_Camera cam;
     int i,k , paused = 0, numQuads = 0;
     Quad quad, screenQuad;
-    Matrix4f model;
-    Matrix4f modelViewProj;
+    mth_Matrix4 model;
+    mth_Matrix4 modelViewProj;
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     if(!buffer)
     {
         printf("Out of memory!");
-        return;
+        exit(1);
     }
 
-    matIdentity(&model);
-    matIdentity(&modelViewProj);
+    mth_matIdentity(&model);
+    mth_matIdentity(&modelViewProj);
 
     // setup camera
     cam.position.x = 0;
@@ -56,8 +56,8 @@ void testQuads()
     model.m[12] = -160.f;
     model.m[13] = -100.f;
 
-    keysPressed = translateInput();
-    clrScrBufferColor(buffer, 107);
+    keysPressed = kbd_getInput();
+    gfx_clrBufferColor(buffer, 107);
 
     while(!keysPressed[KEY_ESC])
     {
@@ -73,16 +73,16 @@ void testQuads()
         screenQuad.tris[0] = quad.tris[0];
         screenQuad.tris[1] = quad.tris[1];
         
-        matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
-        modelViewProj = matMul(&cam.view, &cam.projection);
-        modelViewProj = matMul(&model, &modelViewProj);
+        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
+        modelViewProj = mth_matMul(&cam.view, &cam.projection);
+        modelViewProj = mth_matMul(&model, &modelViewProj);
 
         for(k = 0; k < 2; k++)
         {
             for(i = 0; i < 3; i++)
             {
-                screenQuad.tris[k].vertices[i].position = matMulVec(&modelViewProj, &quad.tris[k].vertices[i].position);
+                screenQuad.tris[k].vertices[i].position = mth_matMulVec(&modelViewProj, &quad.tris[k].vertices[i].position);
                 screenQuad.tris[k].vertices[i].position.x = (screenQuad.tris[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
                 screenQuad.tris[k].vertices[i].position.y = (screenQuad.tris[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
             }
@@ -90,25 +90,21 @@ void testQuads()
 
         if(paused == 0)
         {
-            drawTriangle(&screenQuad.tris[0], buffer);
-            drawTriangle(&screenQuad.tris[1], buffer);
-            updateScreen(buffer);
+            gfx_drawTriangle(&screenQuad.tris[0], buffer);
+            gfx_drawTriangle(&screenQuad.tris[1], buffer);
+            gfx_updateScreen(buffer);
             fprintf(stdout, "Quads rendered: %d\r", ++numQuads);
             fflush(stdout);
             delay(50);
         }
 
-        keysPressed = translateInput();
+        keysPressed = kbd_getInput();
 
         // pause rendering when holding down space bar
         paused = keysPressed[KEY_SPACE];
     }
 
     free(buffer);
-
-    do {
-        keysPressed = translateInput();
-    } while(keysPressed[KEY_ESC]);
 }
 
 void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh)

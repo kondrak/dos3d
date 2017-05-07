@@ -7,15 +7,19 @@
 extern "C" {
 #endif
 
+/*
+ * Projection camera struct.
+ */
+
 typedef struct
 {
-    Vector4f position;
-    Vector4f target;
-    Vector4f up;
-    Vector4f right;
-    Matrix4f view;
-    Matrix4f projection;
-} Camera;
+    mth_Vector4 position;
+    mth_Vector4 target;
+    mth_Vector4 up;
+    mth_Vector4 right;
+    mth_Matrix4 view;
+    mth_Matrix4 projection;
+} gfx_Camera;
 
 #ifdef __cplusplus
 }

@@ -1,8 +1,8 @@
 #include "src/math.h"
 #include <math.h>
 
-// quick inverse sqrt()
-double qInvSqrt(double number)
+// internal: quick inverse sqrt()
+double __qInvSqrt(double number)
 {
     long i;
     float x2, y;
@@ -18,15 +18,10 @@ double qInvSqrt(double number)
     return y;
 }
 
-// vector dot product
-double dotProduct(const Vector4f *v1, const Vector4f *v2)
+/* ***** */
+mth_Vector4 mth_crossProduct(const mth_Vector4 *v1, const mth_Vector4 *v2)
 {
-    return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
-}
-
-Vector4f crossProduct(const Vector4f *v1, const Vector4f *v2)
-{
-    Vector4f r;
+    mth_Vector4 r;
     r.x = v1->y*v2->z - v1->z*v2->y;
     r.y = v1->z*v2->x - v1->x*v2->z;
     r.z = v1->x*v2->y - v1->y*v2->x;
@@ -35,9 +30,10 @@ Vector4f crossProduct(const Vector4f *v1, const Vector4f *v2)
     return r;
 }
 
-Vector4f vecAdd(const Vector4f *v1, const Vector4f *v2)
+/* ***** */
+mth_Vector4 mth_vecAdd(const mth_Vector4 *v1, const mth_Vector4 *v2)
 {
-    Vector4f r;
+    mth_Vector4 r;
     r.x = v1->x + v2->x;
     r.y = v1->y + v2->y;
     r.z = v1->z + v2->z;
@@ -45,9 +41,10 @@ Vector4f vecAdd(const Vector4f *v1, const Vector4f *v2)
     return r;
 }
 
-Vector4f vecSub(const Vector4f *v1, const Vector4f *v2)
+/* ***** */
+mth_Vector4 mth_vecSub(const mth_Vector4 *v1, const mth_Vector4 *v2)
 {
-    Vector4f r;
+    mth_Vector4 r;
     r.x = v1->x - v2->x;
     r.y = v1->y - v2->y;
     r.z = v1->z - v2->z;
@@ -55,9 +52,10 @@ Vector4f vecSub(const Vector4f *v1, const Vector4f *v2)
     return r;
 }
 
-Vector4f vecScale(const Vector4f *v, const float scale)
+/* ***** */
+mth_Vector4 mth_vecScale(const mth_Vector4 *v, const float scale)
 {
-    Vector4f r;
+    mth_Vector4 r;
     r.x = v->x * scale;
     r.y = v->y * scale;
     r.z = v->z * scale;
@@ -65,82 +63,38 @@ Vector4f vecScale(const Vector4f *v, const float scale)
     return r;
 }
 
-double lengthSquare(const Vector4f *v)
+/* ***** */
+double mth_dotProduct(const mth_Vector4 *v1, const mth_Vector4 *v2)
+{
+    return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
+}
+
+/* ***** */
+double mth_lengthSquare(const mth_Vector4 *v)
 {
     return (v->x*v->x + v->y*v->y + v->z*v->z);
 }
 
-// inverse vector length
-double invLength(const Vector4f *v)
+/* ***** */
+double mth_invLength(const mth_Vector4 *v)
 {
-    return qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
+    return __qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 }
 
-// normalize a vector
-void normalize(Vector4f *v)
+/* ***** */
+void mth_normalize(mth_Vector4 *v)
 {
-    double l = qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
+    double l = __qInvSqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 
     v->x *= l;
     v->y *= l;
     v->z *= l;
 }
 
-// clamp RGB value to [0-255]
-void clamp(double *color)
+/* ***** */
+mth_Vector4 mth_matMulVec(const mth_Matrix4 *m, const mth_Vector4 *v)
 {
-    if (color[0] > 0xFF) color[0] = 0xFF;
-    if (color[1] > 0xFF) color[1] = 0xFF;
-    if (color[2] > 0xFF) color[2] = 0xFF;
-
-    if (color[0] < 0x00) color[0] = 0x00;
-    if (color[1] < 0x00) color[1] = 0x00;
-    if (color[2] < 0x00) color[2] = 0x00;
-}
-
-void matIdentity(Matrix4f *m)
-{
-    m->m[0]  = m->m[5]  = m->m[10] = m->m[15] = 1.f;
-    m->m[1]  = m->m[2]  = m->m[3]  = m->m[4]  = 0.f;
-    m->m[6]  = m->m[7]  = m->m[8]  = m->m[9]  = 0.f;
-    m->m[11] = m->m[12] = m->m[13] = m->m[14] = 0.f;
-}
-
-void matZero(Matrix4f *m)
-{
-    int i;
-    for(i = 0; i < 16; ++i)
-        m->m[i] = 0.f;
-}
-
-void matOne(Matrix4f *m)
-{
-    int i;
-    for(i = 0; i < 16; ++i)
-        m->m[i] = 1.f;
-}
-
-
-void matTranspose(Matrix4f *m)
-{
-    int i, j;
-    Matrix4f temp;
-
-    for (i = 0; i < 16; i++)
-        temp.m[i] = m->m[i];
-
-    for (i = 0; i < 4; i++)
-    {
-        for (j = 0; j < 4; j++)
-        {
-            m->m[i * 4 + j] = temp.m[i + j * 4];
-        }
-    }
-}
-
-Vector4f matMulVec(const Matrix4f *m, const Vector4f *v)
-{
-    Vector4f r;
+    mth_Vector4 r;
     r.x = m->m[0] * v->x + m->m[4] * v->y + m->m[8]  * v->z + m->m[12] * v->w;
     r.y = m->m[1] * v->x + m->m[5] * v->y + m->m[9]  * v->z + m->m[13] * v->w;
     r.z = m->m[2] * v->x + m->m[6] * v->y + m->m[10] * v->z + m->m[14] * v->w;
@@ -149,9 +103,10 @@ Vector4f matMulVec(const Matrix4f *m, const Vector4f *v)
     return r;
 }
 
-Matrix4f matMul(const Matrix4f *m1, const Matrix4f *m2)
+/* ***** */
+mth_Matrix4 mth_matMul(const mth_Matrix4 *m1, const mth_Matrix4 *m2)
 {
-    Matrix4f r;
+    mth_Matrix4 r;
     r.m[0] = m1->m[0] * m2->m[0] + m1->m[1] * m2->m[4] + m1->m[2] * m2->m[8]  + m1->m[3] * m2->m[12];
     r.m[1] = m1->m[0] * m2->m[1] + m1->m[1] * m2->m[5] + m1->m[2] * m2->m[9]  + m1->m[3] * m2->m[13];
     r.m[2] = m1->m[0] * m2->m[2] + m1->m[1] * m2->m[6] + m1->m[2] * m2->m[10] + m1->m[3] * m2->m[14];
@@ -175,10 +130,41 @@ Matrix4f matMul(const Matrix4f *m1, const Matrix4f *m2)
     return r;
 }
 
-void matPerspective(Matrix4f *m, const float fov, const float scrRatio, const float nearPlane, const float farPlane)
+/* ***** */
+void mth_matIdentity(mth_Matrix4 *m)
 {
+    m->m[0]  = m->m[5]  = m->m[10] = m->m[15] = 1.f;
+    m->m[1]  = m->m[2]  = m->m[3]  = m->m[4]  = 0.f;
+    m->m[6]  = m->m[7]  = m->m[8]  = m->m[9]  = 0.f;
+    m->m[11] = m->m[12] = m->m[13] = m->m[14] = 0.f;
+}
+
+/* ***** */
+void mth_matTranspose(mth_Matrix4 *m)
+{
+    int i, j;
+    mth_Matrix4 temp;
+
+    for (i = 0; i < 16; i++)
+        temp.m[i] = m->m[i];
+
+    for (i = 0; i < 4; i++)
+    {
+        for (j = 0; j < 4; j++)
+        {
+            m->m[i * 4 + j] = temp.m[i + j * 4];
+        }
+    }
+}
+
+/* ***** */
+void mth_matPerspective(mth_Matrix4 *m, const float fov, const float scrRatio, const float nearPlane, const float farPlane)
+{
+    int i;
     float tanFov;
-    matZero(m);
+    // zero the matrix first
+    for(i = 0; i < 16; ++i)
+        m->m[i] = 0.f;
 
     tanFov = tan(0.5f * fov);
     m->m[0]  = 1.f / (scrRatio * tanFov);
@@ -188,20 +174,21 @@ void matPerspective(Matrix4f *m, const float fov, const float scrRatio, const fl
     m->m[14] = -2.f * farPlane * nearPlane / (farPlane - nearPlane);
 }
 
-void matView(Matrix4f *m, const Vector4f *eye, const Vector4f *target, const Vector4f *up)
+/* ***** */
+void mth_matView(mth_Matrix4 *m, const mth_Vector4 *eye, const mth_Vector4 *target, const mth_Vector4 *up)
 {
-    Vector4f x,y,z;
+    mth_Vector4 x,y,z;
 
     z.x = target->x;
     z.y = target->y;
     z.z = target->z;
     z.w = target->w;
-    normalize(&z);
-    x = crossProduct(&z, up);
-    normalize(&x);
-    y = crossProduct(&x, &z);
+    mth_normalize(&z);
+    x = mth_crossProduct(&z, up);
+    mth_normalize(&x);
+    y = mth_crossProduct(&x, &z);
 
-    matIdentity(m);
+    mth_matIdentity(m);
 
     m->m[0] = x.x;
     m->m[4] = x.y;
@@ -215,59 +202,15 @@ void matView(Matrix4f *m, const Vector4f *eye, const Vector4f *target, const Vec
     m->m[6] = -z.y;
     m->m[10] = -z.z;
 
-    m->m[12] = -dotProduct(&x, eye);
-    m->m[13] = -dotProduct(&y, eye);
-    m->m[14] = dotProduct(&z, eye);
+    m->m[12] = -mth_dotProduct(&x, eye);
+    m->m[13] = -mth_dotProduct(&y, eye);
+    m->m[14] = mth_dotProduct(&z, eye);
 }
 
-Quaternion quatConjugate(const Quaternion *q)
+/* ***** */
+mth_Quaternion mth_quatMul(const mth_Quaternion *q1, const mth_Quaternion *q2)
 {
-    Quaternion r;
-    r.x = -q->x;
-    r.y = -q->y;
-    r.z = -q->z;
-    r.w = q->w;
-
-    return r;
-}
-
-void quatNormalize(Quaternion *q)
-{
-    double l = qInvSqrt(q->x*q->x + q->y*q->y + q->z*q->z + q->w*q->w);
-    q->x *= l;
-    q->y *= l;
-    q->z *= l;
-    q->w *= l;
-}
-
-Vector4f quatMulVec(const Quaternion *q, const Vector4f *v)
-{
-    Vector4f vn, r;
-    Quaternion vq, cq, rq, rq2;
-    vn.x = v->x;
-    vn.y = v->y;
-    vn.z = v->z;
-    normalize(&vn);
-
-    vq.x = vn.x;
-    vq.y = vn.y;
-    vq.z = vn.z;
-    vq.w = 0.f;
-
-    cq = quatConjugate(q);
-    rq = quatMul(&vq, &cq);
-    rq2 = quatMul(q, &rq);
-
-    r.x = rq2.x;
-    r.y = rq2.y;
-    r.z = rq2.z;
-
-    return r;
-}
-
-Quaternion quatMul(const Quaternion *q1, const Quaternion *q2)
-{
-    Quaternion r;
+    mth_Quaternion r;
     r.x = q1->w*q2->x + q1->x*q2->w + q1->y*q2->z - q1->z*q2->y;
     r.y = q1->w*q2->y - q1->x*q2->z + q1->y*q2->w + q1->z*q2->x;
     r.z = q1->w*q2->z + q1->x*q2->y - q1->y*q2->x + q1->z*q2->w;
@@ -276,30 +219,80 @@ Quaternion quatMul(const Quaternion *q1, const Quaternion *q2)
     return r;
 }
 
-void rotateVecAxisAngle(Vector4f *v, const float angle, const float x, const float y, const float z)
+/* ***** */
+mth_Quaternion mth_quatConjugate(const mth_Quaternion *q)
 {
-    Quaternion q;
+    mth_Quaternion r;
+    r.x = -q->x;
+    r.y = -q->y;
+    r.z = -q->z;
+    r.w = q->w;
+
+    return r;
+}
+
+/* ***** */
+mth_Vector4 mth_quatMulVec(const mth_Quaternion *q, const mth_Vector4 *v)
+{
+    mth_Vector4 vn, r;
+    mth_Quaternion vq, cq, rq, rq2;
+    vn.x = v->x;
+    vn.y = v->y;
+    vn.z = v->z;
+    mth_normalize(&vn);
+
+    vq.x = vn.x;
+    vq.y = vn.y;
+    vq.z = vn.z;
+    vq.w = 0.f;
+
+    cq = mth_quatConjugate(q);
+    rq = mth_quatMul(&vq, &cq);
+    rq2 = mth_quatMul(q, &rq);
+
+    r.x = rq2.x;
+    r.y = rq2.y;
+    r.z = rq2.z;
+
+    return r;
+}
+
+/* ***** */
+void mth_quatNormalize(mth_Quaternion *q)
+{
+    double l = __qInvSqrt(q->x*q->x + q->y*q->y + q->z*q->z + q->w*q->w);
+    q->x *= l;
+    q->y *= l;
+    q->z *= l;
+    q->w *= l;
+}
+
+/* ***** */
+void mth_rotateVecAxisAngle(mth_Vector4 *v, const float angle, const float x, const float y, const float z)
+{
+    mth_Quaternion q;
     float hAngle = angle/2.f;
     q.x = x * sin(hAngle);
     q.y = y * sin(hAngle);
     q.z = z * sin(hAngle);
     q.w = cos(hAngle);
 
-    rotateVecQuat(v, &q);
+    mth_rotateVecQuat(v, &q);
 }
 
-void rotateVecQuat(Vector4f *v, const Quaternion *q)
+/* ***** */
+void mth_rotateVecQuat(mth_Vector4 *v, const mth_Quaternion *q)
 {
-    Quaternion r, qv, qc, viewQuat;
+    mth_Quaternion r, qv, qc, viewQuat;
 
     viewQuat.x = v->x;
     viewQuat.y = v->y;
     viewQuat.z = v->z;
     viewQuat.w = 0.f;
 
-    qc = quatConjugate(q);
-    qv = quatMul(q, &viewQuat);
-    r = quatMul(&qv, &qc);
+    qc = mth_quatConjugate(q);
+    qv = mth_quatMul(q, &viewQuat);
+    r  = mth_quatMul(&qv, &qc);
 
     v->x = r.x;
     v->y = r.y;

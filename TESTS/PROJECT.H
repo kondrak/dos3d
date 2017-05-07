@@ -3,27 +3,27 @@
 #include <stdlib.h>
 
 // helper function
-void setupCube(Vector4f *c);
+void setupCube(mth_Vector4 *c);
 
 // Perspective projection test: render a rotating wireframe cube
 void testPerspective()
 {
     unsigned short *keysPressed;
     float t = 0.f;
-    Vector4f cube[16];
-    Camera cam;
-    Matrix4f model;
-    Matrix4f modelViewProj;
+    mth_Vector4 cube[16];
+    gfx_Camera cam;
+    mth_Matrix4 model;
+    mth_Matrix4 modelViewProj;
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     if(!buffer)
     {
         printf("Out of memory!");
-        return;
+        exit(1);
     }
 
-    matIdentity(&model);
-    matIdentity(&modelViewProj);
+    mth_matIdentity(&model);
+    mth_matIdentity(&modelViewProj);
 
     // setup camera
     cam.position.x = 0;
@@ -52,58 +52,54 @@ void testPerspective()
     model.m[12] = -20.f;
     model.m[13] = -20.f;
 
-    keysPressed = translateInput();
+    keysPressed = kbd_getInput();
 
     while(!keysPressed[KEY_ESC])
     {
         int i;
         // screen coordinates for the cube we will calculate here
-        Vector4f screenCube[16];
-        matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
-        modelViewProj = matMul(&cam.view, &cam.projection);
-        modelViewProj = matMul(&model, &modelViewProj);
+        mth_Vector4 screenCube[16];
+        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
+        modelViewProj = mth_matMul(&cam.view, &cam.projection);
+        modelViewProj = mth_matMul(&model, &modelViewProj);
 
         t += 0.001f;
         for(i = 0; i < 16; i++)
         {
             // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
-            rotateVecAxisAngle(&cube[i], 0.001f, 1.f, 1.f, 1.f);
+            mth_rotateVecAxisAngle(&cube[i], 0.001f, 1.f, 1.f, 1.f);
             model.m[14] = sin(t) * 80.f;
             
             // calculate screen coordinates for transformed square vertices
-            screenCube[i] = matMulVec(&modelViewProj, &cube[i]);
+            screenCube[i] = mth_matMulVec(&modelViewProj, &cube[i]);
 
             // translate position to screen pixels
             screenCube[i].x = (screenCube[i].x * (float)SCREEN_WIDTH)  / (2.0f * screenCube[i].w) + (SCREEN_WIDTH >> 1);
             screenCube[i].y = (screenCube[i].y * (float)SCREEN_HEIGHT) / (2.0f * screenCube[i].w) + (SCREEN_HEIGHT >> 1);
         }
 
-        clrScrBuffer(buffer);
+        gfx_clrBuffer(buffer);
 
         // render the cube walls
         for(i = 0; i < 4; i++)
         {
-            drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 1], 3+i, buffer);
-            drawLineVec(&screenCube[4*i + 1], &screenCube[4*i + 3], 3+i, buffer);
-            drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 2], 3+i, buffer);
-            drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, buffer);
+            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 1], 3+i, buffer);
+            gfx_drawLineVec(&screenCube[4*i + 1], &screenCube[4*i + 3], 3+i, buffer);
+            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 2], 3+i, buffer);
+            gfx_drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, buffer);
         }
 
-        updateScreen(buffer);
+        gfx_updateScreen(buffer);
 
-        keysPressed = translateInput();
+        keysPressed = kbd_getInput();
     }
     
     free(buffer);
-
-    do {
-        keysPressed = translateInput();
-    } while(keysPressed[KEY_ESC]);
 }
 
 
-void setupCube(Vector4f *c)
+void setupCube(mth_Vector4 *c)
 {
     int i;
     for(i = 0; i < 4; i++)

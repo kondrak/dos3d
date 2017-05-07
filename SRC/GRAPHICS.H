@@ -3,26 +3,49 @@
 
 #include "src/math.h"
 
+/*
+ * Common graphics functionality.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
     #define SCREEN_WIDTH  320
     #define SCREEN_HEIGHT 200
-    
+
+    // basic vertex: position and UV mapping for textures
     typedef struct
     {
-        Vector4f position;
-        Vector2f uv;
-    } Vertex;
+        mth_Vector4 position;
+        mth_Vector2 uv;
+    } gfx_Vertex;
 
-    void setMode(unsigned char mode);
-    void drawPixel(int x, int y, unsigned char color, unsigned char *buffer);
-    void drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer);
-    void drawLineVec(const Vector4f *from, const Vector4f *to, unsigned char color, unsigned char *buffer);
-    void clrScrBuffer(unsigned char *buffer);
-    void clrScrBufferColor(unsigned char *buffer, unsigned char color);
-    void updateScreen(unsigned char *buffer);
-    void vsync();
+    // set graphics mode
+    void gfx_setMode(unsigned char mode);
+
+    // draw pixel to buffer
+    void gfx_drawPixel(int x, int y, unsigned char color, unsigned char *buffer);
+
+    // Bresenham line drawing
+    void gfx_drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer);
+
+    // Bresenham line drawing - using mth_Vector4 structs
+    void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, unsigned char color, unsigned char *buffer);
+
+    // clears buffer to 0
+    void gfx_clrBuffer(unsigned char *buffer);
+
+    // clears buffer to specific color
+    void gfx_clrBufferColor(unsigned char *buffer, unsigned char color);
+
+    // copy buffer contents to VGA memory
+    void gfx_updateScreen(unsigned char *buffer);
+
+    // set current VGA palette
+    void gfx_setPalette(unsigned char *palette);
+
+    // wait for retrace
+    void gfx_vSync();
 
 #ifdef __cplusplus
 }

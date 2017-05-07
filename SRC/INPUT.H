@@ -2,10 +2,10 @@
 #define INPUT_H
 
 /*
- *  simple key input processing
+ *  Simple key input processing.
  */
 
-enum KeyCode
+enum kbd_KeyCode
 {
     KEY_ESC = 1,
     KEY_1 = 2,
@@ -18,6 +18,7 @@ enum KeyCode
     KEY_8 = 9,
     KEY_9 = 10,
     KEY_0 = 11,
+    KEY_Q = 16,
     KEY_W = 17,
     KEY_R = 18,
     KEY_A = 30,
@@ -26,20 +27,21 @@ enum KeyCode
     KEY_F = 33,
     KEY_G = 34,
     KEY_ENTER = 28,
-    KEY_UP = 72,
-    KEY_PGUP = 73,
-    KEY_LEFT = 75,
+    KEY_UP    = 72,
+    KEY_PGUP  = 73,
+    KEY_LEFT  = 75,
     KEY_RIGHT = 77,
     KEY_SPACE = 57,
-    KEY_DOWN = 80,
-    KEY_PGDN = 81
+    KEY_DOWN  = 80,
+    KEY_PGDN  = 81
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    unsigned short *translateInput(void);
+    // returns an integer array with each bit representing a keypress, mapped to KeyCode enum
+    unsigned short *kbd_getInput(void);
 
 #ifdef __cplusplus
 }

@@ -6,8 +6,8 @@
 
 typedef struct
 {
-    Bitmap *texture;
-    Triangle tris[2];
+    gfx_Bitmap  *texture;
+    gfx_Triangle tris[2];
 } TexQuad;
 
 // helper functions
@@ -19,25 +19,25 @@ void testTextureMapping()
 {
     unsigned short *keysPressed;
     TexQuad quad, screenQuad;
-    Camera cam;
-    Matrix4f model;
-    Matrix4f modelViewProj;
-    Bitmap bmp = loadBitmap("images/wood.bmp");
+    gfx_Camera cam;
+    mth_Matrix4 model;
+    mth_Matrix4 modelViewProj;
+    gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     if(!buffer)
     {
         printf("Out of memory!");
-        return;
+        exit(1);
     }
 
-    matIdentity(&model);
-    matIdentity(&modelViewProj);
+    mth_matIdentity(&model);
+    mth_matIdentity(&modelViewProj);
 
     // setup camera
     cam.position.x = 0;
     cam.position.y = 0;
-    cam.position.z = 100.f;
+    cam.position.z = 60.f;
     cam.position.w = 1.f;
 
     cam.up.x = 0.f;
@@ -66,15 +66,15 @@ void testTextureMapping()
     screenQuad.tris[0] = quad.tris[0];
     screenQuad.tris[1] = quad.tris[1];
 
-    keysPressed = translateInput();
+    keysPressed = kbd_getInput();
 
     while(!keysPressed[KEY_ESC])
     {
         int i, k;
-        matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
-        modelViewProj = matMul(&cam.view, &cam.projection);
-        modelViewProj = matMul(&model, &modelViewProj);
+        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
+        modelViewProj = mth_matMul(&cam.view, &cam.projection);
+        modelViewProj = mth_matMul(&model, &modelViewProj);
 
         if(keysPressed[KEY_A])
         {
@@ -82,7 +82,7 @@ void testTextureMapping()
             {
                 for(i = 0; i < 3; i++)
                 {
-                    rotateVecAxisAngle(&quad.tris[k].vertices[i].position, 0.01f, 0.f, 1.f, 0.f);
+                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, 0.01f, 0.f, 1.f, 0.f);
                 }
             }
         }
@@ -93,7 +93,7 @@ void testTextureMapping()
             {
                 for(i = 0; i < 3; i++)
                 {
-                    rotateVecAxisAngle(&quad.tris[k].vertices[i].position, -0.01f, 0.f, 1.f, 0.f);
+                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, -0.01f, 0.f, 1.f, 0.f);
                 }
             }
         }
@@ -104,7 +104,7 @@ void testTextureMapping()
             {
                 for(i = 0; i < 3; i++)
                 {
-                    rotateVecAxisAngle(&quad.tris[k].vertices[i].position, 0.01f, 1.f, 0.f, 0.f);
+                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, 0.01f, 1.f, 0.f, 0.f);
                 }
             }
         }
@@ -115,7 +115,7 @@ void testTextureMapping()
             {
                 for(i = 0; i < 3; i++)
                 {
-                    rotateVecAxisAngle(&quad.tris[k].vertices[i].position, -0.01f, 1.f, 0.f, 0.f);
+                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, -0.01f, 1.f, 0.f, 0.f);
                 }
             }
         }
@@ -124,25 +124,21 @@ void testTextureMapping()
         {
             for(i = 0; i < 3; i++)
             {
-                screenQuad.tris[k].vertices[i].position = matMulVec(&modelViewProj, &quad.tris[k].vertices[i].position);
+                screenQuad.tris[k].vertices[i].position = mth_matMulVec(&modelViewProj, &quad.tris[k].vertices[i].position);
                 screenQuad.tris[k].vertices[i].position.x = (screenQuad.tris[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
                 screenQuad.tris[k].vertices[i].position.y = (screenQuad.tris[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
             }
         }
 
-        clrScrBuffer(buffer);
+        gfx_clrBuffer(buffer);
         drawTexQuad(&screenQuad, buffer);
-        updateScreen(buffer);
+        gfx_updateScreen(buffer);
 
-        keysPressed = translateInput();
+        keysPressed = kbd_getInput();
     }
 
     free(buffer);
-    freeBitmap(&bmp);
-
-    do {
-        keysPressed = translateInput();
-    } while(keysPressed[KEY_ESC]);
+    gfx_freeBitmap(&bmp);
 }
 
 
@@ -193,6 +189,6 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh)
 
 void drawTexQuad(TexQuad *q, unsigned char *buffer)
 {
-    drawTriangle(&q->tris[0], buffer);
-    drawTriangle(&q->tris[1], buffer);
+    gfx_drawTriangle(&q->tris[0], buffer);
+    gfx_drawTriangle(&q->tris[1], buffer);
 }
