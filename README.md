@@ -13,7 +13,9 @@ Features
 - perspective and view calculations - "DOF6 Camera Ready (tm)"
 - line and point rendering
 - loading, resizing and displaying bitmaps (8bpp) with optional color keying
+- bitmap scrolling
 - texture atlas support
+- double buffering
 
 The executable is a set of pre-made tests that demonstrate each feature in detail.
 
