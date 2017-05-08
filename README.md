@@ -22,3 +22,11 @@ The executable is a set of pre-made tests that demonstrate each feature in detai
 ![Screenshot](http://kondrak.info/images/dos3d/1.png?raw=true)
 ![Screenshot](http://kondrak.info/images/dos3d/2.png?raw=true)
 ![Screenshot](http://kondrak.info/images/dos3d/3.png?raw=true)
+
+Ideas
+-------
+
+- use fixed point instead of floating point
+- apply optimizations detailed in fatmap2.txt
+- add perspective correction to texture mapping
+- ???
