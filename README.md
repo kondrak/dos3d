@@ -26,7 +26,7 @@ The executable is a set of pre-made tests that demonstrate each feature in detai
 Ideas
 -------
 
-- use fixed point instead of floating point
+- use fixed point instead of floating point (and fix precision errors!)
 - apply optimizations detailed in [fatmap2.txt](http://www.multi.fi/~mbc/sources/fatmap2.txt)
 - add perspective correction to texture mapping
 - ???
