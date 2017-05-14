@@ -29,4 +29,5 @@ Ideas
 - use fixed point instead of floating point (and fix precision errors!)
 - apply optimizations detailed in [fatmap2.txt](http://www.multi.fi/~mbc/sources/fatmap2.txt)
 - add perspective correction to texture mapping
+- add proper clipping
 - ???
