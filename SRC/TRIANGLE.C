@@ -150,21 +150,22 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
         float duRight = texW * (v1->uv.u - v0->uv.u) * invDy;
         float dvRight = texH * (v1->uv.v - v0->uv.v) * invDy;
 
-        float uLeft = texW * v0->uv.u;
-        float uRight = uLeft;
-        float vLeft = texH * v0->uv.v;
-        float vRight = vLeft;
+        float startU = texW * v0->uv.u;
+        float startV = texH * v0->uv.v;
+        // With triangles the texture gradients (u,v slopes over the triangle surface)
+        // are guaranteed to be constant, so we need to calculate du and dv only once.
+        float invDx = 1.f / (dxRight - dxLeft);
+        float du = (duRight - duLeft) * invDx;
+        float dv = (dvRight - dvLeft) * invDx;
+        float startX = xLeft;
+        float endX   = xRight;
 
         gfx_setPalette(t->texture->palette);
 
         for(y = v0->position.y; ; y += yDir)
         {
-            int startX = xLeft;
-            int endX = xRight;
-            float u = uLeft;
-            float v = vLeft;
-            float du, dv;
-            float dx = endX - startX;
+            float u = startU;
+            float v = startV;
 
             if(type == FLAT_BOTTOM && y > v2->position.y)
             {
@@ -184,17 +185,6 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
             else if ( type == FLAT_TOP && y < v2->position.y)
                 break;
 
-            if(dx > 0)
-            {
-                du = (uRight - uLeft) / dx;
-                dv = (vRight - vLeft) / dx;
-            }
-            else
-            {
-                du = uRight - uLeft;
-                dv = vRight - vLeft;
-            }
-
             for(x = startX; x <= endX; ++x)
             {
                 // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
@@ -206,12 +196,10 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
                 v += dv;
             }
 
-            xLeft  += dxLeft;
-            xRight += dxRight;
-            uLeft  += duLeft;
-            uRight += duRight;
-            vLeft  += dvLeft;
-            vRight += dvRight;
+            startX += dxLeft;
+            endX   += dxRight;
+            startU += duLeft;
+            startV += dvLeft;
         }
     }
 }
