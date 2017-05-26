@@ -59,8 +59,7 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
 
         v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
         v3.position.y = v2.position.y;
-        // todo: interpolate z for proper perspective texture mapping!
-        v3.position.z = v2.position.z;
+        v3.position.z = v0.position.z + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.z - v0.position.z);
         v3.position.w = v2.position.w;
 
         diff  = mth_vecSub(&v1.position, &v0.position);
