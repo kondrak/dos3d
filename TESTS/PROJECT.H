@@ -77,6 +77,7 @@ void testPerspective()
             // translate position to screen pixels
             screenCube[i].x = (screenCube[i].x * (float)SCREEN_WIDTH)  / (2.0f * screenCube[i].w) + (SCREEN_WIDTH >> 1);
             screenCube[i].y = (screenCube[i].y * (float)SCREEN_HEIGHT) / (2.0f * screenCube[i].w) + (SCREEN_HEIGHT >> 1);
+            screenCube[i].z /= screenCube[i].w;
         }
 
         gfx_clrBuffer(buffer);

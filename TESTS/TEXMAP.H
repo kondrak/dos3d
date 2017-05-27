@@ -127,6 +127,7 @@ void testTextureMapping()
                 screenQuad.tris[k].vertices[i].position = mth_matMulVec(&modelViewProj, &quad.tris[k].vertices[i].position);
                 screenQuad.tris[k].vertices[i].position.x = (screenQuad.tris[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
                 screenQuad.tris[k].vertices[i].position.y = (screenQuad.tris[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
+                screenQuad.tris[k].vertices[i].position.z /= screenQuad.tris[k].vertices[i].position.w;
             }
         }
 
