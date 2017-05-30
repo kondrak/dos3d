@@ -174,8 +174,7 @@ static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, c
     invZ1 = 1.f / v1->position.z;
     invZ2 = 1.f / v2->position.z;
 
-    DBG("%.5f %.5f %.5f\r", 1.f/invZ0, 1.f/invZ1, 1.f/invZ2);
-    gfx_setPalette(t->texture->palette);
+    //gfx_setPalette(t->texture->palette);
 
     for(y = v0->position.y; ; y += yDir)
     {
@@ -201,24 +200,24 @@ static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, c
         startInvZ = lerp(invZ0, invZ2, r1);
         endInvZ = lerp(invZ0, invZ1, r1);
 
-        startU *= lerp(v0->uv.u, v2->uv.u, r1);
-        startV *= lerp(v0->uv.v, v2->uv.v, r1);
-        UEnd *= lerp(v0->uv.u, v1->uv.u, r1);
-        VEnd *= lerp(v0->uv.v, v1->uv.v, r1);
+        startU *= lerp(v0->uv.u*invZ0, v2->uv.u*invZ2, r1);
+        startV *= lerp(v0->uv.v*invZ0, v2->uv.v*invZ2, r1);
+        UEnd *= lerp(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
+        VEnd *= lerp(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
 
         for(x = startX; x <= endX; ++x)
         {
             float r = (x - startX) / (endX - startX);
             float lerpInvZ = lerp(startInvZ, endInvZ, r);
             float z = 1.f/lerpInvZ;
-            float u = z * lerp(startU*startInvZ, UEnd*endInvZ, r);
-            float v = z * lerp(startV*startInvZ, VEnd*endInvZ, r);
+            float u = z * lerp(startU, UEnd, r);
+            float v = z * lerp(startV, VEnd, r);
 
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
             unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
             if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                gfx_drawPixel(x, y, pixel, buffer);
+                gfx_drawPixel(x, y, (int)(z)%256, buffer);
         }
 
         startX += dxLeft;

@@ -177,7 +177,6 @@ void updateScene(Scene *s, mth_Matrix4 *mvp)
                 s->walls[w].screenQuad->tris[k].vertices[i].position = mth_matMulVec(mvp, &s->walls[w].tris[k].vertices[i].position);
                 s->walls[w].screenQuad->tris[k].vertices[i].position.x = (s->walls[w].screenQuad->tris[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * s->walls[w].screenQuad->tris[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
                 s->walls[w].screenQuad->tris[k].vertices[i].position.y = (s->walls[w].screenQuad->tris[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * s->walls[w].screenQuad->tris[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
-                s->walls[w].screenQuad->tris[k].vertices[i].position.z /= s->walls[w].screenQuad->tris[k].vertices[i].position.w;
             }
         }
     }
