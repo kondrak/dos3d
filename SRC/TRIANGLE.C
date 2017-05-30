@@ -1,5 +1,5 @@
 #include "src/triangle.h"
-
+#include "src/utils.h"
 #define VERTEX_SWAP(v1, v2) { gfx_Vertex s = v2; v2 = v1; v1 = s; }
 
 // simplest case: will plot either a flat bottom or flat top triangles
@@ -72,8 +72,8 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
             ratioV = diff2.y / diff.y;
 
         // lerp the UV mapping for the triangle
-        v3.uv.u = v1.uv.u * ratioU + v0.uv.u * (1.0 - ratioU);
-        v3.uv.v = v1.uv.v * ratioV + v0.uv.v * (1.0 - ratioV);
+        v3.uv.u = lerp(v0.uv.u, v1.uv.u, ratioU);
+        v3.uv.v = lerp(v0.uv.v, v1.uv.v, ratioV);
 
         // this swap is done to maintain consistent renderer behavior
         if(v3.position.x < v2.position.x)
@@ -158,7 +158,14 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
         float dv = (dvRight - dvLeft) * invDx;
         float startX = xLeft;
         float endX   = xRight;
+        float invZ0, invZ1, invZ2;
 
+
+        invZ0 = 1.f / v0->position.z;
+        invZ1 = 1.f / v1->position.z;
+        invZ2 = 1.f / v2->position.z;
+
+        //DBG("%.5f %.5f %.5f\r", 1.f/invZ0, 1.f/invZ1, 1.f/invZ2);
         gfx_setPalette(t->texture->palette);
 
         for(y = v0->position.y; ; y += yDir)
@@ -166,28 +173,45 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
             float u = startU;
             float v = startV;
 
+            float startInvZ, endInvZ, UStart = texW, VStart = texH, UEnd = texW, VEnd = texH, r1;
+
             if(type == FLAT_BOTTOM && y > v2->position.y)
             {
                 u -= du;
                 v -= dv;
-                for(x = startX-dxLeft; x <= endX-dxRight; ++x)
+                /*for(x = startX-dxLeft; x <= endX-dxRight; ++x)
                 {
-                    unsigned char pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
+                    unsigned char pixel =  t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
                     if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
                         gfx_drawPixel(x, y, pixel, buffer);
                     u += du;
                     v += dv;
-                }
+                }*/
                 break;
             }
             else if ( type == FLAT_TOP && y < v2->position.y)
                 break;
 
+            r1 = (v0->position.y - y) / (v0->position.y - v2->position.y);
+            startInvZ = lerp(invZ0, invZ2, r1);
+            endInvZ = lerp(invZ0, invZ1, r1);
+
+            UStart *= lerp(v0->uv.u, v2->uv.u, r1);
+            VStart *= lerp(v0->uv.v, v2->uv.v, r1);
+            UEnd *= lerp(v0->uv.u, v1->uv.u, r1);
+            VEnd *= lerp(v0->uv.v, v1->uv.v, r1);
+
             for(x = startX; x <= endX; ++x)
             {
+                float r = (x - startX) / (endX - startX);
+                float lerpInvZ = lerp(startInvZ, endInvZ, r);
+                float z = 1.f/lerpInvZ;
+                float uu = z * lerp(UStart*startInvZ, UEnd*endInvZ, r);
+                float vv = z * lerp(VStart*startInvZ, VEnd*endInvZ, r);
+
                 // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-                unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
+                unsigned char pixel = t->texture->data[((int)uu + ((int)vv * t->texture->height)) % texArea];
 
                 if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
                     gfx_drawPixel(x, y, pixel, buffer);
