@@ -2,6 +2,7 @@
 #include "src/camera.h"
 #include "src/triangle.h"
 #include "src/math.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 typedef struct
@@ -141,10 +142,13 @@ void testTextureMapping()
         }
 
         gfx_clrBuffer(buffer);
+        fprintf(stdout, tm == AFFINE ? "Affine\r" : "Perspective\r");
+
         drawTexQuad(&screenQuad, buffer, tm);
         gfx_updateScreen(buffer);
 
         keysPressed = kbd_getInput();
+        fflush(stdout);
     }
 
     free(buffer);
