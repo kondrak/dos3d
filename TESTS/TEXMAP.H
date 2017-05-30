@@ -12,13 +12,15 @@ typedef struct
 
 // helper functions
 void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh);
-void drawTexQuad(TexQuad *q, unsigned char *buffer);
+void drawTexQuad(TexQuad *q, unsigned char *buffer, enum TextureMapping tm);
 
 // Texture mapping test
 void testTextureMapping()
 {
     const unsigned short *keysPressed;
     TexQuad quad, screenQuad;
+    enum TextureMapping tm = PERSPECTIVE;
+    int texMapFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
@@ -120,6 +122,13 @@ void testTextureMapping()
             }
         }
 
+        if(keysPressed[KEY_G] && !texMapFlipped)
+        {
+            tm = tm == AFFINE ? PERSPECTIVE : AFFINE;
+            texMapFlipped = 1;
+        }
+        else if(!keysPressed[KEY_G]) texMapFlipped = 0;
+
         for(k = 0; k < 2; k++)
         {
             for(i = 0; i < 3; i++)
@@ -132,7 +141,7 @@ void testTextureMapping()
         }
 
         gfx_clrBuffer(buffer);
-        drawTexQuad(&screenQuad, buffer);
+        drawTexQuad(&screenQuad, buffer, tm);
         gfx_updateScreen(buffer);
 
         keysPressed = kbd_getInput();
@@ -188,8 +197,8 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh)
     q->tris[1].vertices[2].uv.v = 0;
 }
 
-void drawTexQuad(TexQuad *q, unsigned char *buffer)
+void drawTexQuad(TexQuad *q, unsigned char *buffer, enum TextureMapping tm)
 {
-    gfx_drawTriangle(&q->tris[0], buffer);
-    gfx_drawTriangle(&q->tris[1], buffer);
+    gfx_drawTriangleTexMap(&q->tris[0], buffer, tm);
+    gfx_drawTriangleTexMap(&q->tris[1], buffer, tm);
 }

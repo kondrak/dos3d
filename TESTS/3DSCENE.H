@@ -25,10 +25,10 @@ typedef struct
 
 // helper functions
 void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v);
-void drawSceneQuad(SceneQuad *q, unsigned char *buffer);
+void drawSceneQuad(SceneQuad *q, unsigned char *buffer, enum TextureMapping tm);
 void setupScene(Scene *s);
 void updateScene(Scene *s, mth_Matrix4 *mvp);
-void drawScene(Scene *s, unsigned char *buffer);
+void drawScene(Scene *s, unsigned char *buffer, enum TextureMapping tm);
 void freeScene(Scene *s);
 
 // Render a simple scene
@@ -36,6 +36,8 @@ void test3DScene()
 {
     const unsigned short *keysPressed;
     Scene scene;
+    enum TextureMapping tm = PERSPECTIVE;
+    int texMapFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
@@ -80,6 +82,13 @@ void test3DScene()
 
     while(!keysPressed[KEY_ESC])
     {
+        if(keysPressed[KEY_G] && !texMapFlipped)
+        {
+            tm = tm == AFFINE ? PERSPECTIVE : AFFINE;
+            texMapFlipped = 1;
+        }
+        else if(!keysPressed[KEY_G]) texMapFlipped = 0;
+
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
@@ -90,7 +99,7 @@ void test3DScene()
 
         // render!
         gfx_clrBuffer(buffer);
-        drawScene(&scene, buffer);
+        drawScene(&scene, buffer, tm);
 
         keysPressed = kbd_getInput();
     }
@@ -150,10 +159,10 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
     q->screenQuad->tris[1] = q->tris[1]; 
 }
 
-void drawSceneQuad(SceneQuad *q, unsigned char *buffer)
+void drawSceneQuad(SceneQuad *q, unsigned char *buffer, enum TextureMapping tm)
 {
-    gfx_drawTriangleColorKey(&q->tris[0], buffer, COLOR_MAGENTA);
-    gfx_drawTriangleColorKey(&q->tris[1], buffer, COLOR_MAGENTA);
+    gfx_drawTriangleColorKeyTexMap(&q->tris[0], buffer, COLOR_MAGENTA, tm);
+    gfx_drawTriangleColorKeyTexMap(&q->tris[1], buffer, COLOR_MAGENTA, tm);
 }
 
 void updateScene(Scene *s, mth_Matrix4 *mvp)
@@ -174,7 +183,7 @@ void updateScene(Scene *s, mth_Matrix4 *mvp)
     }
 }
 
-void drawScene(Scene *s, unsigned char *buffer)
+void drawScene(Scene *s, unsigned char *buffer, enum TextureMapping tm)
 {
     int w;
     static unsigned int bgOffset = 0;
@@ -184,7 +193,7 @@ void drawScene(Scene *s, unsigned char *buffer)
 
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
-        drawSceneQuad(s->walls[w].screenQuad, buffer);
+        drawSceneQuad(s->walls[w].screenQuad, buffer, tm);
 
     // push to screen!
     gfx_updateScreen(buffer);

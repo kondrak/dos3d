@@ -12,6 +12,12 @@
 extern "C" {
 #endif
 
+    enum TextureMapping
+    {
+        AFFINE,
+        PERSPECTIVE
+    };
+
     typedef struct
     {
         int color;
@@ -24,8 +30,12 @@ extern "C" {
     // draw triangle to buffer (no color keying)
     void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer);
 
+    void gfx_drawTriangleTexMap(const gfx_Triangle *t, unsigned char *buffer, enum TextureMapping tm);
+
     // draw triangle to buffer with colorKey as the tranpsarent color
     void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, const short colorKey);
+
+    void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer, const short colorKey, enum TextureMapping tm);
 
 #ifdef __cplusplus
 }

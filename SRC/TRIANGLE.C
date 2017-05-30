@@ -10,17 +10,29 @@ enum TriangleType
 };
 
 // internal: perform triangle rendering based on its type
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey);
+static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey, enum TextureMapping tm);
+static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, short colorKey);
+static void affineTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, double invDy, short colorKey);
 
-/* ***** */
 void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer)
 {
-    // draw triangle to screen buffer without any color keying
     gfx_drawTriangleColorKey(t, buffer, -1);
 }
 
 /* ***** */
+void gfx_drawTriangleTexMap(const gfx_Triangle *t, unsigned char *buffer, enum TextureMapping tm)
+{
+    // draw triangle to screen buffer without any color keying
+    gfx_drawTriangleColorKeyTexMap(t, buffer, -1, tm);
+}
+
 void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, short colorKey)
+{
+    gfx_drawTriangleColorKeyTexMap(t, buffer, colorKey, AFFINE);
+}
+
+/* ***** */
+void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer, short colorKey, enum TextureMapping tm)
 {
     gfx_Vertex v0, v1, v2;
 
@@ -46,9 +58,9 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
 
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
-        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey);
+        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey, tm);
     else if(v0.position.y == v1.position.y)
-        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey);
+        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey, tm);
     else
     {
         // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
@@ -80,8 +92,8 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
             VERTEX_SWAP(v3, v2)
 
         // draw the composition of both triangles to form the desired shape
-        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey);
-        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey);
+        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey, tm);
+        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey, tm);
     }
 }
 
@@ -98,11 +110,10 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
  * |     \    |/
  * v2-----v1  v2
  */
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const short colorKey)
+static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const short colorKey, enum TextureMapping tm)
 {
     double invDy, dxLeft, dxRight, xLeft, xRight;
-    double x, y, yDir = 1;
-    int useColorKey = colorKey != -1 ? 1 : 0;
+    double y, yDir = 1;
 
     if(type == FLAT_BOTTOM)
     {
@@ -136,93 +147,147 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
             gfx_drawLine(xLeft, y, xRight, y, t->color, buffer);
             xLeft  += dxLeft;
             xRight += dxRight;
-
         }
     }
     else
     {
-        float texW = t->texture->width - 1;
-        float texH = t->texture->height - 1;
-        int   texArea = texW * texH;
-        float duLeft  = texW * (v2->uv.u - v0->uv.u) * invDy;
-        float dvLeft  = texH * (v2->uv.v - v0->uv.v) * invDy;
-        float duRight = texW * (v1->uv.u - v0->uv.u) * invDy;
-        float dvRight = texH * (v1->uv.v - v0->uv.v) * invDy;
+        if(tm == AFFINE)
+            affineTextureMap(t, v0, v1, v2, buffer, type, dxLeft, dxRight, yDir, invDy, colorKey);
+        else
+            perspectiveTextureMap(t, v0, v1, v2, buffer, type, dxLeft, dxRight, yDir, colorKey);
+    }
+}
 
-        float startU = texW * v0->uv.u;
-        float startV = texH * v0->uv.v;
-        // With triangles the texture gradients (u,v slopes over the triangle surface)
-        // are guaranteed to be constant, so we need to calculate du and dv only once.
-        float invDx = 1.f / (dxRight - dxLeft);
-        float du = (duRight - duLeft) * invDx;
-        float dv = (dvRight - dvLeft) * invDx;
-        float startX = xLeft;
-        float endX   = xRight;
-        float invZ0, invZ1, invZ2;
+static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, short colorKey)
+{
+    double x, y;
+    int useColorKey = colorKey != -1 ? 1 : 0;
+    float texW = t->texture->width - 1;
+    float texH = t->texture->height - 1;
+    int   texArea = texW * texH;
 
+    float startX = v0->position.x;
+    float endX   = startX;
+    float invZ0, invZ1, invZ2;
 
-        invZ0 = 1.f / v0->position.z;
-        invZ1 = 1.f / v1->position.z;
-        invZ2 = 1.f / v2->position.z;
+    invZ0 = 1.f / v0->position.z;
+    invZ1 = 1.f / v1->position.z;
+    invZ2 = 1.f / v2->position.z;
 
-        //DBG("%.5f %.5f %.5f\r", 1.f/invZ0, 1.f/invZ1, 1.f/invZ2);
-        gfx_setPalette(t->texture->palette);
+    DBG("%.5f %.5f %.5f\r", 1.f/invZ0, 1.f/invZ1, 1.f/invZ2);
+    gfx_setPalette(t->texture->palette);
 
-        for(y = v0->position.y; ; y += yDir)
+    for(y = v0->position.y; ; y += yDir)
+    {
+        float startInvZ, endInvZ, startU = texW, startV = texH, UEnd = texW, VEnd = texH, r1;
+
+        if(type == FLAT_BOTTOM && y > v2->position.y)
         {
-            float u = startU;
-            float v = startV;
-
-            float startInvZ, endInvZ, UStart = texW, VStart = texH, UEnd = texW, VEnd = texH, r1;
-
-            if(type == FLAT_BOTTOM && y > v2->position.y)
+            /*for(x = startX-dxLeft; x <= endX-dxRight; ++x)
             {
-                u -= du;
-                v -= dv;
-                /*for(x = startX-dxLeft; x <= endX-dxRight; ++x)
-                {
-                    unsigned char pixel =  t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
-
-                    if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                        gfx_drawPixel(x, y, pixel, buffer);
-                    u += du;
-                    v += dv;
-                }*/
-                break;
-            }
-            else if ( type == FLAT_TOP && y < v2->position.y)
-                break;
-
-            r1 = (v0->position.y - y) / (v0->position.y - v2->position.y);
-            startInvZ = lerp(invZ0, invZ2, r1);
-            endInvZ = lerp(invZ0, invZ1, r1);
-
-            UStart *= lerp(v0->uv.u, v2->uv.u, r1);
-            VStart *= lerp(v0->uv.v, v2->uv.v, r1);
-            UEnd *= lerp(v0->uv.u, v1->uv.u, r1);
-            VEnd *= lerp(v0->uv.v, v1->uv.v, r1);
-
-            for(x = startX; x <= endX; ++x)
-            {
-                float r = (x - startX) / (endX - startX);
-                float lerpInvZ = lerp(startInvZ, endInvZ, r);
-                float z = 1.f/lerpInvZ;
-                float uu = z * lerp(UStart*startInvZ, UEnd*endInvZ, r);
-                float vv = z * lerp(VStart*startInvZ, VEnd*endInvZ, r);
-
-                // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-                unsigned char pixel = t->texture->data[((int)uu + ((int)vv * t->texture->height)) % texArea];
+                unsigned char pixel =  t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
                 if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
                     gfx_drawPixel(x, y, pixel, buffer);
                 u += du;
                 v += dv;
-            }
-
-            startX += dxLeft;
-            endX   += dxRight;
-            startU += duLeft;
-            startV += dvLeft;
+            }*/
+            break;
         }
+        else if ( type == FLAT_TOP && y < v2->position.y)
+            break;
+
+        r1 = (v0->position.y - y) / (v0->position.y - v2->position.y);
+        startInvZ = lerp(invZ0, invZ2, r1);
+        endInvZ = lerp(invZ0, invZ1, r1);
+
+        startU *= lerp(v0->uv.u, v2->uv.u, r1);
+        startV *= lerp(v0->uv.v, v2->uv.v, r1);
+        UEnd *= lerp(v0->uv.u, v1->uv.u, r1);
+        VEnd *= lerp(v0->uv.v, v1->uv.v, r1);
+
+        for(x = startX; x <= endX; ++x)
+        {
+            float r = (x - startX) / (endX - startX);
+            float lerpInvZ = lerp(startInvZ, endInvZ, r);
+            float z = 1.f/lerpInvZ;
+            float u = z * lerp(startU*startInvZ, UEnd*endInvZ, r);
+            float v = z * lerp(startV*startInvZ, VEnd*endInvZ, r);
+
+            // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
+            unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
+
+            if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
+                gfx_drawPixel(x, y, pixel, buffer);
+        }
+
+        startX += dxLeft;
+        endX   += dxRight;
     }
 }
+
+static void affineTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, double invDy, short colorKey)
+{
+    double x, y;
+    int useColorKey = colorKey != -1 ? 1 : 0;
+    float texW = t->texture->width - 1;
+    float texH = t->texture->height - 1;
+    int   texArea = texW * texH;
+    float duLeft  = texW * (v2->uv.u - v0->uv.u) * invDy;
+    float dvLeft  = texH * (v2->uv.v - v0->uv.v) * invDy;
+    float duRight = texW * (v1->uv.u - v0->uv.u) * invDy;
+    float dvRight = texH * (v1->uv.v - v0->uv.v) * invDy;
+
+    float startU = texW * v0->uv.u;
+    float startV = texH * v0->uv.v;
+    // With triangles the texture gradients (u,v slopes over the triangle surface)
+    // are guaranteed to be constant, so we need to calculate du and dv only once.
+    float invDx = 1.f / (dxRight - dxLeft);
+    float du = (duRight - duLeft) * invDx;
+    float dv = (dvRight - dvLeft) * invDx;
+    float startX = v0->position.x;
+    float endX   = startX;
+
+    gfx_setPalette(t->texture->palette);
+
+    for(y = v0->position.y; ; y += yDir)
+    {
+        float u = startU;
+        float v = startV;
+
+        if(type == FLAT_BOTTOM && y > v2->position.y)
+        {
+            u -= du;
+            v -= dv;
+            /*for(x = startX-dxLeft; x <= endX-dxRight; ++x)
+            {
+                unsigned char pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
+
+                if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
+                    gfx_drawPixel(x, y, pixel, buffer);
+                u += du;
+                v += dv;
+            }*/
+            break;
+        }
+        else if ( type == FLAT_TOP && y < v2->position.y)
+            break;
+
+        for(x = startX; x <= endX; ++x)
+        {
+            // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
+            unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
+
+            if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
+                gfx_drawPixel(x, y, pixel, buffer);
+            u += du;
+            v += dv;
+        }
+
+        startX += dxLeft;
+        endX   += dxRight;
+        startU += duLeft;
+        startV += dvLeft;
+    }
+}
+
