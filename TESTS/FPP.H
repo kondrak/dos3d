@@ -63,7 +63,6 @@ void testFirstPerson()
             // translate position to screen pixels
             square[i].x = (square[i].x * (float)SCREEN_WIDTH)  / (2.0f * square[i].w) + (SCREEN_WIDTH >> 1);
             square[i].y = (square[i].y * (float)SCREEN_HEIGHT) / (2.0f * square[i].w) + (SCREEN_HEIGHT >> 1);
-            square[i].z /= square[i].w;
         }
 
         gfx_clrBuffer(buffer);

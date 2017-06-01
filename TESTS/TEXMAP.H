@@ -7,12 +7,11 @@
 
 typedef struct
 {
-    gfx_Bitmap  *texture;
     gfx_Triangle tris[2];
 } TexQuad;
 
 // helper functions
-void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh);
+void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture);
 void drawTexQuad(TexQuad *q, unsigned char *buffer, enum TextureMapping tm);
 
 // Texture mapping test
@@ -62,10 +61,8 @@ void testTextureMapping()
     //model.m[12] = -20.f;
     //model.m[13] = -20.f;
 
-    quad.texture = &bmp;
-    setupTexQuad(&quad, -20, -20, 20, 20);
+    setupTexQuad(&quad, -20, -20, 20, 20, &bmp);
 
-    screenQuad.texture = quad.texture;
     screenQuad.tris[0] = quad.tris[0];
     screenQuad.tris[1] = quad.tris[1];
 
@@ -155,10 +152,10 @@ void testTextureMapping()
 }
 
 
-void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh)
+void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture)
 {
     q->tris[0].color = 1;
-    q->tris[0].texture = q->texture;
+    q->tris[0].texture = texture;
     q->tris[0].vertices[0].position.x = qx;
     q->tris[0].vertices[0].position.y = qh;
     q->tris[0].vertices[0].position.z = 0;
@@ -179,7 +176,7 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh)
     q->tris[0].vertices[2].uv.v = 0;
 
     q->tris[1].color = 1;
-    q->tris[1].texture = q->texture;
+    q->tris[1].texture = texture;
     q->tris[1].vertices[0].position.x = qx;
     q->tris[1].vertices[0].position.y = qh;
     q->tris[1].vertices[0].position.z = 0;

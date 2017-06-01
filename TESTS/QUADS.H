@@ -5,11 +5,10 @@
 
 typedef struct
 {
-    int color;
     gfx_Triangle tris[2];
 } Quad;
 
-void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh);
+void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh, int color);
 
 // Quad rendering test
 void testQuads()
@@ -66,10 +65,8 @@ void testQuads()
         int qw = (qx + rand()) % 320;
         int qh = (qy + rand()) % 200;
 
-        quad.color = rand() % 103 + 1;
-        setupTestQuad(&quad, qx, qy, qw, qh );
+        setupTestQuad(&quad, qx, qy, qw, qh, rand() % 103 + 1 );
 
-        screenQuad.color = quad.color;
         screenQuad.tris[0] = quad.tris[0];
         screenQuad.tris[1] = quad.tris[1];
         
@@ -85,7 +82,6 @@ void testQuads()
                 screenQuad.tris[k].vertices[i].position = mth_matMulVec(&modelViewProj, &quad.tris[k].vertices[i].position);
                 screenQuad.tris[k].vertices[i].position.x = (screenQuad.tris[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
                 screenQuad.tris[k].vertices[i].position.y = (screenQuad.tris[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
-                screenQuad.tris[k].vertices[i].position.z /= screenQuad.tris[k].vertices[i].position.w;
             }
         }
 
@@ -108,9 +104,9 @@ void testQuads()
     free(buffer);
 }
 
-void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh)
+void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh, int color)
 {
-    q->tris[0].color = q->color;
+    q->tris[0].color = color;
     q->tris[0].texture = NULL;
     q->tris[0].vertices[0].position.x = qx;
     q->tris[0].vertices[0].position.y = qh;
@@ -125,7 +121,7 @@ void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh)
     q->tris[0].vertices[2].position.z = 0;
     q->tris[0].vertices[2].position.w = 1.f;
 
-    q->tris[1].color = q->color;
+    q->tris[1].color = color;
     q->tris[1].texture = NULL;
     q->tris[1].vertices[0].position.x = qx;
     q->tris[1].vertices[0].position.y = qh;

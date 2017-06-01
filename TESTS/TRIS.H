@@ -83,7 +83,6 @@ void testTriangles()
             screenTriangle.vertices[i].position = mth_matMulVec(&modelViewProj, &triangle.vertices[i].position);
             screenTriangle.vertices[i].position.x = (screenTriangle.vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle.vertices[i].position.w) + (SCREEN_WIDTH >> 1);
             screenTriangle.vertices[i].position.y = (screenTriangle.vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle.vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
-            screenTriangle.vertices[i].position.z /= screenTriangle.vertices[i].position.w;
         }
 
         if(paused == 0)
