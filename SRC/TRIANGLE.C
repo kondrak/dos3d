@@ -72,12 +72,6 @@ void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer
         v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
         v3.position.y = v2.position.y;
 
-        // get the z value for v3 by interpolating 1/z, since that can be done using lerp (at this point we skip v3.w, since it won't be relevant anymore)
-        if((v0.position.x - v1.position.x) != 0.0)
-            v3.position.z = 1.0 / lerp(1.0/v1.position.z, 1.0/v0.position.z, (v3.position.x - v1.position.x) / (v0.position.x - v1.position.x));
-        else
-            v3.position.z = v0.position.z;
-
         diff  = mth_vecSub(&v1.position, &v0.position);
         diff2 = mth_vecSub(&v3.position, &v0.position);
 
@@ -87,9 +81,28 @@ void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer
         if(diff.y != 0)
             ratioV = diff2.y / diff.y;
 
-        // lerp the UV mapping for the triangle
-        v3.uv.u = lerp(v0.uv.u, v1.uv.u, ratioU);
-        v3.uv.v = lerp(v0.uv.v, v1.uv.v, ratioV);
+        // lerp Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions
+        if(tm == PERSPECTIVE)
+        {
+            float invV0Z = 1.f/v0.position.z;
+            float invV1Z = 1.f/v1.position.z;
+
+            // get the z value for v3 by interpolating 1/z, since that can be done using lerp (at this point we skip v3.w - it won't be relevant anymore)
+            if((v0.position.x - v1.position.x) != 0.0)
+                v3.position.z = 1.0 / LERP(invV1Z, invV0Z, (v3.position.x - v1.position.x) / (v0.position.x - v1.position.x));
+            else
+                v3.position.z = v0.position.z;
+
+            v3.uv.u = v3.position.z * LERP(v0.uv.u*invV0Z, v1.uv.u*invV1Z, ratioU);
+            v3.uv.v = v3.position.z * LERP(v0.uv.v*invV0Z, v1.uv.v*invV1Z, ratioV);
+        }
+        else
+        {
+            // simple Intercept Theorem is fine in case of affine texture mapping (skip v3.w again)
+            v3.position.z = v0.position.z + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.z - v0.position.z);
+            v3.uv.u = LERP(v0.uv.u, v1.uv.u, ratioU);
+            v3.uv.v = LERP(v0.uv.v, v1.uv.v, ratioV);
+        }
 
         // this swap is done to maintain consistent renderer behavior
         if(v3.position.x < v2.position.x)
@@ -201,21 +214,21 @@ static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, c
             break;
 
         r1 = (v0->position.y - y) / (v0->position.y - v2->position.y);
-        startInvZ = lerp(invZ0, invZ2, r1);
-        endInvZ = lerp(invZ0, invZ1, r1);
+        startInvZ = LERP(invZ0, invZ2, r1);
+        endInvZ = LERP(invZ0, invZ1, r1);
 
-        startU *= lerp(v0->uv.u*invZ0, v2->uv.u*invZ2, r1);
-        startV *= lerp(v0->uv.v*invZ0, v2->uv.v*invZ2, r1);
-        UEnd *= lerp(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
-        VEnd *= lerp(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
+        startU *= LERP(v0->uv.u*invZ0, v2->uv.u*invZ2, r1);
+        startV *= LERP(v0->uv.v*invZ0, v2->uv.v*invZ2, r1);
+        UEnd *= LERP(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
+        VEnd *= LERP(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
 
         for(x = startX; x <= endX; ++x)
         {
             float r = (x - startX) / (endX - startX);
-            float lerpInvZ = lerp(startInvZ, endInvZ, r);
+            float lerpInvZ = LERP(startInvZ, endInvZ, r);
             float z = 1.f/lerpInvZ;
-            float u = z * lerp(startU, UEnd, r);
-            float v = z * lerp(startV, VEnd, r);
+            float u = z * LERP(startU, UEnd, r);
+            float v = z * LERP(startV, VEnd, r);
 
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
             unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
