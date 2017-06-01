@@ -9,7 +9,7 @@ Features
 
 - triangle rasterization
 - quad rasterization (using triangle composition)
-- affine texture mapping
+- affine and perspective corrected texture mapping
 - perspective and view calculations - "DOF6 Camera Ready (tm)"
 - line and point rendering
 - loading, resizing and displaying bitmaps (8bpp) with optional color keying
@@ -23,11 +23,10 @@ The executable is a set of pre-made tests that demonstrate each feature in detai
 ![Screenshot](http://kondrak.info/images/dos3d/2.png?raw=true)
 ![Screenshot](http://kondrak.info/images/dos3d/3.png?raw=true)
 
-Ideas
+TODO
 -------
 
-- use fixed point instead of floating point (and fix precision errors!)
-- apply optimizations detailed in [fatmap2.txt](http://www.multi.fi/~mbc/sources/fatmap2.txt)
-- add perspective correction to texture mapping
+- subpixel and subtexel precision improvements
+- Z-buffer
 - add proper clipping
 - ???
