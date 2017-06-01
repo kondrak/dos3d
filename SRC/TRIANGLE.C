@@ -71,8 +71,12 @@ void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer
 
         v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
         v3.position.y = v2.position.y;
-        v3.position.z = v0.position.z + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.z - v0.position.z);
-        v3.position.w = v2.position.w;
+
+        // get the z value for v3 by interpolating 1/z, since that can be done using lerp (at this point we skip v3.w, since it won't be relevant anymore)
+        if((v0.position.x - v1.position.x) != 0.0)
+            v3.position.z = 1.0 / lerp(1.0/v1.position.z, 1.0/v0.position.z, (v3.position.x - v1.position.x) / (v0.position.x - v1.position.x));
+        else
+            v3.position.z = v0.position.z;
 
         diff  = mth_vecSub(&v1.position, &v0.position);
         diff2 = mth_vecSub(&v3.position, &v0.position);
@@ -174,7 +178,7 @@ static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, c
     invZ1 = 1.f / v1->position.z;
     invZ2 = 1.f / v2->position.z;
 
-    //gfx_setPalette(t->texture->palette);
+    gfx_setPalette(t->texture->palette);
 
     for(y = v0->position.y; ; y += yDir)
     {
@@ -217,7 +221,7 @@ static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, c
             unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
             if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                gfx_drawPixel(x, y, (int)(z)%256, buffer);
+                gfx_drawPixel(x, y, pixel, buffer);
         }
 
         startX += dxLeft;
