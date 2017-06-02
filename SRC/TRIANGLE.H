@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-    enum TextureMapping
+    enum TextureMappingMode
     {
         AFFINE,
         PERSPECTIVE
@@ -25,17 +25,22 @@ extern "C" {
         gfx_Bitmap *texture;
     } gfx_Triangle;
 
+    typedef struct
+    {
+        enum TextureMappingMode texMapMode;
+        short colorKey;
+    } gfx_drawOptions;
+
+    // default draw options initialization since the compiler can't handle struct constructors
+    #define DRAWOPTS_DEFAULT(o) \
+            o.texMapMode = PERSPECTIVE; \
+            o.colorKey   = -1;
+
     /* *** Interface *** */
 
     // draw triangle to buffer (no color keying)
     void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer);
-
-    void gfx_drawTriangleTexMap(const gfx_Triangle *t, unsigned char *buffer, enum TextureMapping tm);
-
-    // draw triangle to buffer with colorKey as the tranpsarent color
-    void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, const short colorKey);
-
-    void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer, const short colorKey, enum TextureMapping tm);
+    void gfx_drawTriangleOpts(const gfx_Triangle *t, unsigned char *buffer, const gfx_drawOptions drawOpts);
 
 #ifdef __cplusplus
 }

@@ -8,18 +8,19 @@
 typedef struct
 {
     gfx_Triangle tris[2];
+    gfx_drawOptions drawOpts;
 } TexQuad;
 
 // helper functions
 void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture);
-void drawTexQuad(TexQuad *q, unsigned char *buffer, enum TextureMapping tm);
+void drawTexQuad(TexQuad *q, unsigned char *buffer, enum TextureMappingMode tm);
 
 // Texture mapping test
 void testTextureMapping()
 {
     const unsigned short *keysPressed;
     TexQuad quad, screenQuad;
-    enum TextureMapping tm = PERSPECTIVE;
+    enum TextureMappingMode tm = PERSPECTIVE;
     int texMapFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 model;
@@ -197,8 +198,9 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *textur
     q->tris[1].vertices[2].uv.v = 0;
 }
 
-void drawTexQuad(TexQuad *q, unsigned char *buffer, enum TextureMapping tm)
+void drawTexQuad(TexQuad *q, unsigned char *buffer, enum TextureMappingMode tm)
 {
-    gfx_drawTriangleTexMap(&q->tris[0], buffer, tm);
-    gfx_drawTriangleTexMap(&q->tris[1], buffer, tm);
+    q->drawOpts.texMapMode = tm;
+    gfx_drawTriangleOpts(&q->tris[0], buffer, q->drawOpts);
+    gfx_drawTriangleOpts(&q->tris[1], buffer, q->drawOpts);
 }

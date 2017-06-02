@@ -21,14 +21,15 @@ typedef struct
 {
     gfx_Bitmap textures[NUM_TEXTURES];
     SceneQuad walls[NUM_WALLS];
+    gfx_drawOptions drawOpts;
 } Scene;
 
 // helper functions
 void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v);
-void drawSceneQuad(SceneQuad *q, unsigned char *buffer, enum TextureMapping tm);
+void drawSceneQuad(SceneQuad *q, unsigned char *buffer, const gfx_drawOptions drawOpts);
 void setupScene(Scene *s);
 void updateScene(Scene *s, mth_Matrix4 *mvp);
-void drawScene(Scene *s, unsigned char *buffer, enum TextureMapping tm);
+void drawScene(Scene *s, unsigned char *buffer, enum TextureMappingMode tm);
 void freeScene(Scene *s);
 
 // Render a simple scene
@@ -36,7 +37,7 @@ void test3DScene()
 {
     const unsigned short *keysPressed;
     Scene scene;
-    enum TextureMapping tm = PERSPECTIVE;
+    enum TextureMappingMode tm = PERSPECTIVE;
     int texMapFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 model;
@@ -159,10 +160,10 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
     q->screenQuad->tris[1] = q->tris[1]; 
 }
 
-void drawSceneQuad(SceneQuad *q, unsigned char *buffer, enum TextureMapping tm)
+void drawSceneQuad(SceneQuad *q, unsigned char *buffer, const gfx_drawOptions drawOpts)
 {
-    gfx_drawTriangleColorKeyTexMap(&q->tris[0], buffer, COLOR_MAGENTA, tm);
-    gfx_drawTriangleColorKeyTexMap(&q->tris[1], buffer, COLOR_MAGENTA, tm);
+    gfx_drawTriangleOpts(&q->tris[0], buffer, drawOpts);
+    gfx_drawTriangleOpts(&q->tris[1], buffer, drawOpts);
 }
 
 void updateScene(Scene *s, mth_Matrix4 *mvp)
@@ -182,7 +183,7 @@ void updateScene(Scene *s, mth_Matrix4 *mvp)
     }
 }
 
-void drawScene(Scene *s, unsigned char *buffer, enum TextureMapping tm)
+void drawScene(Scene *s, unsigned char *buffer, enum TextureMappingMode tm)
 {
     int w;
     static unsigned int bgOffset = 0;
@@ -190,9 +191,12 @@ void drawScene(Scene *s, unsigned char *buffer, enum TextureMapping tm)
     gfx_drawBitmapOffset(&s->textures[0], 0, 0, bgOffset % s->textures[0].width, 0, buffer);
     bgOffset++;
 
+    // update texture mapping mode
+    s->drawOpts.texMapMode = tm;
+
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
-        drawSceneQuad(s->walls[w].screenQuad, buffer, tm);
+        drawSceneQuad(s->walls[w].screenQuad, buffer, s->drawOpts);
 
     // push to screen!
     gfx_updateScreen(buffer);
@@ -204,6 +208,10 @@ void setupScene(Scene *s)
     int i, k;
     gfx_Bitmap textureAtlas = gfx_loadBitmap("images/scene.bmp");
     gfx_Bitmap skyTexture   = gfx_bitmapFromAtlas(&textureAtlas, 0, 0, 256, 128);
+
+    DRAWOPTS_DEFAULT(s->drawOpts);
+    s->drawOpts.colorKey = COLOR_MAGENTA;
+
     s->textures[0] = gfx_resizeBitmap(&skyTexture, 320, 128);
     s->textures[1] = gfx_bitmapFromAtlas(&textureAtlas, 0, 256, 128, 128);
     s->textures[2] = gfx_bitmapFromAtlas(&textureAtlas, 0, 128, 128, 128);

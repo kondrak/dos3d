@@ -10,29 +10,19 @@ enum TriangleType
 };
 
 // internal: perform triangle rendering based on its type
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey, enum TextureMapping tm);
-static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, short colorKey);
-static void affineTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, double invDy, short colorKey);
+static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts);
+static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, const gfx_drawOptions *drawOpts);
+static void affineTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, double invDy, const gfx_drawOptions *drawOpts);
 
 void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer)
 {
-    gfx_drawTriangleColorKey(t, buffer, -1);
+    gfx_drawOptions drawOpts;
+    DRAWOPTS_DEFAULT(drawOpts);
+    gfx_drawTriangleOpts(t, buffer, drawOpts);
 }
 
 /* ***** */
-void gfx_drawTriangleTexMap(const gfx_Triangle *t, unsigned char *buffer, enum TextureMapping tm)
-{
-    // draw triangle to screen buffer without any color keying
-    gfx_drawTriangleColorKeyTexMap(t, buffer, -1, tm);
-}
-
-void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, short colorKey)
-{
-    gfx_drawTriangleColorKeyTexMap(t, buffer, colorKey, AFFINE);
-}
-
-/* ***** */
-void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer, short colorKey, enum TextureMapping tm)
+void gfx_drawTriangleOpts(const gfx_Triangle *t, unsigned char *buffer, const gfx_drawOptions drawOpts)
 {
     gfx_Vertex v0, v1, v2;
 
@@ -58,9 +48,9 @@ void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer
 
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
-        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey, tm);
+        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, &drawOpts);
     else if(v0.position.y == v1.position.y)
-        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey, tm);
+        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, &drawOpts);
     else
     {
         // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
@@ -82,7 +72,7 @@ void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer
             ratioV = diff2.y / diff.y;
 
         // lerp Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions
-        if(tm == PERSPECTIVE)
+        if(drawOpts.texMapMode != AFFINE)
         {
             float invV0Z = 1.f/v0.position.z;
             float invV1Z = 1.f/v1.position.z;
@@ -109,8 +99,8 @@ void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer
             VERTEX_SWAP(v3, v2)
 
         // draw the composition of both triangles to form the desired shape
-        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey, tm);
-        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey, tm);
+        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, &drawOpts);
+        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, &drawOpts);
     }
 }
 
@@ -127,7 +117,7 @@ void gfx_drawTriangleColorKeyTexMap(const gfx_Triangle *t, unsigned char *buffer
  * |     \    |/
  * v2-----v1  v2
  */
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const short colorKey, enum TextureMapping tm)
+static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts)
 {
     double invDy, dxLeft, dxRight, xLeft, xRight;
     double y, yDir = 1;
@@ -168,17 +158,17 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
     }
     else
     {
-        if(tm == AFFINE)
-            affineTextureMap(t, v0, v1, v2, buffer, type, dxLeft, dxRight, yDir, invDy, colorKey);
+        if(drawOpts->texMapMode == AFFINE)
+            affineTextureMap(t, v0, v1, v2, buffer, type, dxLeft, dxRight, yDir, invDy, drawOpts);
         else
-            perspectiveTextureMap(t, v0, v1, v2, buffer, type, dxLeft, dxRight, yDir, colorKey);
+            perspectiveTextureMap(t, v0, v1, v2, buffer, type, dxLeft, dxRight, yDir, drawOpts);
     }
 }
 
-static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, short colorKey)
+static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, const gfx_drawOptions *drawOpts)
 {
     double x, y;
-    int useColorKey = colorKey != -1 ? 1 : 0;
+    int useColorKey = drawOpts->colorKey != -1 ? 1 : 0;
     float texW = t->texture->width - 1;
     float texH = t->texture->height - 1;
     int   texArea = texW * texH;
@@ -233,7 +223,7 @@ static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, c
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
             unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
-            if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
+            if(!useColorKey || (useColorKey && pixel != (unsigned char)drawOpts->colorKey))
                 gfx_drawPixel(x, y, pixel, buffer);
         }
 
@@ -242,10 +232,10 @@ static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, c
     }
 }
 
-static void affineTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, double invDy, short colorKey)
+static void affineTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, double invDy, const gfx_drawOptions *drawOpts)
 {
     double x, y;
-    int useColorKey = colorKey != -1 ? 1 : 0;
+    int useColorKey = drawOpts->colorKey != -1 ? 1 : 0;
     float texW = t->texture->width - 1;
     float texH = t->texture->height - 1;
     int   texArea = texW * texH;
@@ -294,7 +284,7 @@ static void affineTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const 
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
             unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
-            if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
+            if(!useColorKey || (useColorKey && pixel != (unsigned char)drawOpts->colorKey))
                 gfx_drawPixel(x, y, pixel, buffer);
             u += du;
             v += dv;
