@@ -40,7 +40,7 @@ extern "C" {
 
     // draw triangle to buffer (no color keying)
     void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer);
-    void gfx_drawTriangleOpts(const gfx_Triangle *t, unsigned char *buffer, const gfx_drawOptions drawOpts);
+    void gfx_drawTriangleOpts(const gfx_Triangle *t, const gfx_drawOptions drawOpts, unsigned char *buffer);
 
 #ifdef __cplusplus
 }

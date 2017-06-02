@@ -26,10 +26,10 @@ typedef struct
 
 // helper functions
 void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v);
-void drawSceneQuad(SceneQuad *q, unsigned char *buffer, const gfx_drawOptions drawOpts);
+void drawSceneQuad(const SceneQuad *q, const gfx_drawOptions drawOpts, unsigned char *buffer);
 void setupScene(Scene *s);
 void updateScene(Scene *s, mth_Matrix4 *mvp);
-void drawScene(Scene *s, unsigned char *buffer, enum TextureMappingMode tm);
+void drawScene(Scene *s, unsigned char *buffer);
 void freeScene(Scene *s);
 
 // Render a simple scene
@@ -37,7 +37,6 @@ void test3DScene()
 {
     const unsigned short *keysPressed;
     Scene scene;
-    enum TextureMappingMode tm = PERSPECTIVE;
     int texMapFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 model;
@@ -85,7 +84,7 @@ void test3DScene()
     {
         if(keysPressed[KEY_G] && !texMapFlipped)
         {
-            tm = tm == AFFINE ? PERSPECTIVE : AFFINE;
+            scene.drawOpts.texMapMode = scene.drawOpts.texMapMode == AFFINE ? PERSPECTIVE : AFFINE;
             texMapFlipped = 1;
         }
         else if(!keysPressed[KEY_G]) texMapFlipped = 0;
@@ -100,7 +99,7 @@ void test3DScene()
 
         // render!
         gfx_clrBuffer(buffer);
-        drawScene(&scene, buffer, tm);
+        drawScene(&scene, buffer);
 
         keysPressed = kbd_getInput();
     }
@@ -160,10 +159,10 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
     q->screenQuad->tris[1] = q->tris[1]; 
 }
 
-void drawSceneQuad(SceneQuad *q, unsigned char *buffer, const gfx_drawOptions drawOpts)
+void drawSceneQuad(const SceneQuad *q, const gfx_drawOptions drawOpts, unsigned char *buffer)
 {
-    gfx_drawTriangleOpts(&q->tris[0], buffer, drawOpts);
-    gfx_drawTriangleOpts(&q->tris[1], buffer, drawOpts);
+    gfx_drawTriangleOpts(&q->tris[0], drawOpts, buffer);
+    gfx_drawTriangleOpts(&q->tris[1], drawOpts, buffer);
 }
 
 void updateScene(Scene *s, mth_Matrix4 *mvp)
@@ -183,7 +182,7 @@ void updateScene(Scene *s, mth_Matrix4 *mvp)
     }
 }
 
-void drawScene(Scene *s, unsigned char *buffer, enum TextureMappingMode tm)
+void drawScene(Scene *s, unsigned char *buffer)
 {
     int w;
     static unsigned int bgOffset = 0;
@@ -191,12 +190,9 @@ void drawScene(Scene *s, unsigned char *buffer, enum TextureMappingMode tm)
     gfx_drawBitmapOffset(&s->textures[0], 0, 0, bgOffset % s->textures[0].width, 0, buffer);
     bgOffset++;
 
-    // update texture mapping mode
-    s->drawOpts.texMapMode = tm;
-
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
-        drawSceneQuad(s->walls[w].screenQuad, buffer, s->drawOpts);
+        drawSceneQuad(s->walls[w].screenQuad, s->drawOpts, buffer);
 
     // push to screen!
     gfx_updateScreen(buffer);

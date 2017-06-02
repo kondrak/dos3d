@@ -18,11 +18,11 @@ void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer)
 {
     gfx_drawOptions drawOpts;
     DRAWOPTS_DEFAULT(drawOpts);
-    gfx_drawTriangleOpts(t, buffer, drawOpts);
+    gfx_drawTriangleOpts(t, drawOpts, buffer);
 }
 
 /* ***** */
-void gfx_drawTriangleOpts(const gfx_Triangle *t, unsigned char *buffer, const gfx_drawOptions drawOpts)
+void gfx_drawTriangleOpts(const gfx_Triangle *t, const gfx_drawOptions drawOpts, unsigned char *buffer)
 {
     gfx_Vertex v0, v1, v2;
 
