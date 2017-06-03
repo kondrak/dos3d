@@ -3,6 +3,7 @@
 
 #include "src/bitmap.h"
 #include "src/graphics.h"
+#include "src/math.h"
 
 /*
  * Triangle definition and rendering.
@@ -38,9 +39,9 @@ extern "C" {
 
     /* *** Interface *** */
 
-    // draw triangle to buffer (no color keying)
-    void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer);
-    void gfx_drawTriangleOpts(const gfx_Triangle *t, const gfx_drawOptions drawOpts, unsigned char *buffer);
+    // draw triangle to buffer
+    void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, unsigned char *buffer);
+    void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions drawOpts, unsigned char *buffer);
 
 #ifdef __cplusplus
 }

@@ -8,9 +8,7 @@ typedef struct SceneQuad SceneQuad;
 
 typedef struct SceneQuad
 {
-    gfx_Bitmap *texture;
     gfx_Triangle tris[2];
-    SceneQuad *screenQuad;
 } SceneQuad;
 
 #define COLOR_MAGENTA 212
@@ -25,11 +23,10 @@ typedef struct
 } Scene;
 
 // helper functions
-void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v);
-void drawSceneQuad(const SceneQuad *q, const gfx_drawOptions drawOpts, unsigned char *buffer);
+void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v, gfx_Bitmap *texture);
+void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions drawOpts, unsigned char *buffer);
 void setupScene(Scene *s);
-void updateScene(Scene *s, mth_Matrix4 *mvp);
-void drawScene(Scene *s, unsigned char *buffer);
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, unsigned char *buffer);
 void freeScene(Scene *s);
 
 // Render a simple scene
@@ -92,14 +89,11 @@ void test3DScene()
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
-        modelViewProj = mth_matMul(&model, &modelViewProj);      
-
-        // update position of scene items
-        updateScene(&scene, &modelViewProj);
+        modelViewProj = mth_matMul(&model, &modelViewProj);
 
         // render!
         gfx_clrBuffer(buffer);
-        drawScene(&scene, buffer);
+        drawScene(&scene, &modelViewProj, buffer);
 
         keysPressed = kbd_getInput();
     }
@@ -109,10 +103,10 @@ void test3DScene()
 }
 
 
-void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v)
+void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v, gfx_Bitmap *texture)
 {
     q->tris[0].color = 1;
-    q->tris[0].texture = q->texture;
+    q->tris[0].texture = texture;
     q->tris[0].vertices[0].position.x = qx;
     q->tris[0].vertices[0].position.y = qy2;
     q->tris[0].vertices[0].position.z = qz;
@@ -133,7 +127,7 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
     q->tris[0].vertices[2].uv.v = 0;
 
     q->tris[1].color = 1;
-    q->tris[1].texture = q->texture;
+    q->tris[1].texture = texture;
     q->tris[1].vertices[0].position.x = qx;
     q->tris[1].vertices[0].position.y = qy2;
     q->tris[1].vertices[0].position.z = qz;
@@ -151,38 +145,16 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
     q->tris[1].vertices[2].position.z = qz2;
     q->tris[1].vertices[2].position.w = 1.f;
     q->tris[1].vertices[2].uv.u = u;
-    q->tris[1].vertices[2].uv.v = 0;
-    
-    q->screenQuad = (SceneQuad*)malloc(sizeof(SceneQuad));
-    q->screenQuad->texture = q->texture;
-    q->screenQuad->tris[0] = q->tris[0];
-    q->screenQuad->tris[1] = q->tris[1]; 
+    q->tris[1].vertices[2].uv.v = 0; 
 }
 
-void drawSceneQuad(const SceneQuad *q, const gfx_drawOptions drawOpts, unsigned char *buffer)
+void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions drawOpts, unsigned char *buffer)
 {
-    gfx_drawTriangleOpts(&q->tris[0], drawOpts, buffer);
-    gfx_drawTriangleOpts(&q->tris[1], drawOpts, buffer);
+    gfx_drawTriangleOpts(&q->tris[0], mvp, drawOpts, buffer);
+    gfx_drawTriangleOpts(&q->tris[1], mvp, drawOpts, buffer);
 }
 
-void updateScene(Scene *s, mth_Matrix4 *mvp)
-{
-    int i, k, w;
-    for(w = 0; w < NUM_WALLS; w++)
-    {
-        for(k = 0; k < 2; k++)
-        {
-            for(i = 0; i < 3; i++)
-            {
-                s->walls[w].screenQuad->tris[k].vertices[i].position = mth_matMulVec(mvp, &s->walls[w].tris[k].vertices[i].position);
-                s->walls[w].screenQuad->tris[k].vertices[i].position.x = (s->walls[w].screenQuad->tris[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * s->walls[w].screenQuad->tris[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
-                s->walls[w].screenQuad->tris[k].vertices[i].position.y = (s->walls[w].screenQuad->tris[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * s->walls[w].screenQuad->tris[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
-            }
-        }
-    }
-}
-
-void drawScene(Scene *s, unsigned char *buffer)
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, unsigned char *buffer)
 {
     int w;
     static unsigned int bgOffset = 0;
@@ -192,7 +164,7 @@ void drawScene(Scene *s, unsigned char *buffer)
 
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
-        drawSceneQuad(s->walls[w].screenQuad, s->drawOpts, buffer);
+        drawSceneQuad(&s->walls[w], mvp, s->drawOpts, buffer);
 
     // push to screen!
     gfx_updateScreen(buffer);
@@ -219,15 +191,8 @@ void setupScene(Scene *s)
     // atlas bitmap is no longer needed at this point
     gfx_freeBitmap(&textureAtlas);
 
-    s->walls[0].texture = &s->textures[2];
-    s->walls[1].texture = &s->textures[1];
-    s->walls[2].texture = &s->textures[3];
-    s->walls[3].texture = &s->textures[3];
-    s->walls[4].texture = &s->textures[4];
-    s->walls[5].texture = &s->textures[5];
-    s->walls[6].texture = &s->textures[6];
     // floor
-    setupSceneQuad(&s->walls[0], -40, -20, 0, 40, 20, 0, 2.f, 2.f);
+    setupSceneQuad(&s->walls[0], -40, -20, 0, 40, 20, 0, 2.f, 2.f, &s->textures[2]);
 
     //rotate the floor
     for(k = 0; k < 2; ++k)
@@ -239,17 +204,17 @@ void setupScene(Scene *s)
     } 
 
     // back wall
-    setupSceneQuad(&s->walls[1], -80, -120, -120, 80, 40, -120, 1.f, 1.f);
+    setupSceneQuad(&s->walls[1], -80, -120, -120, 80, 40, -120, 1.f, 1.f, &s->textures[1]);
     // right wall
-    setupSceneQuad(&s->walls[2],  80, -40, -120, 100, 40, -40, 1.f, 1.f);
+    setupSceneQuad(&s->walls[2],  80, -40, -120, 100, 40, -40, 1.f, 1.f, &s->textures[3]);
     // left wall
-    setupSceneQuad(&s->walls[3], -100, -40, -40, -80, 40, -120, 1.f, 1.f);
+    setupSceneQuad(&s->walls[3], -100, -40, -40, -80, 40, -120, 1.f, 1.f, &s->textures[3]);
     // baron of hell
-    setupSceneQuad(&s->walls[4], 20, -20, -65, 84, 44, -65, 1.f, 1.f);
+    setupSceneQuad(&s->walls[4], 20, -20, -65, 84, 44, -65, 1.f, 1.f, &s->textures[4]);
     // cacodemon
-    setupSceneQuad(&s->walls[5], -60, -20, -95, 4, 44, -95, 1.f, 1.f);
+    setupSceneQuad(&s->walls[5], -60, -20, -95, 4, 44, -95, 1.f, 1.f, &s->textures[5]);
     // shotgun guy
-    setupSceneQuad(&s->walls[6], -100, -20, -42, -34, 44, -42, 1.f, 1.f);
+    setupSceneQuad(&s->walls[6], -100, -20, -42, -34, 44, -42, 1.f, 1.f, &s->textures[6]);
 }
 
 void freeScene(Scene *s)
@@ -257,7 +222,4 @@ void freeScene(Scene *s)
     int w;
     for(w = 0; w < NUM_TEXTURES; w++)
         gfx_freeBitmap(&s->textures[w]);
-    
-    for(w = 0; w < NUM_WALLS; w++)
-        free(s->walls[w].screenQuad);
 }

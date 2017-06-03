@@ -13,13 +13,13 @@ typedef struct
 
 // helper functions
 void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture);
-void drawTexQuad(const TexQuad *q, unsigned char *buffer);
+void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, unsigned char *buffer);
 
 // Texture mapping test
 void testTextureMapping()
 {
     const unsigned short *keysPressed;
-    TexQuad quad, screenQuad;
+    TexQuad quad;
     int texMapFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 model;
@@ -62,9 +62,6 @@ void testTextureMapping()
     //model.m[13] = -20.f;
 
     setupTexQuad(&quad, -20, -20, 20, 20, &bmp);
-
-    screenQuad.tris[0] = quad.tris[0];
-    screenQuad.tris[1] = quad.tris[1];
 
     keysPressed = kbd_getInput();
 
@@ -128,21 +125,10 @@ void testTextureMapping()
         }
         else if(!keysPressed[KEY_G]) texMapFlipped = 0;
 
-        for(k = 0; k < 2; k++)
-        {
-            for(i = 0; i < 3; i++)
-            {
-                screenQuad.tris[k].vertices[i].position = mth_matMulVec(&modelViewProj, &quad.tris[k].vertices[i].position);
-                screenQuad.tris[k].vertices[i].position.x = (screenQuad.tris[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
-                screenQuad.tris[k].vertices[i].position.y = (screenQuad.tris[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
-            }
-        }
-
         gfx_clrBuffer(buffer);
         fprintf(stdout, quad.drawOpts.texMapMode == AFFINE ? "Affine\r" : "Perspective\r");
 
-        screenQuad.drawOpts = quad.drawOpts;
-        drawTexQuad(&screenQuad, buffer);
+        drawTexQuad(&quad, &modelViewProj, buffer);
         gfx_updateScreen(buffer);
 
         keysPressed = kbd_getInput();
@@ -201,8 +187,8 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *textur
     q->tris[1].vertices[2].uv.v = 0;
 }
 
-void drawTexQuad(const TexQuad *q, unsigned char *buffer)
+void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, unsigned char *buffer)
 {
-    gfx_drawTriangleOpts(&q->tris[0], q->drawOpts, buffer);
-    gfx_drawTriangleOpts(&q->tris[1], q->drawOpts, buffer);
+    gfx_drawTriangleOpts(&q->tris[0], mvp, q->drawOpts, buffer);
+    gfx_drawTriangleOpts(&q->tris[1], mvp, q->drawOpts, buffer);
 }

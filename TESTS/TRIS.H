@@ -8,8 +8,8 @@ void testTriangles()
 {
     const unsigned short *keysPressed;
     gfx_Camera cam;
-    int i, paused = 0, numTris = 0;
-    gfx_Triangle triangle, screenTriangle;
+    int paused = 0, numTris = 0;
+    gfx_Triangle triangle;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
@@ -70,24 +70,14 @@ void testTriangles()
         triangle.vertices[2].position.z = 0;
         triangle.vertices[2].position.w = 1.f;
 
-        screenTriangle.color = triangle.color;
-        screenTriangle.texture = NULL;
-        
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
-        for(i = 0; i < 3; i++)
-        {
-            screenTriangle.vertices[i].position = mth_matMulVec(&modelViewProj, &triangle.vertices[i].position);
-            screenTriangle.vertices[i].position.x = (screenTriangle.vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenTriangle.vertices[i].position.w) + (SCREEN_WIDTH >> 1);
-            screenTriangle.vertices[i].position.y = (screenTriangle.vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenTriangle.vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
-        }
-
         if(paused == 0)
         {
-            gfx_drawTriangle(&screenTriangle, buffer);
+            gfx_drawTriangle(&triangle, &modelViewProj, buffer);
             gfx_updateScreen(buffer);
             fprintf(stdout, "Triangles rendered: %d\r", ++numTris);
             fflush(stdout);

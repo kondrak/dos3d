@@ -15,8 +15,8 @@ void testQuads()
 {
     const unsigned short *keysPressed;
     gfx_Camera cam;
-    int i,k , paused = 0, numQuads = 0;
-    Quad quad, screenQuad;
+    int paused = 0, numQuads = 0;
+    Quad quad;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
@@ -67,28 +67,15 @@ void testQuads()
 
         setupTestQuad(&quad, qx, qy, qw, qh, rand() % 103 + 1 );
 
-        screenQuad.tris[0] = quad.tris[0];
-        screenQuad.tris[1] = quad.tris[1];
-        
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
-        for(k = 0; k < 2; k++)
-        {
-            for(i = 0; i < 3; i++)
-            {
-                screenQuad.tris[k].vertices[i].position = mth_matMulVec(&modelViewProj, &quad.tris[k].vertices[i].position);
-                screenQuad.tris[k].vertices[i].position.x = (screenQuad.tris[k].vertices[i].position.x * (float)SCREEN_WIDTH)  / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_WIDTH >> 1);
-                screenQuad.tris[k].vertices[i].position.y = (screenQuad.tris[k].vertices[i].position.y * (float)SCREEN_HEIGHT) / (2.0f * screenQuad.tris[k].vertices[i].position.w) + (SCREEN_HEIGHT >> 1);
-            }
-        }
-
         if(paused == 0)
         {
-            gfx_drawTriangle(&screenQuad.tris[0], buffer);
-            gfx_drawTriangle(&screenQuad.tris[1], buffer);
+            gfx_drawTriangle(&quad.tris[0], &modelViewProj, buffer);
+            gfx_drawTriangle(&quad.tris[1], &modelViewProj, buffer);
             gfx_updateScreen(buffer);
             fprintf(stdout, "Quads rendered: %d\r", ++numQuads);
             fflush(stdout);

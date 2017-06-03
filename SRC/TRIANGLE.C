@@ -14,15 +14,15 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
 static void perspectiveTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, const gfx_drawOptions *drawOpts);
 static void affineTextureMap(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, double dxLeft, double dxRight, double yDir, double invDy, const gfx_drawOptions *drawOpts);
 
-void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer)
+void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, unsigned char *buffer)
 {
     gfx_drawOptions drawOpts;
     DRAWOPTS_DEFAULT(drawOpts);
-    gfx_drawTriangleOpts(t, drawOpts, buffer);
+    gfx_drawTriangleOpts(t, matrix, drawOpts, buffer);
 }
 
 /* ***** */
-void gfx_drawTriangleOpts(const gfx_Triangle *t, const gfx_drawOptions drawOpts, unsigned char *buffer)
+void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions drawOpts, unsigned char *buffer)
 {
     gfx_Vertex v0, v1, v2;
 
@@ -30,18 +30,25 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const gfx_drawOptions drawOpts,
     v1 = t->vertices[1];
     v2 = t->vertices[2];
 
+    // transform the vertices
+    v0.position = mth_matMulVec(matrix, &v0.position);
+    v1.position = mth_matMulVec(matrix, &v1.position);
+    v2.position = mth_matMulVec(matrix, &v2.position);
+
+    // transform x and y of each vertex to screen coordinates
+    v0.position.x = (v0.position.x * (float)SCREEN_WIDTH)  / (2.0f * v0.position.w) + (SCREEN_WIDTH >> 1);
+    v0.position.y = (v0.position.y * (float)SCREEN_HEIGHT) / (2.0f * v0.position.w) + (SCREEN_HEIGHT >> 1);
+    v1.position.x = (v1.position.x * (float)SCREEN_WIDTH)  / (2.0f * v1.position.w) + (SCREEN_WIDTH >> 1);
+    v1.position.y = (v1.position.y * (float)SCREEN_HEIGHT) / (2.0f * v1.position.w) + (SCREEN_HEIGHT >> 1);
+    v2.position.x = (v2.position.x * (float)SCREEN_WIDTH)  / (2.0f * v2.position.w) + (SCREEN_WIDTH >> 1);
+    v2.position.y = (v2.position.y * (float)SCREEN_HEIGHT) / (2.0f * v2.position.w) + (SCREEN_HEIGHT >> 1);    
+
     // sort vertices so that v0 is topmost, then v2, then v1
     if(v2.position.y > v1.position.y)
-    {
-        v2 = t->vertices[1];
-        v1 = t->vertices[2];
-    }
+        VERTEX_SWAP(v1, v2)
 
     if(v0.position.y > v1.position.y)
-    {
-        v0 = v1;
-        v1 = t->vertices[0];
-    }
+        VERTEX_SWAP(v0, v1)
 
     if(v0.position.y > v2.position.y)
         VERTEX_SWAP(v0, v2)
