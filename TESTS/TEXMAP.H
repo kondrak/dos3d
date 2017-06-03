@@ -189,6 +189,6 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *textur
 
 void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, unsigned char *buffer)
 {
-    gfx_drawTriangleOpts(&q->tris[0], mvp, q->drawOpts, buffer);
-    gfx_drawTriangleOpts(&q->tris[1], mvp, q->drawOpts, buffer);
+    gfx_drawTriangleOpts(&q->tris[0], mvp, &q->drawOpts, buffer);
+    gfx_drawTriangleOpts(&q->tris[1], mvp, &q->drawOpts, buffer);
 }

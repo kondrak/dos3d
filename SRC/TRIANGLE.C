@@ -18,11 +18,11 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, unsigned
 {
     gfx_drawOptions drawOpts;
     DRAWOPTS_DEFAULT(drawOpts);
-    gfx_drawTriangleOpts(t, matrix, drawOpts, buffer);
+    gfx_drawTriangleOpts(t, matrix, &drawOpts, buffer);
 }
 
 /* ***** */
-void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions drawOpts, unsigned char *buffer)
+void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions *drawOpts, unsigned char *buffer)
 {
     gfx_Vertex v0, v1, v2;
 
@@ -55,9 +55,9 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
 
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
-        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, &drawOpts);
+        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, drawOpts);
     else if(v0.position.y == v1.position.y)
-        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, &drawOpts);
+        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, drawOpts);
     else
     {
         // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
@@ -79,7 +79,7 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
             ratioV = diff2.y / diff.y;
 
         // lerp Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions
-        if(drawOpts.texMapMode != AFFINE)
+        if(drawOpts->texMapMode != AFFINE)
         {
             float invV0Z = 1.f/v0.position.z;
             float invV1Z = 1.f/v1.position.z;
@@ -106,8 +106,8 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
             VERTEX_SWAP(v3, v2)
 
         // draw the composition of both triangles to form the desired shape
-        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, &drawOpts);
-        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, &drawOpts);
+        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, drawOpts);
+        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, drawOpts);
     }
 }
 

@@ -24,7 +24,7 @@ typedef struct
 
 // helper functions
 void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v, gfx_Bitmap *texture);
-void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions drawOpts, unsigned char *buffer);
+void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer);
 void setupScene(Scene *s);
 void drawScene(const Scene *s, const mth_Matrix4 *mvp, unsigned char *buffer);
 void freeScene(Scene *s);
@@ -148,7 +148,7 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
     q->tris[1].vertices[2].uv.v = 0; 
 }
 
-void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions drawOpts, unsigned char *buffer)
+void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer)
 {
     gfx_drawTriangleOpts(&q->tris[0], mvp, drawOpts, buffer);
     gfx_drawTriangleOpts(&q->tris[1], mvp, drawOpts, buffer);
@@ -164,7 +164,7 @@ void drawScene(const Scene *s, const mth_Matrix4 *mvp, unsigned char *buffer)
 
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
-        drawSceneQuad(&s->walls[w], mvp, s->drawOpts, buffer);
+        drawSceneQuad(&s->walls[w], mvp, &s->drawOpts, buffer);
 
     // push to screen!
     gfx_updateScreen(buffer);
