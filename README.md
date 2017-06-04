@@ -9,6 +9,7 @@ Features
 
 - triangle rasterization
 - quad rasterization (using triangle composition)
+- front/back face culling (CCW surfaces are considered "back")
 - affine and perspective corrected texture mapping
 - perspective and view calculations - "DOF6 Camera Ready (tm)"
 - line and point rendering
