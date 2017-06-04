@@ -4,6 +4,7 @@
 #include "src/math.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 typedef struct
 {
@@ -17,6 +18,8 @@ void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions
 // Texture mapping test
 void testTextureMapping()
 {
+    clock_t now = clock();
+    clock_t last = now;
     const unsigned short *keysPressed;
     TexQuad quad;
     int texMapFlipped = 0;
@@ -66,12 +69,15 @@ void testTextureMapping()
     setupTexQuad(&quad, -20, -20, 20, 20, &bmp);
 
     keysPressed = kbd_getInput();
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {
         int i, k;
+        float dt;
+        now = clock();
+        dt = (float)(now - last) / CLOCKS_PER_SEC;
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
@@ -81,7 +87,7 @@ void testTextureMapping()
             {
                 for(i = 0; i < 3; i++)
                 {
-                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, 0.01f, 0.f, 1.f, 0.f);
+                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, 1.75f*dt, 0.f, 1.f, 0.f);
                 }
             }
         }
@@ -92,7 +98,7 @@ void testTextureMapping()
             {
                 for(i = 0; i < 3; i++)
                 {
-                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, -0.01f, 0.f, 1.f, 0.f);
+                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, -1.75f*dt, 0.f, 1.f, 0.f);
                 }
             }
         }
@@ -103,7 +109,7 @@ void testTextureMapping()
             {
                 for(i = 0; i < 3; i++)
                 {
-                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, 0.01f, 1.f, 0.f, 0.f);
+                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, 1.75f*dt, 1.f, 0.f, 0.f);
                 }
             }
         }
@@ -114,7 +120,7 @@ void testTextureMapping()
             {
                 for(i = 0; i < 3; i++)
                 {
-                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, -0.01f, 1.f, 0.f, 0.f);
+                    mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, -1.75f*dt, 1.f, 0.f, 0.f);
                 }
             }
         }
@@ -135,6 +141,7 @@ void testTextureMapping()
 
         keysPressed = kbd_getInput();
         fflush(stdout);
+        last = now;
     }
 
     free(buffer);
