@@ -21,6 +21,17 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, unsigned
     gfx_drawTriangleOpts(t, matrix, &drawOpts, buffer);
 }
 
+#define COORD_CLIPPED(p0, p1, p2, c) ( (p0.c < -p0.w && p1.c < -p1.w && p2.c < -p2.w) || \
+                                       (p0.c >  p0.w && p1.c >  p1.w && p2.c >  p2.w ) )
+#define X_CLIPPED(p0, p1, p2)        COORD_CLIPPED(p0, p1, p2, x)
+#define Y_CLIPPED(p0, p1, p2)        COORD_CLIPPED(p0, p1, p2, y)
+#define Z_CLIPPED(p0, p1, p2)        ( (p0.z < 0    && p1.z < 0    && p2.z < 0) || \
+                                       (p0.z > p0.w && p1.z > p1.w && p2.z > p2.w) )
+
+#define TRIANGLE_OFFSCREEN(v0, v1, v2) ( X_CLIPPED(v0.position, v1.position, v2.position) || \
+                                         Y_CLIPPED(v0.position, v1.position, v2.position) || \
+                                         Z_CLIPPED(v0.position, v1.position, v2.position) )
+
 /* ***** */
 void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions *drawOpts, unsigned char *buffer)
 {
@@ -34,6 +45,10 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
     v0.position = mth_matMulVec(matrix, &v0.position);
     v1.position = mth_matMulVec(matrix, &v1.position);
     v2.position = mth_matMulVec(matrix, &v2.position);
+
+    // skip rendering if triangle is completely offscreen
+    if(TRIANGLE_OFFSCREEN(v0, v1, v2))
+        return;
 
     // transform x and y of each vertex to screen coordinates
     v0.position.x = (v0.position.x * (float)SCREEN_WIDTH)  / (2.0f * v0.position.w) + (SCREEN_WIDTH >> 1);

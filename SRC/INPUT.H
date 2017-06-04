@@ -20,7 +20,7 @@ enum kbd_KeyCode
     KEY_0 = 11,
     KEY_Q = 16,
     KEY_W = 17,
-    KEY_R = 18,
+    KEY_R = 19,
     KEY_A = 30,
     KEY_S = 31,
     KEY_D = 32,

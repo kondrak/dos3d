@@ -1,22 +1,21 @@
 #include "src/camera.h"
-#include "src/graphics.h"
+#include "src/triangle.h"
 #include <stdlib.h>
 
 // First person WASD camera
 void testFirstPerson()
 {
     const unsigned short *keysPressed;
-    unsigned int i;
     mth_Vector4 ts, rs;
-    mth_Vector4 square[4];
     gfx_Camera cam;
+    gfx_Triangle triangle;
     mth_Matrix4 viewProj;
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     // setup camera
     cam.position.x = 0;
     cam.position.y = 0;
-    cam.position.z = 1.f;
+    cam.position.z = 40.f;
     cam.position.w = 1.f;
 
     cam.up.x = 0.f;
@@ -34,6 +33,23 @@ void testFirstPerson()
     cam.target.z = -1.f;
     cam.target.w = 1.f;
     
+    triangle.color = 3;
+    triangle.texture = NULL;
+    triangle.vertices[0].position.x = -10;
+    triangle.vertices[0].position.y = 10;
+    triangle.vertices[0].position.z = 0;
+    triangle.vertices[0].position.w = 1.f;
+
+    triangle.vertices[1].position.x = 10;
+    triangle.vertices[1].position.y = 0;
+    triangle.vertices[1].position.z = 0;
+    triangle.vertices[1].position.w = 1.f;
+
+    triangle.vertices[2].position.x = -10;
+    triangle.vertices[2].position.y = 0;
+    triangle.vertices[2].position.z = 0;
+    triangle.vertices[2].position.w = 1.f;
+
     if(!buffer)
     {
         printf("Out of memory!");
@@ -44,34 +60,12 @@ void testFirstPerson()
 
     while(!keysPressed[KEY_ESC])
     {
-        for(i = 0; i < 4; i++)
-        {
-            square[i].x = 0 + 50*(i%2);
-            square[i].y = 0 + 50*(i > 1 ? 1 : 0);
-            square[i].z = -80.f;
-            square[i].w = 1.f;
-        }
-
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
+        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 500.f);
         viewProj = mth_matMul(&cam.view, &cam.projection);
 
-        for(i = 0; i < 4; i++)
-        {
-            square[i] = mth_matMulVec(&viewProj, &square[i]);
-
-            // translate position to screen pixels
-            square[i].x = (square[i].x * (float)SCREEN_WIDTH)  / (2.0f * square[i].w) + (SCREEN_WIDTH >> 1);
-            square[i].y = (square[i].y * (float)SCREEN_HEIGHT) / (2.0f * square[i].w) + (SCREEN_HEIGHT >> 1);
-        }
-
         gfx_clrBuffer(buffer);
-
-        gfx_drawLineVec(&square[0], &square[1], 3, buffer);
-        gfx_drawLineVec(&square[1], &square[3], 3, buffer);
-        gfx_drawLineVec(&square[0], &square[2], 3, buffer);
-        gfx_drawLineVec(&square[2], &square[3], 3, buffer);
-
+        gfx_drawTriangle(&triangle, &viewProj, buffer);
         gfx_updateScreen(buffer);
 
         keysPressed = kbd_getInput();
@@ -103,13 +97,13 @@ void testFirstPerson()
             cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
-        if(keysPressed[KEY_PGUP])
+        if(keysPressed[KEY_R])
         {
             mth_rotateVecAxisAngle(&cam.target, -0.001f, cam.right.x, cam.right.y, cam.right.z);
-            cam.right = mth_crossProduct(&cam.target, &cam.up);
+            cam.up = mth_crossProduct(&cam.right, &cam.target);
         }
 
-        if(keysPressed[KEY_PGDN])
+        if(keysPressed[KEY_F])
         {
             mth_rotateVecAxisAngle(&cam.target, 0.001f, cam.right.x, cam.right.y, cam.right.z);
             cam.up = mth_crossProduct(&cam.right, &cam.target);
