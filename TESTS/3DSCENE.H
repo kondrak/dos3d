@@ -19,14 +19,13 @@ typedef struct
 {
     gfx_Bitmap textures[NUM_TEXTURES];
     SceneQuad walls[NUM_WALLS];
-    gfx_drawOptions drawOpts;
 } Scene;
 
 // helper functions
 void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v, gfx_Bitmap *texture);
 void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer);
 void setupScene(Scene *s);
-void drawScene(const Scene *s, const mth_Matrix4 *mvp, unsigned char *buffer);
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer);
 void freeScene(Scene *s);
 
 // Render a simple scene
@@ -36,11 +35,13 @@ void test3DScene()
     Scene scene;
     int texMapFlipped = 0;
     gfx_Camera cam;
+    gfx_drawOptions drawOpts;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
     unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
-    setupScene(&scene);
+    DRAWOPTS_DEFAULT(drawOpts);
+    drawOpts.colorKey = COLOR_MAGENTA;
     
     if(!buffer)
     {
@@ -48,6 +49,7 @@ void test3DScene()
         exit(1);
     }
 
+    setupScene(&scene);
     mth_matIdentity(&model);
     mth_matIdentity(&modelViewProj);
 
@@ -81,7 +83,7 @@ void test3DScene()
     {
         if(keysPressed[KEY_G] && !texMapFlipped)
         {
-            scene.drawOpts.texMapMode = scene.drawOpts.texMapMode == AFFINE ? PERSPECTIVE : AFFINE;
+            drawOpts.texMapMode = drawOpts.texMapMode == AFFINE ? PERSPECTIVE : AFFINE;
             texMapFlipped = 1;
         }
         else if(!keysPressed[KEY_G]) texMapFlipped = 0;
@@ -93,7 +95,7 @@ void test3DScene()
 
         // render!
         gfx_clrBuffer(buffer);
-        drawScene(&scene, &modelViewProj, buffer);
+        drawScene(&scene, &modelViewProj, &drawOpts, buffer);
 
         keysPressed = kbd_getInput();
     }
@@ -154,7 +156,7 @@ void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOpt
     gfx_drawTriangleOpts(&q->tris[1], mvp, drawOpts, buffer);
 }
 
-void drawScene(const Scene *s, const mth_Matrix4 *mvp, unsigned char *buffer)
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer)
 {
     int w;
     static unsigned int bgOffset = 0;
@@ -164,7 +166,7 @@ void drawScene(const Scene *s, const mth_Matrix4 *mvp, unsigned char *buffer)
 
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
-        drawSceneQuad(&s->walls[w], mvp, &s->drawOpts, buffer);
+        drawSceneQuad(&s->walls[w], mvp, drawOpts, buffer);
 
     // push to screen!
     gfx_updateScreen(buffer);
@@ -176,9 +178,6 @@ void setupScene(Scene *s)
     int i, k;
     gfx_Bitmap textureAtlas = gfx_loadBitmap("images/scene.bmp");
     gfx_Bitmap skyTexture   = gfx_bitmapFromAtlas(&textureAtlas, 0, 0, 256, 128);
-
-    DRAWOPTS_DEFAULT(s->drawOpts);
-    s->drawOpts.colorKey = COLOR_MAGENTA;
 
     s->textures[0] = gfx_resizeBitmap(&skyTexture, 320, 128);
     s->textures[1] = gfx_bitmapFromAtlas(&textureAtlas, 0, 256, 128, 128);
