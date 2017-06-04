@@ -15,8 +15,15 @@ extern "C" {
 
     enum TextureMappingMode
     {
-        AFFINE,
-        PERSPECTIVE
+        TM_AFFINE,
+        TM_PERSPECTIVE
+    };
+
+    enum FaceCullingMode
+    {
+        FC_BACK,
+        FC_FRONT,
+        FC_NONE
     };
 
     typedef struct
@@ -29,12 +36,14 @@ extern "C" {
     typedef struct
     {
         enum TextureMappingMode texMapMode;
+        enum FaceCullingMode cullMode;
         short colorKey;
     } gfx_drawOptions;
 
     // default draw options initialization since the compiler can't handle struct constructors
     #define DRAWOPTS_DEFAULT(o) \
-            o.texMapMode = PERSPECTIVE; \
+            o.texMapMode = TM_PERSPECTIVE; \
+            o.cullMode = FC_NONE; \
             o.colorKey   = -1;
 
     /* *** Interface *** */

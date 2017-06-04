@@ -121,14 +121,14 @@ void testTextureMapping()
 
         if(keysPressed[KEY_G] && !texMapFlipped)
         {
-            drawOpts.texMapMode = drawOpts.texMapMode == AFFINE ? PERSPECTIVE : AFFINE;
+            drawOpts.texMapMode = drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
             texMapFlipped = 1;
             
         }
         else if(!keysPressed[KEY_G]) texMapFlipped = 0;
 
         gfx_clrBuffer(buffer);
-        fprintf(stdout, drawOpts.texMapMode == AFFINE ? "Affine\r" : "Perspective\r");
+        fprintf(stdout, drawOpts.texMapMode == TM_AFFINE ? "Affine\r" : "Perspective\r");
 
         drawTexQuad(&quad, &modelViewProj, &drawOpts, buffer);
         gfx_updateScreen(buffer);

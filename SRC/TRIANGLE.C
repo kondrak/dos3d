@@ -50,6 +50,20 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
     if(TRIANGLE_OFFSCREEN(v0, v1, v2))
         return;
 
+    // test if triangle face should be back/front face culled
+    if(drawOpts->cullMode != FC_NONE)
+    {
+        mth_Vector4 d1 = mth_vecSub(&v1.position, &v0.position);
+        mth_Vector4 d2 = mth_vecSub(&v2.position, &v0.position);
+        mth_Vector4 n  = mth_crossProduct(&d1, &d2);
+        double dp = mth_dotProduct(&v0.position, &n);
+        
+        if(drawOpts->cullMode == FC_BACK && dp >= 0)
+            return;
+        else if(drawOpts->cullMode == FC_FRONT && dp < 0)
+            return;
+    }
+
     // transform x and y of each vertex to screen coordinates
     v0.position.x = (v0.position.x * (float)SCREEN_WIDTH)  / (2.0f * v0.position.w) + (SCREEN_WIDTH >> 1);
     v0.position.y = (v0.position.y * (float)SCREEN_HEIGHT) / (2.0f * v0.position.w) + (SCREEN_HEIGHT >> 1);
@@ -94,7 +108,7 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
             ratioV = diff2.y / diff.y;
 
         // lerp Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions
-        if(drawOpts->texMapMode != AFFINE)
+        if(drawOpts->texMapMode != TM_AFFINE)
         {
             float invV0Z = 1.f/v0.position.z;
             float invV1Z = 1.f/v1.position.z;
@@ -180,7 +194,7 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
     }
     else
     {
-        if(drawOpts->texMapMode == AFFINE)
+        if(drawOpts->texMapMode == TM_AFFINE)
             affineTextureMap(t, v0, v1, v2, buffer, type, dxLeft, dxRight, yDir, invDy, drawOpts);
         else
             perspectiveTextureMap(t, v0, v1, v2, buffer, type, dxLeft, dxRight, yDir, drawOpts);

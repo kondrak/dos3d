@@ -83,7 +83,7 @@ void test3DScene()
     {
         if(keysPressed[KEY_G] && !texMapFlipped)
         {
-            drawOpts.texMapMode = drawOpts.texMapMode == AFFINE ? PERSPECTIVE : AFFINE;
+            drawOpts.texMapMode = drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
             texMapFlipped = 1;
         }
         else if(!keysPressed[KEY_G]) texMapFlipped = 0;
