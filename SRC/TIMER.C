@@ -2,6 +2,8 @@
 #include <conio.h>
 #include <dos.h>
 
+#define ASM_TIMER
+
 typedef void (__interrupt* INTFUNCPTR)();
 
 INTFUNCPTR oldTimerInterrupt; // Original interrupt handler
@@ -26,7 +28,16 @@ void __interrupt timerHandler()
     }
     else
     {
-        outp(0x20, 0x20); // Acknowledge interrupt
+        // Acknowledge interrupt
+#ifdef ASM_TIMER
+        __asm
+        {
+            mov al, 20h
+            out 20h, al
+        }
+#else
+    outp(0x20, 0x20);
+#endif
     }
 }
 
@@ -52,9 +63,21 @@ void tmr_start()
     int386x(0x21, &r, &r, &s);
 
     /* Set resolution of timer chip to 1ms: */
+#ifdef ASM_TIMER
+    __asm
+    {
+        mov al, 36h
+        out 43h, al
+        mov al, 4Fh
+        out 40h, al
+        mov al, 04h
+        out 40h, al
+    }
+#else
     outp(0x43, 0x36);
     outp(0x40, (unsigned char)(1103 & 0xff));
     outp(0x40, (unsigned char)((1103 >> 8) & 0xff));
+#endif
     _enable();
 }
 
@@ -73,8 +96,20 @@ void tmr_finish()
     int386x(0x21, &r, &r, &s);
  
  /* Reset timer chip resolution to 18.2...ms: */
+#ifdef ASM_TIMER
+    __asm
+    {
+        mov al, 36h
+        out 43h, al
+        mov al, 00h
+        out 40h, al
+        mov al, 00h
+        out 40h, al
+    }
+#else
     outp(0x43, 0x36);
     outp(0x40, 0x00);
     outp(0x40, 0x00);
+#endif
     _enable();
 }

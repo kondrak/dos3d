@@ -1,5 +1,6 @@
 #include "src/camera.h"
 #include "src/graphics.h"
+#include "src/timer.h"
 #include <stdlib.h>
 
 // helper function
@@ -9,6 +10,7 @@ void setupCube(mth_Vector4 *c);
 void testPerspective()
 {
     const unsigned short *keysPressed;
+    unsigned long int now, last = 0;
     float t = 0.f;
     mth_Vector4 cube[16];
     gfx_Camera cam;
@@ -21,6 +23,8 @@ void testPerspective()
         printf("Out of memory!");
         exit(1);
     }
+
+    tmr_start();
 
     mth_matIdentity(&model);
     mth_matIdentity(&modelViewProj);
@@ -53,22 +57,25 @@ void testPerspective()
     model.m[13] = -20.f;
 
     keysPressed = kbd_getInput();
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {
         int i;
+        float dt;
         // screen coordinates for the cube we will calculate here
         mth_Vector4 screenCube[16];
+        now = tmr_getMs();
+        dt = (float)(now - last);
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
-        t += 0.001f;
+        t += 0.0015f*dt;
         for(i = 0; i < 16; i++)
         {
             // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
-            mth_rotateVecAxisAngle(&cube[i], 0.001f, 1.f, 1.f, 1.f);
+            mth_rotateVecAxisAngle(&cube[i], 0.0015f*dt, 1.f, 1.f, 1.f);
             model.m[14] = sin(t) * 80.f;
             
             // calculate screen coordinates for transformed square vertices
@@ -93,8 +100,10 @@ void testPerspective()
         gfx_updateScreen(buffer);
 
         keysPressed = kbd_getInput();
+        last = now;
     }
-    
+
+    tmr_finish();
     free(buffer);
 }
 
