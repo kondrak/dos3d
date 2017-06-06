@@ -4,7 +4,7 @@
 
 #define ASM_TIMER
 
-typedef void (__interrupt* INTFUNCPTR)();
+typedef void (__interrupt __far *INTFUNCPTR)();
 
 INTFUNCPTR oldTimerInterrupt; // Original interrupt handler
 
@@ -15,7 +15,7 @@ unsigned long int tmr_getMs()
     return milliseconds;
 }
 
-void __interrupt timerHandler()
+void __interrupt __far timerHandler()
 {
     static unsigned long count = 0; // To keep track of original timer ticks
     
