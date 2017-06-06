@@ -1,13 +1,12 @@
 #include "src/camera.h"
+#include "src/timer.h"
 #include "src/triangle.h"
 #include <stdlib.h>
-#include <time.h>
 
 // First person WASD camera
 void testFirstPerson()
 {
-    clock_t now = clock();
-    clock_t last = now;
+    unsigned long int now, last = 0;
     const unsigned short *keysPressed;
     mth_Vector4 ts, rs;
     gfx_Camera cam;
@@ -58,15 +57,16 @@ void testFirstPerson()
         printf("Out of memory!");
         exit(1);
     }
-    
+
+    tmr_start();
     keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {
         float dt;
-        now = clock();
-        dt = (float)(now - last) / CLOCKS_PER_SEC;
+        now = tmr_getMs();
+        dt = (float)(now - last);
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         viewProj = mth_matMul(&cam.view, &cam.projection);
 
@@ -76,8 +76,8 @@ void testFirstPerson()
 
         keysPressed = kbd_getInput();
 
-        ts = mth_vecScale(&cam.target, 50.f*dt);
-        rs = mth_vecScale(&cam.right, 50.f*dt);
+        ts = mth_vecScale(&cam.target, 0.05f*dt);
+        rs = mth_vecScale(&cam.right, 0.05f*dt);
 
         if(keysPressed[KEY_W])
             cam.position = mth_vecAdd(&cam.position, &ts);
@@ -93,29 +93,30 @@ void testFirstPerson()
 
         if(keysPressed[KEY_LEFT])
         {
-            mth_rotateVecAxisAngle(&cam.target, 1.75f*dt, cam.up.x, cam.up.y, cam.up.z);
+            mth_rotateVecAxisAngle(&cam.target, 0.002f*dt, cam.up.x, cam.up.y, cam.up.z);
             cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
         if(keysPressed[KEY_RIGHT])
         {
-            mth_rotateVecAxisAngle(&cam.target, -1.75f*dt, cam.up.x, cam.up.y, cam.up.z);
+            mth_rotateVecAxisAngle(&cam.target, -0.002f*dt, cam.up.x, cam.up.y, cam.up.z);
             cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
         if(keysPressed[KEY_R])
         {
-            mth_rotateVecAxisAngle(&cam.target, -1.75f*dt, cam.right.x, cam.right.y, cam.right.z);
+            mth_rotateVecAxisAngle(&cam.target, -0.002f*dt, cam.right.x, cam.right.y, cam.right.z);
             cam.up = mth_crossProduct(&cam.right, &cam.target);
         }
 
         if(keysPressed[KEY_F])
         {
-            mth_rotateVecAxisAngle(&cam.target, 1.75f*dt, cam.right.x, cam.right.y, cam.right.z);
+            mth_rotateVecAxisAngle(&cam.target, 0.002f*dt, cam.right.x, cam.right.y, cam.right.z);
             cam.up = mth_crossProduct(&cam.right, &cam.target);
         }
         last = now;
     }
 
+    tmr_finish();
     free(buffer);
 }

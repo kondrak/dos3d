@@ -1,8 +1,8 @@
 #include "src/bitmap.h"
 #include "src/camera.h"
+#include "src/math.h"
 #include "src/triangle.h"
 #include "src/math.h"
-#include <stdlib.h>
 
 typedef struct SceneQuad SceneQuad;
 

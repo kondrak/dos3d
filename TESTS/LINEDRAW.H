@@ -1,31 +1,32 @@
 #include "src/graphics.h"
 #include "src/input.h"
 #include "src/math.h"
-
-#include <sys/timeb.h>
+#include "src/timer.h"
 
 // Bresenham line drawing test
 void testBresenham(int ox, int oy, int r)
 {
     float l;
-    unsigned int elapsed, numLines = 0;
+    unsigned long int startTime, numLines = 0;
     const unsigned short *keysPressed = kbd_getInput();
-    struct timeb startTime, endTime;
+
+    tmr_start();
 
     fprintf(stdout, "Bresenham drawing: please wait...\r");
     fflush(stdout);
 
-    ftime(&startTime);
+    startTime = tmr_getMs();
+
     for(l = 0.0f; l < 2.0f*M_PI; l += 0.001f, numLines++)
     {
         int color = (int)((l * 10.f) + 1) % 256;
         gfx_drawLine(ox, oy, ox + r * cos(l), oy + r * sin(l), color, NULL);
     }
-    ftime(&endTime);
 
-    elapsed = (endTime.time - startTime.time)*1000 + endTime.millitm - startTime.millitm;
-    fprintf(stdout, "Bresenham drawing: %ums (%u lines)", elapsed, numLines);
+    fprintf(stdout, "Bresenham drawing: %ums (%u lines)", tmr_getMs() - startTime, numLines);
     fflush(stdout);
     
     while(!keysPressed[KEY_ESC]) keysPressed = kbd_getInput();
+
+    tmr_finish();
 }
