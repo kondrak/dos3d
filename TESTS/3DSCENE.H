@@ -1,8 +1,8 @@
 #include "src/bitmap.h"
 #include "src/camera.h"
 #include "src/math.h"
+#include "src/timer.h"
 #include "src/triangle.h"
-#include "src/math.h"
 
 typedef struct SceneQuad SceneQuad;
 
@@ -25,12 +25,13 @@ typedef struct
 void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v, gfx_Bitmap *texture);
 void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer);
 void setupScene(Scene *s);
-void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer);
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer, float dt);
 void freeScene(Scene *s);
 
 // Render a simple scene
 void test3DScene()
 {
+    unsigned long int now, last = 0;
     const unsigned short *keysPressed;
     Scene scene;
     int texMapFlipped = 0;
@@ -48,6 +49,8 @@ void test3DScene()
         printf("Out of memory!");
         exit(1);
     }
+
+    tmr_start();
 
     setupScene(&scene);
     mth_matIdentity(&model);
@@ -82,6 +85,10 @@ void test3DScene()
 
     while(!keysPressed[KEY_ESC])
     {
+        float dt;
+        now = tmr_getMs();
+        dt = (float)(now - last);
+
         if(keysPressed[KEY_G] && !texMapFlipped)
         {
             drawOpts.texMapMode = drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
@@ -94,12 +101,13 @@ void test3DScene()
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
         // render!
-        gfx_clrBuffer(buffer);
-        drawScene(&scene, &modelViewProj, &drawOpts, buffer);
+        drawScene(&scene, &modelViewProj, &drawOpts, buffer, dt);
 
         keysPressed = kbd_getInput();
+        last = now;
     }
 
+    tmr_finish();
     free(buffer);
     freeScene(&scene);
 }
@@ -156,13 +164,13 @@ void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOpt
     gfx_drawTriangleOpts(&q->tris[1], mvp, drawOpts, buffer);
 }
 
-void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer)
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer, float dt)
 {
     int w;
-    static unsigned int bgOffset = 0;
+    static float bgOffset = 0.f;
     // background: Doom 1 sky texture, scrolling horizontally
-    gfx_drawBitmapOffset(&s->textures[0], 0, 0, bgOffset % s->textures[0].width, 0, buffer);
-    bgOffset++;
+    gfx_drawBitmapOffset(&s->textures[0], 0, 0, (int)bgOffset % s->textures[0].width, 0, buffer);
+    bgOffset += 0.01f * dt;
 
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
