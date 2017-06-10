@@ -9,7 +9,7 @@
 static unsigned char *VGA = (unsigned char *)0xA0000;
 
 /* ***** */
-void gfx_setMode(unsigned char mode)
+void gfx_setMode(const unsigned char mode)
 {
     _asm {
         mov ah, 0x00
@@ -19,7 +19,7 @@ void gfx_setMode(unsigned char mode)
 }
 
 /* ***** */
-void gfx_drawPixel(int x, int y, unsigned char color, unsigned char *buffer)
+void gfx_drawPixel(int x, int y, const unsigned char color, unsigned char *buffer)
 {
     // naive "clipping"
     if(x >= SCREEN_WIDTH || x < 0 || y >= SCREEN_HEIGHT || y < 0) return;
@@ -31,7 +31,7 @@ void gfx_drawPixel(int x, int y, unsigned char color, unsigned char *buffer)
 }
 
 /* ***** */
-void gfx_drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer)
+void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, unsigned char *buffer)
 {
     // Bresenham line drawing
     int x = x1 - x0;
@@ -62,7 +62,7 @@ void gfx_drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned 
 }
 
 /* ***** */
-void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, unsigned char color, unsigned char *buffer)
+void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsigned char color, unsigned char *buffer)
 {
     gfx_drawLine(from->x, from->y, to->x, to->y, color, buffer);
 }
@@ -74,7 +74,7 @@ void gfx_clrBuffer(unsigned char *buffer)
 }
 
 /* ***** */
-void gfx_clrBufferColor(unsigned char *buffer, unsigned char color)
+void gfx_clrBufferColor(unsigned char *buffer, const unsigned char color)
 {
     if(!buffer)
         memset(VGA, color, SCREEN_WIDTH*SCREEN_HEIGHT);
@@ -89,7 +89,7 @@ void gfx_updateScreen(unsigned char *buffer)
 }
 
 /* ***** */
-void gfx_setPalette(unsigned char *palette)
+void gfx_setPalette(const unsigned char *palette)
 {
     int i;
     outp(0x03c8, 0);
