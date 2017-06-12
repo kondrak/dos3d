@@ -212,6 +212,7 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
     float startX = v0->position.x;
     float endX   = startX;
     float invZ0, invZ1, invZ2, invY02;
+    int   finished = 0;
 
     if(type == FLAT_BOTTOM)
     {
@@ -238,16 +239,10 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
 
         if(type == FLAT_BOTTOM && y > v2->position.y)
         {
-            /*for(x = startX-dxLeft; x <= endX-dxRight; ++x)
-            {
-                unsigned char pixel =  t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
-
-                if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                    gfx_drawPixel(x, y, pixel, buffer);
-                u += du;
-                v += dv;
-            }*/
-            break;
+            // in final iteration draw extra scanline to avoid pixel wide gaps
+            startX -=dxLeft;
+            endX -= dxRight;
+            finished = 1;
         }
         else if ( type == FLAT_TOP && y < v2->position.y)
             break;
@@ -278,6 +273,8 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
 
         startX += dxLeft;
         endX   += dxRight;
+
+        if(finished) break;
     }
 }
 
@@ -290,6 +287,7 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
     float texW = tex->width - 1;
     float texH = tex->height - 1;
     int   texArea = texW * texH;
+    int   finished = 0;
 
     if(type == FLAT_BOTTOM)
     {
@@ -327,18 +325,12 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
 
         if(type == FLAT_BOTTOM && y > v2->position.y)
         {
-            u -= du;
-            v -= dv;
-            /*for(x = startX-dxLeft; x <= endX-dxRight; ++x)
-            {
-                unsigned char pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
-
-                if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                    gfx_drawPixel(x, y, pixel, buffer);
-                u += du;
-                v += dv;
-            }*/
-            break;
+            // in final iteration draw extra scanline to avoid pixel wide gaps
+            u -= duLeft;
+            v -= dvLeft;
+            startX -= dxLeft;
+            endX   -= dxRight;
+            finished = 1;
         }
         else if ( type == FLAT_TOP && y < v2->position.y)
             break;
@@ -358,6 +350,8 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
         endX   += dxRight;
         startU += duLeft;
         startV += dvLeft;
+
+        if(finished) break;
     }
 }
 
