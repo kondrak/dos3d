@@ -37,6 +37,8 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
 /* ***** */
 void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer)
 {
+    int bufferHalfWidth  = buffer->width >> 1;
+    int bufferHalfHeight = buffer->height >> 1;
     gfx_Vertex v0, v1, v2;
 
     v0 = t->vertices[0];
@@ -67,12 +69,12 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
     }
 
     // transform x and y of each vertex to screen coordinates
-    v0.position.x = (v0.position.x * (float)SCREEN_WIDTH)  / (2.0f * v0.position.w) + (SCREEN_WIDTH >> 1);
-    v0.position.y = (v0.position.y * (float)SCREEN_HEIGHT) / (2.0f * v0.position.w) + (SCREEN_HEIGHT >> 1);
-    v1.position.x = (v1.position.x * (float)SCREEN_WIDTH)  / (2.0f * v1.position.w) + (SCREEN_WIDTH >> 1);
-    v1.position.y = (v1.position.y * (float)SCREEN_HEIGHT) / (2.0f * v1.position.w) + (SCREEN_HEIGHT >> 1);
-    v2.position.x = (v2.position.x * (float)SCREEN_WIDTH)  / (2.0f * v2.position.w) + (SCREEN_WIDTH >> 1);
-    v2.position.y = (v2.position.y * (float)SCREEN_HEIGHT) / (2.0f * v2.position.w) + (SCREEN_HEIGHT >> 1);    
+    v0.position.x = (v0.position.x * (float)buffer->width)  / (2.0f * v0.position.w) + bufferHalfWidth;
+    v0.position.y = (v0.position.y * (float)buffer->height) / (2.0f * v0.position.w) + bufferHalfHeight;
+    v1.position.x = (v1.position.x * (float)buffer->width)  / (2.0f * v1.position.w) + bufferHalfWidth;
+    v1.position.y = (v1.position.y * (float)buffer->height) / (2.0f * v1.position.w) + bufferHalfHeight;
+    v2.position.x = (v2.position.x * (float)buffer->width)  / (2.0f * v2.position.w) + bufferHalfWidth;
+    v2.position.y = (v2.position.y * (float)buffer->height) / (2.0f * v2.position.w) + bufferHalfHeight;
 
     // sort vertices so that v0 is topmost, then v2, then v1
     if(v2.position.y > v1.position.y)

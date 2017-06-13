@@ -61,7 +61,7 @@ void testFirstPerson()
 
     tmr_start();
     keysPressed = kbd_getInput();
-    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 500.f);
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 1.0f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {

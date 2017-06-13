@@ -69,7 +69,7 @@ void testQuads()
         setupTestQuad(&quad, qx, qy, qw, qh, rand() % 103 + 1 );
 
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
+        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
 

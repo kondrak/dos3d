@@ -24,6 +24,8 @@ extern "C" {
     typedef struct
     {
         unsigned char *colorBuffer;
+        int width;
+        int height;
     } gfx_drawBuffer;
 
     enum BufferType
@@ -33,6 +35,8 @@ extern "C" {
     };
 
     #define ALLOC_DRAWBUFFER(b, w, h, f) \
+            b.width  = w; \
+            b.height = h; \
             b.colorBuffer = (unsigned char *)malloc(w * h);
 
     #define FREE_DRAWBUFFER(b) \

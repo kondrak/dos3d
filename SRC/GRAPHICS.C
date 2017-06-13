@@ -22,7 +22,7 @@ void gfx_setMode(const unsigned char mode)
 void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buffer)
 {
     // naive "clipping"
-    if(x >= SCREEN_WIDTH || x < 0 || y >= SCREEN_HEIGHT || y < 0) return;
+    if(x >= buffer->width || x < 0 || y >= buffer->height || y < 0) return;
 
     if(!buffer)
         VGA[(y << 8) + (y << 6) + x] = color;
@@ -77,15 +77,15 @@ void gfx_clrBuffer(gfx_drawBuffer *buffer)
 void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color)
 {
     if(!buffer)
-        memset(VGA, color, SCREEN_WIDTH*SCREEN_HEIGHT);
+        memset(VGA, color, SCREEN_WIDTH * SCREEN_HEIGHT);
     else
-        memset(buffer->colorBuffer, color, SCREEN_WIDTH*SCREEN_HEIGHT);
+        memset(buffer->colorBuffer, color, buffer->width * buffer->height);
 }
 
 /* ***** */
 void gfx_updateScreen(gfx_drawBuffer *buffer)
 {
-    memcpy(VGA, buffer->colorBuffer, SCREEN_WIDTH*SCREEN_HEIGHT);
+    memcpy(VGA, buffer->colorBuffer, SCREEN_WIDTH * SCREEN_HEIGHT);
 }
 
 /* ***** */

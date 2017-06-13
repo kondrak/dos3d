@@ -147,7 +147,7 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
     {
         memcpy(&buffer->colorBuffer[screenOffset], &bmp->data[bmpOffset], bmp->width);
         bmpOffset    += bmp->width;
-        screenOffset += SCREEN_WIDTH;
+        screenOffset += buffer->width;
     }
 }
 
@@ -165,7 +165,7 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
         memcpy(&buffer->colorBuffer[screenOffset + bmp->width - xOffset], &bmp->data[(bmpOffset + yOffset * bmp->width) % texArea], xOffset);
 
         bmpOffset    += bmp->width;
-        screenOffset += SCREEN_WIDTH;
+        screenOffset += buffer->width;
     }
 }
 
@@ -186,7 +186,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
             if(data != (unsigned char)colorKey)
                 buffer->colorBuffer[screenOffset+x+i] = data;
         }
-        screenOffset += SCREEN_WIDTH;
+        screenOffset += buffer->width;
     }
 }
 

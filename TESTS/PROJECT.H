@@ -58,7 +58,7 @@ void testPerspective()
     model.m[13] = -20.f;
 
     keysPressed = kbd_getInput();
-    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {
@@ -83,8 +83,8 @@ void testPerspective()
             screenCube[i] = mth_matMulVec(&modelViewProj, &cube[i]);
 
             // translate position to screen pixels
-            screenCube[i].x = (screenCube[i].x * (float)SCREEN_WIDTH)  / (2.0f * screenCube[i].w) + (SCREEN_WIDTH >> 1);
-            screenCube[i].y = (screenCube[i].y * (float)SCREEN_HEIGHT) / (2.0f * screenCube[i].w) + (SCREEN_HEIGHT >> 1);
+            screenCube[i].x = (screenCube[i].x * (float)buffer.width)  / (2.0f * screenCube[i].w) + (buffer.width >> 1);
+            screenCube[i].y = (screenCube[i].y * (float)buffer.height) / (2.0f * screenCube[i].w) + (buffer.height >> 1);
         }
 
         gfx_clrBuffer(&buffer);

@@ -83,7 +83,7 @@ void test3DScene()
     model.m[13] = -20.f;
 
     keysPressed = kbd_getInput();
-    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 500.f);
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {
