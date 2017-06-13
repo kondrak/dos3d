@@ -211,7 +211,7 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
     int   texArea = texW * texH;
     float startX = v0->position.x;
     float endX   = startX;
-    float invZ0, invZ1, invZ2, invY02;
+    float invZ0, invZ1, invZ2, invY02 = 1.f;
     int   finished = 0;
 
     if(type == FLAT_BOTTOM)
@@ -229,14 +229,16 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
     invZ0  = 1.f / v0->position.z;
     invZ1  = 1.f / v1->position.z;
     invZ2  = 1.f / v2->position.z;
-    invY02 = 1.f / (v0->position.y - v2->position.y);
+
+    if(v0->position.y - v2->position.y)
+        invY02 = 1.f / (v0->position.y - v2->position.y);
 
     gfx_setPalette(tex->palette);
 
     for(y = v0->position.y; ; y += yDir)
     {
         float startInvZ, endInvZ, invLineLength, r1;
-        float startU = texW, startV = texH, UEnd = texW, VEnd = texH;
+        float startU = texW, startV = texH, endU = texW, endV = texH;
 
         if(type == FLAT_BOTTOM && y > v2->position.y)
         {
@@ -255,8 +257,8 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
 
         startU *= LERP(v0->uv.u*invZ0, v2->uv.u*invZ2, r1);
         startV *= LERP(v0->uv.v*invZ0, v2->uv.v*invZ2, r1);
-        UEnd *= LERP(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
-        VEnd *= LERP(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
+        endU *= LERP(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
+        endV *= LERP(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
 
         invLineLength = 1.f / (endX - startX);
 
@@ -265,8 +267,8 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
             float r = (x - startX) * invLineLength;
             float lerpInvZ = LERP(startInvZ, endInvZ, r);
             float z = 1.f/lerpInvZ;
-            float u = z * LERP(startU, UEnd, r);
-            float v = z * LERP(startV, VEnd, r);
+            float u = z * LERP(startU, endU, r);
+            float v = z * LERP(startV, endV, r);
 
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
             unsigned char pixel = tex->data[((int)u + ((int)v * tex->height)) % texArea];
