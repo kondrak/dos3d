@@ -27,7 +27,7 @@ void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buff
     if(!buffer)
         VGA[(y << 8) + (y << 6) + x] = color;
     else
-        buffer->colorBuffer[(y << 8) + (y << 6) + x] = color;
+        buffer->colorBuffer[x + y * buffer->width] = color;
 }
 
 /* ***** */
@@ -80,6 +80,23 @@ void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color)
         memset(VGA, color, SCREEN_WIDTH * SCREEN_HEIGHT);
     else
         memset(buffer->colorBuffer, color, buffer->width * buffer->height);
+}
+
+/* ***** */
+void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target)
+{
+    int i;
+    
+    if(target)
+    {
+        for(i = 0; i < src->height; ++i)
+            memcpy(&target[x + (i + y) * target->width], &src->colorBuffer[i * src->width], src->width);
+    }
+    else
+    {
+        for(i = 0; i < src->height; ++i)
+            memcpy(&VGA[(y << 8) + (y << 6) + x + i * SCREEN_WIDTH], &src->colorBuffer[i * src->width], src->width);
+    }
 }
 
 /* ***** */

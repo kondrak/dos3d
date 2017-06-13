@@ -10,6 +10,7 @@ Features
 - triangle rasterization
 - front/back face culling (CCW surfaces are considered "back")
 - affine and perspective corrected texture mapping
+- multiple render targets
 - perspective and view calculations - "DOF6 Camera Ready (tm)"
 - line and point rendering
 - loading, resizing and displaying bitmaps (8bpp) with optional color keying

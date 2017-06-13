@@ -41,10 +41,11 @@ extern "C" {
     } gfx_drawOptions;
 
     // default draw options initialization since the compiler can't handle struct constructors
-    #define DRAWOPTS_DEFAULT(o) \
+    #define DRAWOPTS_DEFAULT(o) {\
             o.texMapMode = TM_PERSPECTIVE; \
             o.cullMode = FC_NONE; \
-            o.colorKey   = -1;
+            o.colorKey   = -1; \
+            }
 
     /* *** Interface *** */
 

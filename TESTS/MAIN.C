@@ -11,7 +11,7 @@
 #include "tests/fpp.h"
 #include "tests/linedraw.h"
 #include "tests/project.h"
-#include "tests/quads.h"
+#include "tests/rtargets.h"
 #include "tests/texmap.h"
 #include "tests/tris.h"
 
@@ -22,7 +22,7 @@ void printMenu()
     printf("1. Bresenham line drawing\n");
     printf("2. Perspective projection\n");
     printf("3. Triangle rendering\n");
-    printf("4. Quad rendering\n");
+    printf("4. Render targets\n");
     printf("5. Texture mapping\n");
     printf("6. First person WASD camera\n");
     printf("7. Test 3D scene\n");
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
             if(keysPressed[KEY_4])
             {
                 gfx_setMode(0x13);
-                testQuads();
+                testRenderTargets();
                 demoFinished = 1;
             }
             if(keysPressed[KEY_5])

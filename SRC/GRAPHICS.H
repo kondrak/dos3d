@@ -34,10 +34,11 @@ extern "C" {
         DB_DEPTH = 1 << 1
     };
 
-    #define ALLOC_DRAWBUFFER(b, w, h, f) \
+    #define ALLOC_DRAWBUFFER(b, w, h, f) {\
             b.width  = w; \
             b.height = h; \
-            b.colorBuffer = (unsigned char *)malloc(w * h);
+            b.colorBuffer = (unsigned char *)malloc(w * h); \
+            }
 
     #define FREE_DRAWBUFFER(b) \
             free(b.colorBuffer);
@@ -59,6 +60,9 @@ extern "C" {
 
     // clears buffer to specific color
     void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color);
+
+    // copy contents of one buffer to another (at x,y offset)
+    void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target);
 
     // copy buffer contents to VGA memory
     void gfx_updateScreen(gfx_drawBuffer *buffer);
