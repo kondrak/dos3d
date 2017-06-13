@@ -1,7 +1,6 @@
 #include "src/camera.h"
 #include "src/graphics.h"
 #include "src/timer.h"
-#include <stdlib.h>
 
 // helper function
 void setupCube(mth_Vector4 *c);
@@ -18,7 +17,7 @@ void testPerspective()
     mth_Matrix4 modelViewProj;
     gfx_drawBuffer buffer;
 
-    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     if(!buffer.colorBuffer)
     {
@@ -106,7 +105,7 @@ void testPerspective()
     }
 
     tmr_finish();
-    free(buffer.colorBuffer);
+    FREE_DRAWBUFFER(buffer);
 }
 
 

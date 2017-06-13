@@ -1,7 +1,6 @@
 #include "src/camera.h"
 #include "src/timer.h"
 #include "src/triangle.h"
-#include <stdlib.h>
 
 // First person WASD camera
 void testFirstPerson()
@@ -14,7 +13,7 @@ void testFirstPerson()
     mth_Matrix4 viewProj;
     gfx_drawBuffer buffer;
 
-    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     // setup camera
     cam.position.x = 0;
@@ -120,5 +119,5 @@ void testFirstPerson()
     }
 
     tmr_finish();
-    free(buffer.colorBuffer);
+    FREE_DRAWBUFFER(buffer);
 }

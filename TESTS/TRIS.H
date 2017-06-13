@@ -1,7 +1,6 @@
 #include "src/camera.h"
 #include "src/triangle.h"
 #include <dos.h>
-#include <stdlib.h>
 
 // Triangle rendering test
 void testTriangles()
@@ -14,7 +13,7 @@ void testTriangles()
     mth_Matrix4 modelViewProj;
     gfx_drawBuffer buffer;
 
-    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     if(!buffer.colorBuffer)
     {
@@ -92,5 +91,5 @@ void testTriangles()
         paused = keysPressed[KEY_SPACE];
     }
 
-    free(buffer.colorBuffer);
+    FREE_DRAWBUFFER(buffer);
 }

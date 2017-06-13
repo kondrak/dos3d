@@ -2,6 +2,7 @@
 #define GRAPHICS_H
 
 #include "src/math.h"
+#include <stdlib.h>
 
 /*
  * Common graphics functionality.
@@ -24,6 +25,12 @@ extern "C" {
     {
         unsigned char *colorBuffer;
     } gfx_drawBuffer;
+
+    #define ALLOC_DRAWBUFFER(b, w, h) \
+            b.colorBuffer = (unsigned char *)malloc(w * h);
+
+    #define FREE_DRAWBUFFER(b) \
+            free(b.colorBuffer);
 
     // set graphics mode
     void gfx_setMode(const unsigned char mode);

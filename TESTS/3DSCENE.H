@@ -43,8 +43,8 @@ void test3DScene()
 
     DRAWOPTS_DEFAULT(drawOpts);
     drawOpts.colorKey = COLOR_MAGENTA;
-    
-    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     if(!buffer.colorBuffer)
     {
@@ -110,7 +110,7 @@ void test3DScene()
     }
 
     tmr_finish();
-    free(buffer.colorBuffer);
+    FREE_DRAWBUFFER(buffer);
     freeScene(&scene);
 }
 

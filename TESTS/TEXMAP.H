@@ -4,7 +4,6 @@
 #include "src/timer.h"
 #include "src/triangle.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 typedef struct
 {
@@ -29,7 +28,7 @@ void testTextureMapping()
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
     gfx_drawBuffer buffer;
 
-    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     DRAWOPTS_DEFAULT(drawOpts);
 
@@ -148,7 +147,7 @@ void testTextureMapping()
     }
 
     tmr_finish();
-    free(buffer.colorBuffer);
+    FREE_DRAWBUFFER(buffer);
     gfx_freeBitmap(&bmp);
 }
 
