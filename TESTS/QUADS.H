@@ -20,7 +20,7 @@ void testQuads()
     mth_Matrix4 modelViewProj;
     gfx_drawBuffer buffer;
 
-    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT);
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
     if(!buffer.colorBuffer)
     {

@@ -28,7 +28,7 @@ void testTextureMapping()
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
     gfx_drawBuffer buffer;
 
-    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT);
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
 
     DRAWOPTS_DEFAULT(drawOpts);
 

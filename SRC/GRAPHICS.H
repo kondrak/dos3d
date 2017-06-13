@@ -26,7 +26,13 @@ extern "C" {
         unsigned char *colorBuffer;
     } gfx_drawBuffer;
 
-    #define ALLOC_DRAWBUFFER(b, w, h) \
+    enum BufferType
+    {
+        DB_COLOR = 1 << 0,
+        DB_DEPTH = 1 << 1
+    };
+
+    #define ALLOC_DRAWBUFFER(b, w, h, f) \
             b.colorBuffer = (unsigned char *)malloc(w * h);
 
     #define FREE_DRAWBUFFER(b) \

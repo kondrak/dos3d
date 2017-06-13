@@ -44,7 +44,7 @@ void test3DScene()
     DRAWOPTS_DEFAULT(drawOpts);
     drawOpts.colorKey = COLOR_MAGENTA;
 
-    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT);
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
 
     if(!buffer.colorBuffer)
     {
