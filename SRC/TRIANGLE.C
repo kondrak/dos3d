@@ -206,8 +206,8 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
     double x, y, invDy, dxLeft, dxRight, yDir = 1;
 
     int   useColorKey = drawOpts->colorKey != -1 ? 1 : 0;
-    float texW = tex->width - 1;
-    float texH = tex->height - 1;
+    int   texW = tex->width - 1;
+    int   texH = tex->height - 1;
     int   texArea = texW * texH;
     float startX = v0->position.x;
     float endX   = startX;
@@ -235,13 +235,15 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
 
     for(y = v0->position.y; ; y += yDir)
     {
-        float startInvZ, endInvZ, startU = texW, startV = texH, UEnd = texW, VEnd = texH, r1;
+        float startInvZ, endInvZ, invLineLength, r1;
+        float startU = texW, startV = texH, UEnd = texW, VEnd = texH;
 
         if(type == FLAT_BOTTOM && y > v2->position.y)
         {
             // in final iteration draw extra scanline to avoid pixel wide gaps
-            startX -=dxLeft;
-            endX -= dxRight;
+            startX -= dxLeft;
+            endX   -= dxRight;
+            y = v2->position.y;
             finished = 1;
         }
         else if ( type == FLAT_TOP && y < v2->position.y)
@@ -249,16 +251,18 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
 
         r1 = (v0->position.y - y) * invY02;
         startInvZ = LERP(invZ0, invZ2, r1);
-        endInvZ = LERP(invZ0, invZ1, r1);
+        endInvZ   = LERP(invZ0, invZ1, r1);
 
         startU *= LERP(v0->uv.u*invZ0, v2->uv.u*invZ2, r1);
         startV *= LERP(v0->uv.v*invZ0, v2->uv.v*invZ2, r1);
         UEnd *= LERP(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
         VEnd *= LERP(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
 
+        invLineLength = 1.f / (endX - startX);
+
         for(x = startX; x <= endX; ++x)
         {
-            float r = (x - startX) / (endX - startX);
+            float r = (x - startX) * invLineLength;
             float lerpInvZ = LERP(startInvZ, endInvZ, r);
             float z = 1.f/lerpInvZ;
             float u = z * LERP(startU, UEnd, r);
