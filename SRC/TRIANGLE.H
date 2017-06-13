@@ -49,8 +49,8 @@ extern "C" {
     /* *** Interface *** */
 
     // draw triangle to buffer
-    void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, unsigned char *buffer);
-    void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions *drawOpts, unsigned char *buffer);
+    void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
+    void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer);
 
 #ifdef __cplusplus
 }

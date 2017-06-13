@@ -20,26 +20,31 @@ extern "C" {
         mth_Vector2 uv;
     } gfx_Vertex;
 
+    typedef struct
+    {
+        unsigned char *colorBuffer;
+    } gfx_drawBuffer;
+
     // set graphics mode
     void gfx_setMode(const unsigned char mode);
 
     // draw pixel to buffer
-    void gfx_drawPixel(int x, int y, const unsigned char color, unsigned char *buffer);
+    void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buffer);
 
     // Bresenham line drawing
-    void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, unsigned char *buffer);
+    void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, gfx_drawBuffer *buffer);
 
     // Bresenham line drawing - using mth_Vector4 structs
-    void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsigned char color, unsigned char *buffer);
+    void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsigned char color, gfx_drawBuffer *buffer);
 
     // clears buffer to 0
-    void gfx_clrBuffer(unsigned char *buffer);
+    void gfx_clrBuffer(gfx_drawBuffer *buffer);
 
     // clears buffer to specific color
-    void gfx_clrBufferColor(unsigned char *buffer, const unsigned char color);
+    void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color);
 
     // copy buffer contents to VGA memory
-    void gfx_updateScreen(unsigned char *buffer);
+    void gfx_updateScreen(gfx_drawBuffer *buffer);
 
     // set current VGA palette
     void gfx_setPalette(const unsigned char *palette);

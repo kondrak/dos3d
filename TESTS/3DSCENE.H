@@ -23,9 +23,9 @@ typedef struct
 
 // helper functions
 void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v, gfx_Bitmap *texture);
-void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer);
+void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer);
 void setupScene(Scene *s);
-void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer);
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer);
 void freeScene(Scene *s);
 
 // Render a simple scene
@@ -39,12 +39,14 @@ void test3DScene()
     gfx_drawOptions drawOpts;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
-    unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    gfx_drawBuffer buffer;
 
     DRAWOPTS_DEFAULT(drawOpts);
     drawOpts.colorKey = COLOR_MAGENTA;
     
-    if(!buffer)
+    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+
+    if(!buffer.colorBuffer)
     {
         printf("Out of memory!");
         exit(1);
@@ -101,14 +103,14 @@ void test3DScene()
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
         // render!
-        drawScene(&scene, &modelViewProj, &drawOpts, buffer);
+        drawScene(&scene, &modelViewProj, &drawOpts, &buffer);
 
         keysPressed = kbd_getInput();
         last = now;
     }
 
     tmr_finish();
-    free(buffer);
+    free(buffer.colorBuffer);
     freeScene(&scene);
 }
 
@@ -158,13 +160,13 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
     q->tris[1].vertices[2].uv.v = 0; 
 }
 
-void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer)
+void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer)
 {
     gfx_drawTriangleOpts(&q->tris[0], mvp, drawOpts, buffer);
     gfx_drawTriangleOpts(&q->tris[1], mvp, drawOpts, buffer);
 }
 
-void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, unsigned char *buffer)
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer)
 {
     int w;
     static int bgOffset = 0;

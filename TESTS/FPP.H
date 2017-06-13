@@ -12,7 +12,9 @@ void testFirstPerson()
     gfx_Camera cam;
     gfx_Triangle triangle;
     mth_Matrix4 viewProj;
-    unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    gfx_drawBuffer buffer;
+
+    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
 
     // setup camera
     cam.position.x = 0;
@@ -52,7 +54,7 @@ void testFirstPerson()
     triangle.vertices[2].position.z = 0;
     triangle.vertices[2].position.w = 1.f;
 
-    if(!buffer)
+    if(!buffer.colorBuffer)
     {
         printf("Out of memory!");
         exit(1);
@@ -70,9 +72,9 @@ void testFirstPerson()
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         viewProj = mth_matMul(&cam.view, &cam.projection);
 
-        gfx_clrBuffer(buffer);
-        gfx_drawTriangle(&triangle, &viewProj, buffer);
-        gfx_updateScreen(buffer);
+        gfx_clrBuffer(&buffer);
+        gfx_drawTriangle(&triangle, &viewProj, &buffer);
+        gfx_updateScreen(&buffer);
 
         keysPressed = kbd_getInput();
 
@@ -118,5 +120,5 @@ void testFirstPerson()
     }
 
     tmr_finish();
-    free(buffer);
+    free(buffer.colorBuffer);
 }

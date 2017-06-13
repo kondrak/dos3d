@@ -12,9 +12,11 @@ void testTriangles()
     gfx_Triangle triangle;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
-    unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    gfx_drawBuffer buffer;
 
-    if(!buffer)
+    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+
+    if(!buffer.colorBuffer)
     {
         printf("Out of memory!");
         exit(1);
@@ -49,7 +51,7 @@ void testTriangles()
     model.m[13] = -100.f;
 
     keysPressed = kbd_getInput();
-    gfx_clrBufferColor(buffer, 105);
+    gfx_clrBufferColor(&buffer, 105);
 
     while(!keysPressed[KEY_ESC])
     {
@@ -77,8 +79,8 @@ void testTriangles()
 
         if(paused == 0)
         {
-            gfx_drawTriangle(&triangle, &modelViewProj, buffer);
-            gfx_updateScreen(buffer);
+            gfx_drawTriangle(&triangle, &modelViewProj, &buffer);
+            gfx_updateScreen(&buffer);
             fprintf(stdout, "Triangles rendered: %d\r", ++numTris);
             fflush(stdout);
             delay(50);
@@ -90,5 +92,5 @@ void testTriangles()
         paused = keysPressed[KEY_SPACE];
     }
 
-    free(buffer);
+    free(buffer.colorBuffer);
 }

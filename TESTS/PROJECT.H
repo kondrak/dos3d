@@ -16,9 +16,11 @@ void testPerspective()
     gfx_Camera cam;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
-    unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    gfx_drawBuffer buffer;
 
-    if(!buffer)
+    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+
+    if(!buffer.colorBuffer)
     {
         printf("Out of memory!");
         exit(1);
@@ -86,25 +88,25 @@ void testPerspective()
             screenCube[i].y = (screenCube[i].y * (float)SCREEN_HEIGHT) / (2.0f * screenCube[i].w) + (SCREEN_HEIGHT >> 1);
         }
 
-        gfx_clrBuffer(buffer);
+        gfx_clrBuffer(&buffer);
 
         // render the cube walls
         for(i = 0; i < 4; i++)
         {
-            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 1], 3+i, buffer);
-            gfx_drawLineVec(&screenCube[4*i + 1], &screenCube[4*i + 3], 3+i, buffer);
-            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 2], 3+i, buffer);
-            gfx_drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, buffer);
+            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 1], 3+i, &buffer);
+            gfx_drawLineVec(&screenCube[4*i + 1], &screenCube[4*i + 3], 3+i, &buffer);
+            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 2], 3+i, &buffer);
+            gfx_drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, &buffer);
         }
 
-        gfx_updateScreen(buffer);
+        gfx_updateScreen(&buffer);
 
         keysPressed = kbd_getInput();
         last = now;
     }
 
     tmr_finish();
-    free(buffer);
+    free(buffer.colorBuffer);
 }
 
 

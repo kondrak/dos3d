@@ -19,9 +19,11 @@ void testQuads()
     Quad quad;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
-    unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    gfx_drawBuffer buffer;
 
-    if(!buffer)
+    buffer.colorBuffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+
+    if(!buffer.colorBuffer)
     {
         printf("Out of memory!");
         exit(1);
@@ -56,7 +58,7 @@ void testQuads()
     model.m[13] = -100.f;
 
     keysPressed = kbd_getInput();
-    gfx_clrBufferColor(buffer, 107);
+    gfx_clrBufferColor(&buffer, 107);
 
     while(!keysPressed[KEY_ESC])
     {
@@ -74,9 +76,9 @@ void testQuads()
 
         if(paused == 0)
         {
-            gfx_drawTriangle(&quad.tris[0], &modelViewProj, buffer);
-            gfx_drawTriangle(&quad.tris[1], &modelViewProj, buffer);
-            gfx_updateScreen(buffer);
+            gfx_drawTriangle(&quad.tris[0], &modelViewProj, &buffer);
+            gfx_drawTriangle(&quad.tris[1], &modelViewProj, &buffer);
+            gfx_updateScreen(&buffer);
             fprintf(stdout, "Quads rendered: %d\r", ++numQuads);
             fflush(stdout);
             delay(50);
@@ -88,7 +90,7 @@ void testQuads()
         paused = keysPressed[KEY_SPACE];
     }
 
-    free(buffer);
+    free(buffer.colorBuffer);
 }
 
 void setupTestQuad(Quad *q, int qx, int qy, int qw, int qh, int color)

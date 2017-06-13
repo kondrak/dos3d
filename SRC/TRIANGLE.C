@@ -10,11 +10,11 @@ enum TriangleType
 };
 
 // internal: perform triangle rendering based on its type
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts);
-static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts);
-static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts);
+static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts);
+static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts);
+static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts);
 
-void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, unsigned char *buffer)
+void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
 {
     gfx_drawOptions drawOpts;
     DRAWOPTS_DEFAULT(drawOpts);
@@ -35,7 +35,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, unsigned
                                          Y_CLIPPED(v0.position, v1.position, v2.position) || \
                                          Z_CLIPPED(v0.position, v1.position, v2.position) )
 /* ***** */
-void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions *drawOpts, unsigned char *buffer)
+void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer)
 {
     gfx_Vertex v0, v1, v2;
 
@@ -162,7 +162,7 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
  * |     \    |/
  * v2-----v1  v2
  */
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts)
+static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts)
 {
     if(!t->texture)
     {
@@ -211,7 +211,7 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
     }
 }
 
-static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts)
+static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts)
 {
     double x, y, invDy, dxLeft, dxRight, yDir = 1;
 
@@ -293,7 +293,7 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
     }
 }
 
-static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts)
+static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type, const gfx_drawOptions *drawOpts)
 {
     double x, y, invDy, dxLeft, dxRight, yDir = 1;
     float duLeft, dvLeft, duRight, dvRight;
