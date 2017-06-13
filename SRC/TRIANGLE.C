@@ -21,6 +21,9 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, unsigned
     gfx_drawTriangleOpts(t, matrix, &drawOpts, buffer);
 }
 
+#define DEGENERATE(v0, v1, v2) ( (v0.position.x == v1.position.x && v0.position.x == v2.position.x) || \
+                                 (v0.position.y == v1.position.y && v0.position.y == v2.position.y) )
+
 #define COORD_CLIPPED(p0, p1, p2, c) ( (p0.c < -p0.w && p1.c < -p1.w && p2.c < -p2.w) || \
                                        (p0.c >  p0.w && p1.c >  p1.w && p2.c >  p2.w ) )
 #define X_CLIPPED(p0, p1, p2)        COORD_CLIPPED(p0, p1, p2, x)
@@ -81,6 +84,10 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
     if(v0.position.y > v2.position.y)
         VERTEX_SWAP(v0, v2)
 
+    // discard degenerate triangles
+    if(DEGENERATE(v0, v1, v2))
+        return;
+
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
         drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, drawOpts);
@@ -134,8 +141,11 @@ void gfx_drawTriangleOpts(const gfx_Triangle *t, const mth_Matrix4 *matrix, cons
             VERTEX_SWAP(v3, v2)
 
         // draw the composition of both triangles to form the desired shape
-        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, drawOpts);
-        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, drawOpts);
+        if(!DEGENERATE(v0, v3, v2))
+            drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, drawOpts);
+
+        if(!DEGENERATE(v1, v3, v2))
+            drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, drawOpts);
     }
 }
 
@@ -229,15 +239,13 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
     invZ0  = 1.f / v0->position.z;
     invZ1  = 1.f / v1->position.z;
     invZ2  = 1.f / v2->position.z;
-
-    if(v0->position.y - v2->position.y)
-        invY02 = 1.f / (v0->position.y - v2->position.y);
+    invY02 = 1.f / (v0->position.y - v2->position.y);
 
     gfx_setPalette(tex->palette);
 
     for(y = v0->position.y; ; y += yDir)
     {
-        float startInvZ, endInvZ, invLineLength, r1;
+        float startInvZ, endInvZ, r1, invLineLength = 0.f;
         float startU = texW, startV = texH, endU = texW, endV = texH;
 
         if(type == FLAT_BOTTOM && y > v2->position.y)
@@ -260,7 +268,8 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
         endU *= LERP(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
         endV *= LERP(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
 
-        invLineLength = 1.f / (endX - startX);
+        if(startX != endX)
+            invLineLength = 1.f / (endX - startX);
 
         for(x = startX; x <= endX; ++x)
         {
