@@ -35,7 +35,7 @@ extern "C" {
 
     enum DepthFunc
     {
-        DF_NEVER,
+        DF_ALWAYS,
         DF_LESS
     };
 
@@ -67,7 +67,7 @@ extern "C" {
     #define DRAWOPTS_DEFAULT(o) {\
             o.texMapMode = TM_PERSPECTIVE; \
             o.cullMode = FC_NONE; \
-            o.depthFunc = DF_NEVER; \
+            o.depthFunc = DF_ALWAYS; \
             o.colorKey   = -1; \
             }
 

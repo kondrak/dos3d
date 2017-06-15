@@ -11,10 +11,10 @@ Features
 - front/back face culling (CCW surfaces are considered "back")
 - affine and perspective corrected texture mapping
 - multiple render targets
+- depth testing (1/Z buffer based)
 - perspective and view calculations - "DOF6 Camera Ready (tm)"
 - line and point rendering
-- loading, resizing and displaying bitmaps (8bpp) with optional color keying
-- bitmap scrolling
+- loading, resizing, scrolling and displaying bitmaps (8bpp) with optional color keying
 - texture atlas support
 - double buffering
 
@@ -28,6 +28,5 @@ TODO
 -------
 
 - subpixel and subtexel precision improvements
-- Z-buffer
 - add proper clipping
 - ???

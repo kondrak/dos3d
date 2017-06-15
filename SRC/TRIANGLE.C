@@ -278,7 +278,12 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
             unsigned char pixel = tex->data[((int)u + ((int)v * tex->height)) % texArea];
 
             if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
-                gfx_drawPixelDepth(x, y, lerpInvZ, pixel, buffer);
+            {
+                if(buffer->drawOpts.depthFunc != DF_ALWAYS)
+                    gfx_drawPixelDepth(x, y, lerpInvZ, pixel, buffer);
+                else
+                    gfx_drawPixel(x, y, pixel, buffer);
+            }
         }
 
         startX += dxLeft;
