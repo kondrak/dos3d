@@ -12,7 +12,7 @@ typedef struct
 
 // helper functions
 void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture);
-void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer);
+void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
 
 // Texture mapping test
 void testTextureMapping()
@@ -22,14 +22,11 @@ void testTextureMapping()
     TexQuad quad;
     int texMapFlipped = 0;
     gfx_Camera cam;
-    gfx_drawOptions drawOpts;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
-
-    DRAWOPTS_DEFAULT(drawOpts);
 
     if(!buffer.colorBuffer)
     {
@@ -122,16 +119,16 @@ void testTextureMapping()
 
         if(keysPressed[KEY_G] && !texMapFlipped)
         {
-            drawOpts.texMapMode = drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
+            buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
             texMapFlipped = 1;
             
         }
         else if(!keysPressed[KEY_G]) texMapFlipped = 0;
 
         gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
-        fprintf(stdout, drawOpts.texMapMode == TM_AFFINE ? "Affine\r" : "Perspective\r");
+        fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "Affine\r" : "Perspective\r");
 
-        drawTexQuad(&quad, &modelViewProj, &drawOpts, &buffer);
+        drawTexQuad(&quad, &modelViewProj, &buffer);
         gfx_updateScreen(&buffer);
 
         keysPressed = kbd_getInput();
@@ -190,8 +187,8 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *textur
     q->tris[1].vertices[2].uv.v = 0;
 }
 
-void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer)
+void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer)
 {
-    gfx_drawTriangleOpts(&q->tris[0], mvp, drawOpts, buffer);
-    gfx_drawTriangleOpts(&q->tris[1], mvp, drawOpts, buffer);
+    gfx_drawTriangle(&q->tris[0], mvp, buffer);
+    gfx_drawTriangle(&q->tris[1], mvp, buffer);
 }

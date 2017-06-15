@@ -50,27 +50,31 @@ extern "C" {
     {
         enum TextureMappingMode texMapMode;
         enum FaceCullingMode cullMode;
+        enum DepthFunc depthFunc;
         short colorKey;
     } gfx_drawOptions;
 
     typedef struct
     {
-        unsigned char *colorBuffer;
-        float *depthBuffer; // depth buffer based on 1/z values per pixel
         int width;
         int height;
+        gfx_drawOptions drawOpts;
+        unsigned char *colorBuffer;
+        float *depthBuffer; // depth buffer based on 1/z values per pixel
     } gfx_drawBuffer;
 
     // default draw options initialization since the compiler can't handle struct constructors
     #define DRAWOPTS_DEFAULT(o) {\
             o.texMapMode = TM_PERSPECTIVE; \
             o.cullMode = FC_NONE; \
+            o.depthFunc = DF_NEVER; \
             o.colorKey   = -1; \
             }
 
     #define ALLOC_DRAWBUFFER(b, w, h, f) {\
             b.width  = w; \
             b.height = h; \
+            DRAWOPTS_DEFAULT(b.drawOpts); \
             b.colorBuffer = f & DB_COLOR ? (unsigned char *)malloc(sizeof(unsigned char) * w * h) : NULL; \
             b.depthBuffer = f & DB_DEPTH ? (float *)malloc(sizeof(float) * w * h) : NULL; \
             }

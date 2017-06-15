@@ -12,15 +12,12 @@ void testRenderTargets()
     const unsigned short *keysPressed;
     gfx_Triangle triangle;
     gfx_Camera cam;
-    gfx_drawOptions drawOpts;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
     gfx_drawBuffer renderTargets[4];
 
     for(i = 0; i < 4; ++i)
         ALLOC_DRAWBUFFER(renderTargets[i], SCREEN_WIDTH/2, SCREEN_HEIGHT/2, DB_COLOR);
-
-    DRAWOPTS_DEFAULT(drawOpts);
 
     for(i = 0; i < 4; ++i)
     {
@@ -95,7 +92,7 @@ void testRenderTargets()
         for(i = 0; i < 4; ++i)
         {
             gfx_clrBufferColor(&renderTargets[i], i+1);
-            gfx_drawTriangleOpts(&triangle, &modelViewProj, &drawOpts, &renderTargets[i]);
+            gfx_drawTriangle(&triangle, &modelViewProj, &renderTargets[i]);
         }
 
         // blit render targets to screen

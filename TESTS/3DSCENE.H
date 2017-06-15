@@ -23,9 +23,9 @@ typedef struct
 
 // helper functions
 void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int qz2, float u, float v, gfx_Bitmap *texture);
-void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer);
+void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
 void setupScene(Scene *s);
-void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer);
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
 void freeScene(Scene *s);
 
 // Render a simple scene
@@ -36,15 +36,12 @@ void test3DScene()
     Scene scene;
     int texMapFlipped = 0;
     gfx_Camera cam;
-    gfx_drawOptions drawOpts;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
     gfx_drawBuffer buffer;
 
-    DRAWOPTS_DEFAULT(drawOpts);
-    drawOpts.colorKey = COLOR_MAGENTA;
-
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
+    buffer.drawOpts.colorKey = COLOR_MAGENTA;
 
     if(!buffer.colorBuffer)
     {
@@ -93,7 +90,7 @@ void test3DScene()
 
         if(keysPressed[KEY_G] && !texMapFlipped)
         {
-            drawOpts.texMapMode = drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
+            buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
             texMapFlipped = 1;
         }
         else if(!keysPressed[KEY_G]) texMapFlipped = 0;
@@ -106,7 +103,7 @@ void test3DScene()
         gfx_clrBuffer(&buffer, DB_DEPTH);
 
         // render!
-        drawScene(&scene, &modelViewProj, &drawOpts, &buffer);
+        drawScene(&scene, &modelViewProj, &buffer);
 
         keysPressed = kbd_getInput();
         last = now;
@@ -163,13 +160,13 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
     q->tris[1].vertices[2].uv.v = 0; 
 }
 
-void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer)
+void drawSceneQuad(const SceneQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer)
 {
-    gfx_drawTriangleOpts(&q->tris[0], mvp, drawOpts, buffer);
-    gfx_drawTriangleOpts(&q->tris[1], mvp, drawOpts, buffer);
+    gfx_drawTriangle(&q->tris[0], mvp, buffer);
+    gfx_drawTriangle(&q->tris[1], mvp, buffer);
 }
 
-void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *drawOpts, gfx_drawBuffer *buffer)
+void drawScene(const Scene *s, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer)
 {
     int w;
     static int bgOffset = 0;
@@ -179,7 +176,7 @@ void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *dr
 
     // walls and sprites
     for(w = 0; w < NUM_WALLS; w++)
-        drawSceneQuad(&s->walls[w], mvp, drawOpts, buffer);
+        drawSceneQuad(&s->walls[w], mvp, buffer);
 
     // push to screen!
     gfx_updateScreen(buffer);
