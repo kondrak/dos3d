@@ -140,7 +140,7 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
 void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
 {
     int j;
-    int screenOffset = (y<<8)+(y<<6)+x;
+    int screenOffset = x + y * buffer->width;
     int bmpOffset = 0;
 
     for(j = 0; j < bmp->height; j++)
@@ -155,7 +155,7 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
 void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer)
 {
     int j;
-    int screenOffset = (y<<8)+(y<<6)+x;
+    int screenOffset = x + y * buffer->width;
     int texArea = bmp->width * bmp->height;
     int bmpOffset = 0;
 
@@ -173,7 +173,7 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
 void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const short colorKey)
 {
     int i,j;
-    int screenOffset = (y<<8)+(y<<6);
+    int screenOffset = y * buffer->width;
     int bmpOffset = 0;
     unsigned char data;
 
