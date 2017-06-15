@@ -14,6 +14,31 @@ extern "C" {
     #define SCREEN_WIDTH  320
     #define SCREEN_HEIGHT 200
 
+    enum BufferType
+    {
+        DB_COLOR = 1 << 0,
+        DB_DEPTH = 1 << 1
+    };
+
+    enum TextureMappingMode
+    {
+        TM_AFFINE,
+        TM_PERSPECTIVE
+    };
+
+    enum FaceCullingMode
+    {
+        FC_BACK,
+        FC_FRONT,
+        FC_NONE
+    };
+
+    enum DepthFunc
+    {
+        DF_NEVER,
+        DF_LESS
+    };
+
     // basic vertex: position and UV mapping for textures
     typedef struct
     {
@@ -23,31 +48,46 @@ extern "C" {
 
     typedef struct
     {
+        enum TextureMappingMode texMapMode;
+        enum FaceCullingMode cullMode;
+        short colorKey;
+    } gfx_drawOptions;
+
+    typedef struct
+    {
         unsigned char *colorBuffer;
+        float *depthBuffer; // depth buffer based on 1/z values per pixel
         int width;
         int height;
     } gfx_drawBuffer;
 
-    enum BufferType
-    {
-        DB_COLOR = 1 << 0,
-        DB_DEPTH = 1 << 1
-    };
+    // default draw options initialization since the compiler can't handle struct constructors
+    #define DRAWOPTS_DEFAULT(o) {\
+            o.texMapMode = TM_PERSPECTIVE; \
+            o.cullMode = FC_NONE; \
+            o.colorKey   = -1; \
+            }
 
     #define ALLOC_DRAWBUFFER(b, w, h, f) {\
             b.width  = w; \
             b.height = h; \
-            b.colorBuffer = (unsigned char *)malloc(w * h); \
+            b.colorBuffer = f & DB_COLOR ? (unsigned char *)malloc(sizeof(unsigned char) * w * h) : NULL; \
+            b.depthBuffer = f & DB_DEPTH ? (float *)malloc(sizeof(float) * w * h) : NULL; \
             }
 
-    #define FREE_DRAWBUFFER(b) \
-            free(b.colorBuffer);
+    #define FREE_DRAWBUFFER(b) {\
+            free(b.colorBuffer); \
+            free(b.depthBuffer); \
+            }
 
     // set graphics mode
     void gfx_setMode(const unsigned char mode);
 
-    // draw pixel to buffer
+    // draw pixel to buffer (ignore depth)
     void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buffer);
+
+    // draw pixel and take depth into account
+    void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer);
 
     // Bresenham line drawing
     void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, gfx_drawBuffer *buffer);
@@ -56,7 +96,7 @@ extern "C" {
     void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsigned char color, gfx_drawBuffer *buffer);
 
     // clears buffer to 0
-    void gfx_clrBuffer(gfx_drawBuffer *buffer);
+    void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType);
 
     // clears buffer to specific color
     void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color);

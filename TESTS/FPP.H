@@ -71,7 +71,7 @@ void testFirstPerson()
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         viewProj = mth_matMul(&cam.view, &cam.projection);
 
-        gfx_clrBuffer(&buffer);
+        gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
         gfx_drawTriangle(&triangle, &viewProj, &buffer);
         gfx_updateScreen(&buffer);
 

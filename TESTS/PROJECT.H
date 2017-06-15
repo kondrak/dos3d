@@ -87,7 +87,7 @@ void testPerspective()
             screenCube[i].y = (screenCube[i].y * (float)buffer.height) / (2.0f * screenCube[i].w) + (buffer.height >> 1);
         }
 
-        gfx_clrBuffer(&buffer);
+        gfx_clrBuffer(&buffer, DB_COLOR);
 
         // render the cube walls
         for(i = 0; i < 4; i++)

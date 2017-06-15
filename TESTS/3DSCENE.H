@@ -79,7 +79,7 @@ void test3DScene()
     cam.target.z = -1.f;
     cam.target.w = 1.f;
 
-    // translate entire cube a bit
+    // translate camera a bit
     model.m[13] = -20.f;
 
     keysPressed = kbd_getInput();
@@ -101,6 +101,9 @@ void test3DScene()
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
+
+        // clear depth buffer
+        gfx_clrBuffer(&buffer, DB_DEPTH);
 
         // render!
         drawScene(&scene, &modelViewProj, &drawOpts, &buffer);
@@ -186,6 +189,7 @@ void drawScene(const Scene *s, const mth_Matrix4 *mvp, const gfx_drawOptions *dr
 void setupScene(Scene *s)
 {
     int i, k;
+    mth_Matrix4 floorModel;
     gfx_Bitmap textureAtlas = gfx_loadBitmap("images/scene.bmp");
     gfx_Bitmap skyTexture   = gfx_bitmapFromAtlas(&textureAtlas, 0, 0, 256, 128);
 
@@ -201,14 +205,20 @@ void setupScene(Scene *s)
     gfx_freeBitmap(&textureAtlas);
 
     // floor
-    setupSceneQuad(&s->walls[0], -40, -20, 0, 40, 20, 0, 2.f, 2.f, &s->textures[2]);
+    setupSceneQuad(&s->walls[0], -140, -48, 0, 140, 48, 0, 3.f, 2.f, &s->textures[2]);
 
-    //rotate the floor
+    // setup translation for floor (move down and back a bit after rotation)
+    mth_matIdentity(&floorModel);
+    floorModel.m[13] = 50.f;
+    floorModel.m[14] = -100.f;
+
+    //rotate and shift the floor
     for(k = 0; k < 2; ++k)
     {
         for(i = 0; i < 3; i++)
         {
             mth_rotateVecAxisAngle(&s->walls[0].tris[k].vertices[i].position, 90.f * M_PI / 180.f, 1.f, 0.f, 0.f);
+            s->walls[0].tris[k].vertices[i].position = mth_matMulVec(&floorModel, &s->walls[0].tris[k].vertices[i].position);
         }
     } 
 

@@ -23,7 +23,6 @@ void testTextureMapping()
     int texMapFlipped = 0;
     gfx_Camera cam;
     gfx_drawOptions drawOpts;
-    mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
     gfx_drawBuffer buffer;
@@ -40,7 +39,6 @@ void testTextureMapping()
 
     tmr_start();
 
-    mth_matIdentity(&model);
     mth_matIdentity(&modelViewProj);
 
     // setup camera
@@ -64,10 +62,6 @@ void testTextureMapping()
     cam.target.z = -1.f;
     cam.target.w = 1.f;
 
-    // additional camera translation
-    //model.m[12] = -20.f;
-    //model.m[13] = -20.f;
-
     setupTexQuad(&quad, -20, -20, 20, 20, &bmp);
 
     keysPressed = kbd_getInput();
@@ -81,7 +75,6 @@ void testTextureMapping()
         dt = (float)(now - last);
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
-        modelViewProj = mth_matMul(&model, &modelViewProj);
 
         if(keysPressed[KEY_A])
         {
@@ -135,7 +128,7 @@ void testTextureMapping()
         }
         else if(!keysPressed[KEY_G]) texMapFlipped = 0;
 
-        gfx_clrBuffer(&buffer);
+        gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
         fprintf(stdout, drawOpts.texMapMode == TM_AFFINE ? "Affine\r" : "Perspective\r");
 
         drawTexQuad(&quad, &modelViewProj, &drawOpts, &buffer);

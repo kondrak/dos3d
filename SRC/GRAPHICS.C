@@ -31,6 +31,28 @@ void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buff
 }
 
 /* ***** */
+void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer)
+{
+    // naive "clipping"
+    if(x >= buffer->width || x < 0 || y >= buffer->height || y < 0) return;
+
+    // no depth info for VGA array, so ignore invZ
+    if(!buffer)
+        VGA[(y << 8) + (y << 6) + x] = color;
+    else
+    {
+        size_t idx = x + y * buffer->width;
+        
+        // write to buffers if 1/z of the drawn pixel is larger (ie. pixel is closer to viewer)
+        if(buffer->depthBuffer[idx] <= invZ)
+        {
+            buffer->colorBuffer[idx] = color;
+            buffer->depthBuffer[idx] = invZ;
+        }
+    }
+}
+
+/* ***** */
 void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, gfx_drawBuffer *buffer)
 {
     // Bresenham line drawing
@@ -68,9 +90,15 @@ void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsig
 }
 
 /* ***** */
-void gfx_clrBuffer(gfx_drawBuffer *buffer)
+void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType)
 {
-    gfx_clrBufferColor(buffer, 0);
+    if(bType & DB_COLOR)
+        gfx_clrBufferColor(buffer, 0);
+
+    // CAUTION: C-standard does not guarantee that memsetting() float array to 0 will produce desired results,
+    // this is platform dependent and may not work on architecture where 0.f is not represented by all 0 bits!
+    if(bType & DB_DEPTH && buffer->depthBuffer)
+        memset(buffer->depthBuffer, 0, sizeof(float) * buffer->width * buffer->height);
 }
 
 /* ***** */
