@@ -39,7 +39,7 @@ void testTextureMapping()
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
     buffer.drawOpts.depthFunc = DF_LESS;
 
-    if(!buffer.colorBuffer)
+    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
     {
         printf("Out of memory!");
         exit(1);

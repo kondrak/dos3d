@@ -54,7 +54,7 @@ void testFirstPerson()
     triangle.vertices[2].position.z = 0;
     triangle.vertices[2].position.w = 1.f;
 
-    if(!buffer.colorBuffer)
+    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
     {
         printf("Out of memory!");
         exit(1);

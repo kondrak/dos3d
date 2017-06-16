@@ -21,7 +21,7 @@ void testRenderTargets()
 
     for(i = 0; i < 4; ++i)
     {
-        if(!renderTargets[i].colorBuffer)
+        if(!DRAWBUFFER_VALID(renderTargets[i], DB_COLOR))
         {
             printf("Out of memory!");
             exit(1);

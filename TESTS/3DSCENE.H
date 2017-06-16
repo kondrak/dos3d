@@ -41,7 +41,7 @@ void test3DScene()
     buffer.drawOpts.colorKey = COLOR_MAGENTA;
     buffer.drawOpts.depthFunc = DF_LESS;
 
-    if(!buffer.colorBuffer)
+    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
     {
         printf("Out of memory!");
         exit(1);

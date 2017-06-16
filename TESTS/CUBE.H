@@ -75,7 +75,7 @@ void testRotatingCube()
     // secondary buffer to render depth buffer values
     ALLOC_DRAWBUFFER(depthDebug, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
-    if(!buffer.colorBuffer || !depthDebug.colorBuffer)
+    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH) || !DRAWBUFFER_VALID(depthDebug, DB_COLOR))
     {
         printf("Out of memory!");
         exit(1);
