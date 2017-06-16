@@ -25,7 +25,7 @@ void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buff
     int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
     int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
 
-    // DF_NEVER - don't draw anything
+    // DF_NEVER - don't draw anything, abort
     if(buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
@@ -39,12 +39,12 @@ void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buff
 }
 
 /* ***** */
-void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer)
+void gfx_drawPixelWithDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer)
 {
     int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
     int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
 
-    // DF_NEVER - don't draw anything
+    // DF_NEVER - don't draw anything, abort
     if(buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
@@ -60,7 +60,7 @@ void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx
         int drawPixel = 1;
 
         // check condition for 1/z and determine whether the pixel should be drawn
-        // note that this is *opposite* to how modern APIs make checks
+        // note that this is *opposite* to how modern APIs make checks (since we store 1/z)
         switch(buffer->drawOpts.depthFunc)
         {
             case DF_LESS:     drawPixel = buffer->depthBuffer[idx] < invZ; break;
@@ -96,7 +96,7 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned
     float startInvZ = z0 ? 1.f / z0 : 1.f;
     float endInvZ   = z1 ? 1.f / z1 : 1.f;
 
-    // DF_NEVER - don't draw anything
+    // DF_NEVER - don't draw anything, abort
     if(buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
@@ -111,11 +111,12 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned
 
     while(i++ <= ax)
     {
+        // interpolate and store 1/z for pixel if depth testing is enabled
         if(buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
             float r = (x0 - startX) * invLineLength;
             float lerpInvZ = LERP(startInvZ, endInvZ, r);
-            gfx_drawPixelDepth(x0, y0, lerpInvZ, color, buffer);
+            gfx_drawPixelWithDepth(x0, y0, lerpInvZ, color, buffer);
         }
         else
             gfx_drawPixel(x0, y0, color, buffer);
@@ -158,7 +159,6 @@ void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color)
 void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target)
 {
     int i;
-    
     if(target)
     {
         for(i = 0; i < src->height; ++i)

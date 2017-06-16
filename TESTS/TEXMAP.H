@@ -72,6 +72,7 @@ void testTextureMapping()
     cam.target.z = -1.f;
     cam.target.w = 1.f;
 
+    // setup textured quad
     setupTexQuad(&quad, -20, -20, 20, 20, &bmp);
 
     keysPressed = kbd_getInput();
@@ -114,13 +115,15 @@ void testTextureMapping()
         }
         else if(!keysPressed[KEY_D]) depthFuncFlipped = 0;
 
+        // clear buffers and draw the quad!
         gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
-        fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
-        fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
-        fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);
-
         drawTexQuad(&quad, &modelViewProj, &buffer);
         gfx_updateScreen(&buffer);
+
+        fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
+        fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
+        // reset carriage to top left corner of the screen
+        fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);        
         gfx_vSync();
 
         keysPressed = kbd_getInput();
@@ -133,7 +136,7 @@ void testTextureMapping()
     gfx_freeBitmap(&bmp);
 }
 
-
+/* ***** */
 void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture)
 {
     q->tris[0].color = 1;
@@ -179,6 +182,7 @@ void setupTexQuad(TexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *textur
     q->tris[1].vertices[2].uv.v = 0;
 }
 
+/* ***** */
 void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer)
 {
     gfx_drawTriangle(&q->tris[0], mvp, buffer);

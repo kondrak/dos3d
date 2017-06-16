@@ -22,7 +22,7 @@ extern "C" {
 
     /* *** Interface *** */
 
-    // draw triangle to buffer
+    // draw triangle to buffer using a transformation matrix
     void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
 
 #ifdef __cplusplus

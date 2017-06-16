@@ -108,7 +108,7 @@ void testPerspective()
     FREE_DRAWBUFFER(buffer);
 }
 
-
+/* ***** */
 void setupCube(mth_Vector4 *c)
 {
     int i;

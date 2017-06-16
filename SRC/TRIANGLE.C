@@ -14,9 +14,11 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
 static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type);
 static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type);
 
+// determine if triangle is degenerate
 #define DEGENERATE(v0, v1, v2) ( (v0.position.x == v1.position.x && v0.position.x == v2.position.x) || \
                                  (v0.position.y == v1.position.y && v0.position.y == v2.position.y) )
 
+// determine if either coordinate of all vertices is offscreen
 #define COORD_CLIPPED(p0, p1, p2, c) ( (p0.c < -p0.w && p1.c < -p1.w && p2.c < -p2.w) || \
                                        (p0.c >  p0.w && p1.c >  p1.w && p2.c >  p2.w ) )
 #define X_CLIPPED(p0, p1, p2)        COORD_CLIPPED(p0, p1, p2, x)
@@ -34,13 +36,13 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
     int bufferHalfHeight = buffer->height >> 1;
     gfx_Vertex v0, v1, v2;
 
+    // DF_NEVER - don't draw anything, abort
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
+        return;
+
     v0 = t->vertices[0];
     v1 = t->vertices[1];
     v2 = t->vertices[2];
-
-    // DF_NEVER - don't draw anything
-    if(buffer->drawOpts.depthFunc == DF_NEVER)
-        return;
 
     // transform the vertices
     v0.position = mth_matMulVec(matrix, &v0.position);
@@ -58,7 +60,8 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         mth_Vector4 d2 = mth_vecSub(&v2.position, &v0.position);
         mth_Vector4 n  = mth_crossProduct(&d1, &d2);
         double dp = mth_dotProduct(&v0.position, &n);
-        
+
+        // face culled? abort!
         if(buffer->drawOpts.cullMode == FC_BACK && dp >= 0)
             return;
         else if(buffer->drawOpts.cullMode == FC_FRONT && dp < 0)
@@ -83,7 +86,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
     if(v0.position.y > v2.position.y)
         VERTEX_SWAP(v0, v2)
 
-    // discard degenerate triangles
+    // discard degenerate triangle
     if(DEGENERATE(v0, v1, v2))
         return;
 
@@ -112,8 +115,8 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         if(diff.y != 0)
             ratioV = diff2.y / diff.y;
 
-        // lerp Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions;
-        // perform this step for affine texture mapping if depth testing is enabled, since then correct Z is needed for v3!
+        // lerp 1/Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions;
+        // perform this step for affine texture mapping only if depth testing is enabled, since then correct Z is needed for v3!
         if(buffer->drawOpts.texMapMode != TM_AFFINE || buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
             float invV0Z = 1.f/v0.position.z;
@@ -126,6 +129,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
                 v3.position.z = v0.position.z;
 
             // this will affect how affine texture map looks on the final polygon if depth test is enabled!
+            // we don't care though, since it's a distorted mapping anyway
             v3.uv.u = v3.position.z * LERP(v0.uv.u*invV0Z, v1.uv.u*invV1Z, ratioU);
             v3.uv.v = v3.position.z * LERP(v0.uv.v*invV0Z, v1.uv.v*invV1Z, ratioV);
         }
@@ -165,12 +169,13 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
  */
 static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type)
 {
+    // no texture? draw a flat-colored
     if(!t->texture)
     {
         double invDy, dxLeft, dxRight, xLeft, xRight;
+        double y, yDir = 1;
         // variables used if depth test is enabled
         float startInvZ, endInvZ, invZ0, invZ1, invZ2, invY02;
-        double y, yDir = 1;
 
         if(type == FLAT_BOTTOM)
         {
@@ -184,8 +189,8 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
 
         dxLeft  = (v2->position.x - v0->position.x) * invDy;
         dxRight = (v1->position.x - v0->position.x) * invDy;
-        xLeft  = v0->position.x;
-        xRight = xLeft;
+        xLeft   = v0->position.x;
+        xRight  = xLeft;
 
         // skip the unnecessary divisions if there's no depth testing
         if(buffer->drawOpts.depthFunc != DF_ALWAYS)
@@ -212,10 +217,10 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
                 break;
             }
 
-            // skip if no depth testing
+            // interpolate 1/z only if depth testing is enabled
             if(buffer->drawOpts.depthFunc != DF_ALWAYS)
             {
-                float r1 = (v0->position.y - y) * invY02;
+                float r1  = (v0->position.y - y) * invY02;
                 startInvZ = LERP(invZ0, invZ2, r1);
                 endInvZ   = LERP(invZ0, invZ1, r1);
                 gfx_drawLine(xLeft, y, 1.f/startInvZ, xRight, y, 1.f/endInvZ, t->color, buffer);
@@ -236,16 +241,16 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
     }
 }
 
+/* ***** */
 static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type)
 {
     double x, y, invDy, dxLeft, dxRight, yDir = 1;
-
     int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
     int   texW = tex->width - 1;
     int   texH = tex->height - 1;
     int   texArea = texW * texH;
-    float startX = v0->position.x;
-    float endX   = startX;
+    float startX  = v0->position.x;
+    float endX    = startX;
     float invZ0, invZ1, invZ2, invY02 = 1.f;
     int   finished = 0;
 
@@ -258,6 +263,7 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
         invDy  = 1.f / (v0->position.y - v2->position.y);
         yDir = -1;
     }
+
     dxLeft  = (v2->position.x - v0->position.x) * invDy;
     dxRight = (v1->position.x - v0->position.x) * invDy;
 
@@ -288,14 +294,15 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
 
         startU *= LERP(v0->uv.u*invZ0, v2->uv.u*invZ2, r1);
         startV *= LERP(v0->uv.v*invZ0, v2->uv.v*invZ2, r1);
-        endU *= LERP(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
-        endV *= LERP(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
+        endU   *= LERP(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
+        endV   *= LERP(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
 
         if(startX != endX)
             invLineLength = 1.f / (endX - startX);
 
         for(x = startX; x <= endX; ++x)
         {
+            // interpolate 1/z for each pixel in the scanline
             float r = (x - startX) * invLineLength;
             float lerpInvZ = LERP(startInvZ, endInvZ, r);
             float z = 1.f/lerpInvZ;
@@ -311,7 +318,7 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
                 if(buffer->drawOpts.depthFunc == DF_ALWAYS)
                     gfx_drawPixel(x, y, pixel, buffer);
                 else
-                    gfx_drawPixelDepth(x, y, lerpInvZ, pixel, buffer);
+                    gfx_drawPixelWithDepth(x, y, lerpInvZ, pixel, buffer);
             }
         }
 
@@ -322,12 +329,13 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
     }
 }
 
+/* ***** */
 static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type)
 {
     double x, y, invDy, dxLeft, dxRight, yDir = 1;
+    int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
     float duLeft, dvLeft, duRight, dvRight;
     float startU, startV, invDx, du, dv, startX, endX;
-    int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
     float texW = tex->width - 1;
     float texH = tex->height - 1;
     int   texArea = texW * texH;
@@ -344,6 +352,7 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
         invDy  = 1.f / (v0->position.y - v2->position.y);
         yDir = -1;
     }
+
     dxLeft  = (v2->position.x - v0->position.x) * invDy;
     dxRight = (v1->position.x - v0->position.x) * invDy;
 
@@ -390,7 +399,7 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
         else if ( type == FLAT_TOP && y < v2->position.y)
             break;
 
-        // skip if no depth testing
+        // interpolate 1/z only if depth testing is enabled
         if(buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
             float r1 = (v0->position.y - y) * invY02;
@@ -415,7 +424,7 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
                 {
                     float r = (x - startX) * invLineLength;
                     float lerpInvZ = LERP(startInvZ, endInvZ, r);
-                    gfx_drawPixelDepth(x, y, lerpInvZ, pixel, buffer);
+                    gfx_drawPixelWithDepth(x, y, lerpInvZ, pixel, buffer);
                 }
             }
             u += du;
@@ -430,4 +439,3 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
         if(finished) break;
     }
 }
-

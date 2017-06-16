@@ -4,17 +4,13 @@
 
 #define ASM_TIMER
 
-typedef void (__interrupt __far *INTFUNCPTR)();
+typedef void (__interrupt __far *intFuncPtr)();
 
-INTFUNCPTR oldTimerInterrupt; // Original interrupt handler
+intFuncPtr oldTimerInterrupt; // Original interrupt handler
 
 volatile unsigned long int milliseconds = 0; // Elapsed time in milliseconds
 
-unsigned long int tmr_getMs()
-{
-    return milliseconds;
-}
-
+// internal: 1ms timer interrupt handler function
 void __interrupt __far timerHandler()
 {
     static unsigned long count = 0; // To keep track of original timer ticks
@@ -41,6 +37,7 @@ void __interrupt __far timerHandler()
     }
 }
 
+/* ***** */
 void tmr_start()
 {
     union REGS r;
@@ -52,7 +49,7 @@ void tmr_start()
     r.h.al = 0x08;
     r.h.ah = 0x35;
     int386x(0x21, &r, &r, &s);
-    oldTimerInterrupt = (INTFUNCPTR)MK_FP(s.es, r.x.ebx);
+    oldTimerInterrupt = (intFuncPtr)MK_FP(s.es, r.x.ebx);
 
     /* Install new interrupt handler: */
     milliseconds = 0;
@@ -81,6 +78,7 @@ void tmr_start()
     _enable();
 }
 
+/* ***** */
 void tmr_finish()
 {
     union REGS r;
@@ -112,4 +110,10 @@ void tmr_finish()
     outp(0x40, 0x00);
 #endif
     _enable();
+}
+
+/* ***** */
+unsigned long int tmr_getMs()
+{
+    return milliseconds;
 }

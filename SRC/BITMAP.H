@@ -27,7 +27,7 @@ extern "C" {
     // create a bitmap from a larger *atlas at image position x,y and of size w,h
     gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int h);
 
-    // return a resized *bmp, the original image data will be freed
+    // return a resized bitmap, the original image data will be freed
     gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h);
 
     // draw bitmap to buffer (no color keying)

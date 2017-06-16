@@ -7,7 +7,7 @@ void testTriangles()
 {
     const unsigned short *keysPressed;
     gfx_Camera cam;
-    int paused = 0, numTris = 0;
+    int numTris = 0;
     gfx_Triangle triangle;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
@@ -54,6 +54,7 @@ void testTriangles()
 
     while(!keysPressed[KEY_ESC])
     {
+        // render randomly scattered triangles of arbitrary size
         triangle.color = rand() % 103 + 1;
         triangle.texture = NULL;
         triangle.vertices[0].position.x = rand() % 320;
@@ -76,7 +77,8 @@ void testTriangles()
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
-        if(paused == 0)
+        // pause rendering when holding down space bar
+        if(!keysPressed[KEY_SPACE])
         {
             gfx_drawTriangle(&triangle, &modelViewProj, &buffer);
             gfx_updateScreen(&buffer);
@@ -86,9 +88,6 @@ void testTriangles()
         }
 
         keysPressed = kbd_getInput();
-
-        // pause rendering when holding down space bar
-        paused = keysPressed[KEY_SPACE];
     }
 
     FREE_DRAWBUFFER(buffer);

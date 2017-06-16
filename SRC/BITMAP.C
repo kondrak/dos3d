@@ -190,6 +190,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
     }
 }
 
+/* ***** */
 void gfx_freeBitmap(gfx_Bitmap *bmp)
 {
     free(bmp->data);

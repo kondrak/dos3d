@@ -32,6 +32,7 @@ void printMenu()
     printf("\nInput:\n");
 }
 
+// main test program
 int main(int argc, char **argv)
 {
     int demoFinished = 0;

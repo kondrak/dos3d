@@ -2,7 +2,7 @@
 #include "src/timer.h"
 #include "src/triangle.h"
 
-// First person WASD camera
+// First person WASD camera (warning: a bit faulty with z-clipping until proper clipping is implemented!)
 void testFirstPerson()
 {
     unsigned long int now, last = 0;

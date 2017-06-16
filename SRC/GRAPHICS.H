@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 /*
- * Common graphics functionality.
+ * Common graphics functions and data structures.
  */
 
 #ifdef __cplusplus
@@ -14,18 +14,21 @@ extern "C" {
     #define SCREEN_WIDTH  320
     #define SCREEN_HEIGHT 200
 
+    // draw buffer type
     enum BufferType
     {
-        DB_COLOR = 1 << 0,
-        DB_DEPTH = 1 << 1
+        DB_COLOR = 1 << 0, // color buffer
+        DB_DEPTH = 1 << 1  // depth buffer
     };
 
+    // texture mapping type
     enum TextureMappingMode
     {
         TM_AFFINE = 1 << 0,
         TM_PERSPECTIVE = 1 << 1
     };
 
+    // face culling mode
     enum FaceCullingMode
     {
         FC_BACK  = 1 << 0,
@@ -33,6 +36,7 @@ extern "C" {
         FC_NONE  = 1 << 2
     };
 
+    // depth function type (OpenGL style)
     enum DepthFunc
     {
         DF_ALWAYS   = 1 << 0,
@@ -51,6 +55,7 @@ extern "C" {
         mth_Vector2 uv;
     } gfx_Vertex;
 
+    // common draw options for a draw buffer
     typedef struct
     {
         enum TextureMappingMode texMapMode;
@@ -59,6 +64,7 @@ extern "C" {
         short colorKey;
     } gfx_drawOptions;
 
+    // draw buffer/render target
     typedef struct
     {
         int width;
@@ -70,23 +76,25 @@ extern "C" {
 
     // default draw options initialization since the compiler can't handle struct constructors
     #define DRAWOPTS_DEFAULT(o) {\
-            o.texMapMode = TM_PERSPECTIVE; \
-            o.cullMode = FC_NONE; \
-            o.depthFunc = DF_ALWAYS; \
-            o.colorKey   = -1; \
+                o.texMapMode = TM_PERSPECTIVE; \
+                o.cullMode = FC_NONE; \
+                o.depthFunc = DF_ALWAYS; \
+                o.colorKey   = -1; \
             }
 
+    // draw buffer allocation and default initialization
     #define ALLOC_DRAWBUFFER(b, w, h, f) {\
-            b.width  = w; \
-            b.height = h; \
-            DRAWOPTS_DEFAULT(b.drawOpts); \
-            b.colorBuffer = f & DB_COLOR ? (unsigned char *)malloc(sizeof(unsigned char) * w * h) : NULL; \
-            b.depthBuffer = f & DB_DEPTH ? (float *)malloc(sizeof(float) * w * h) : NULL; \
+                b.width  = w; \
+                b.height = h; \
+                DRAWOPTS_DEFAULT(b.drawOpts); \
+                b.colorBuffer = f & DB_COLOR ? (unsigned char *)malloc(sizeof(unsigned char) * w * h) : NULL; \
+                b.depthBuffer = f & DB_DEPTH ? (float *)malloc(sizeof(float) * w * h) : NULL; \
             }
 
+    // draw buffer release
     #define FREE_DRAWBUFFER(b) {\
-            free(b.colorBuffer); \
-            free(b.depthBuffer); \
+                free(b.colorBuffer); \
+                free(b.depthBuffer); \
             }
 
     // set graphics mode
@@ -96,7 +104,7 @@ extern "C" {
     void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buffer);
 
     // draw pixel and take depth into account
-    void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer);
+    void gfx_drawPixelWithDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer);
 
     // Bresenham line drawing
     void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned char color, gfx_drawBuffer *buffer);
@@ -107,13 +115,13 @@ extern "C" {
     // clears buffer to 0
     void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType);
 
-    // clears buffer to specific color
+    // fills color buffer to specific color (depth buffer is untouched)
     void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color);
 
-    // copy contents of one buffer to another (at x,y offset)
+    // copy contents of one buffer to another (at x,y offset) - buffers must be the same size (if target is NULL - blits to VGA)
     void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target);
 
-    // copy buffer contents to VGA memory
+    // fast copy buffer contents straight to VGA memory - buffer must be the same size as VGA screen buffer
     void gfx_updateScreen(gfx_drawBuffer *buffer);
 
     // set current VGA palette

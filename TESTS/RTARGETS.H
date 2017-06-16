@@ -3,7 +3,6 @@
 #include "src/timer.h"
 #include "src/triangle.h"
 
-
 // Multiple render targets test
 void testRenderTargets()
 {
@@ -16,6 +15,7 @@ void testRenderTargets()
     mth_Matrix4 modelViewProj;
     gfx_drawBuffer renderTargets[4];
 
+    // create 4 draw buffers
     for(i = 0; i < 4; ++i)
         ALLOC_DRAWBUFFER(renderTargets[i], SCREEN_WIDTH/2, SCREEN_HEIGHT/2, DB_COLOR);
 
