@@ -89,12 +89,12 @@ void test3DScene()
         now = tmr_getMs();
         dt = (float)(now - last);
 
-        if(keysPressed[KEY_G] && !texMapFlipped)
+        if(keysPressed[KEY_T] && !texMapFlipped)
         {
             buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
             texMapFlipped = 1;
         }
-        else if(!keysPressed[KEY_G]) texMapFlipped = 0;
+        else if(!keysPressed[KEY_T]) texMapFlipped = 0;
 
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
