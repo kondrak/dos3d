@@ -25,6 +25,10 @@ void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buff
     int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
     int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
 
+    // DF_NEVER - don't draw anything
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
+        return;
+
     // naive "clipping"
     if(x >= bufferW || x < 0 || y >= bufferH || y < 0) return;
 
@@ -40,6 +44,10 @@ void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx
     int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
     int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
 
+    // DF_NEVER - don't draw anything
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
+        return;
+
     // naive "clipping"
     if(x >= bufferW || x < 0 || y >= bufferH || y < 0) return;
 
@@ -49,9 +57,21 @@ void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx
     else
     {
         size_t idx = x + y * buffer->width;
-        
-        // write to buffers if 1/z of the drawn pixel is larger (ie. pixel is closer to viewer)
-        if(buffer->depthBuffer[idx] <= invZ)
+        int drawPixel = 1;
+
+        // check condition for 1/z and determine whether the pixel should be drawn
+        // note that this is *opposite* to how modern APIs make checks
+        switch(buffer->drawOpts.depthFunc)
+        {
+            case DF_LESS:    drawPixel = buffer->depthBuffer[idx] < invZ; break;
+            case DF_LEQUAL:  drawPixel = buffer->depthBuffer[idx] <= invZ; break;
+            case DF_GEQUAL:  drawPixel = buffer->depthBuffer[idx] >= invZ; break;
+            case DF_GREATER: drawPixel = buffer->depthBuffer[idx] > invZ; break;
+            default:
+            break;
+        }
+
+        if(drawPixel)
         {
             buffer->colorBuffer[idx] = color;
             buffer->depthBuffer[idx] = invZ;
@@ -74,6 +94,10 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned
     int n, i = 0;
     float startInvZ = z0 ? 1.f / z0 : 1.f;
     float endInvZ   = z1 ? 1.f / z1 : 1.f;
+
+    // DF_NEVER - don't draw anything
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
+        return;
 
     if(ax <= ay)
     {

@@ -38,6 +38,10 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
     v1 = t->vertices[1];
     v2 = t->vertices[2];
 
+    // DF_NEVER - don't draw anything
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
+        return;
+
     // transform the vertices
     v0.position = mth_matMulVec(matrix, &v0.position);
     v1.position = mth_matMulVec(matrix, &v1.position);
