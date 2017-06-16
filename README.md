@@ -23,6 +23,8 @@ The executable is a set of pre-made tests that demonstrate each feature in detai
 ![Screenshot](http://kondrak.info/images/dos3d/1.png?raw=true)
 ![Screenshot](http://kondrak.info/images/dos3d/2.png?raw=true)
 ![Screenshot](http://kondrak.info/images/dos3d/3.png?raw=true)
+![Screenshot](http://kondrak.info/images/dos3d/4.png?raw=true)
+![Screenshot](http://kondrak.info/images/dos3d/5.png?raw=true)
 
 TODO
 -------
