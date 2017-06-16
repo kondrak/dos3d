@@ -198,7 +198,9 @@ void setupScene(Scene *s)
     s->textures[4] = gfx_bitmapFromAtlas(&textureAtlas, 128, 256, 128, 128);
     s->textures[5] = gfx_bitmapFromAtlas(&textureAtlas, 0, 384, 128, 128);
     s->textures[6] = gfx_bitmapFromAtlas(&textureAtlas, 128, 384, 128, 128);
-    
+
+    // load the color palette
+    gfx_setPalette(textureAtlas.palette);
     // atlas bitmap is no longer needed at this point
     gfx_freeBitmap(&textureAtlas);
 

@@ -45,6 +45,8 @@ void testTextureMapping()
         exit(1);
     }
 
+    gfx_setPalette(bmp.palette);
+
     tmr_start();
 
     mth_matIdentity(&modelViewProj);
@@ -119,6 +121,7 @@ void testTextureMapping()
 
         drawTexQuad(&quad, &modelViewProj, &buffer);
         gfx_updateScreen(&buffer);
+        gfx_vSync();
 
         keysPressed = kbd_getInput();
         fflush(stdout);

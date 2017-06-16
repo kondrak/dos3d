@@ -152,6 +152,18 @@ void gfx_setPalette(const unsigned char *palette)
 }
 
 /* ***** */
+void gfx_getPalette(unsigned char *outPalette)
+{
+    int i;
+    outp(0x03c7, 0);
+
+    for(i = 0; i < 256*3; ++i)
+    {
+        outPalette[i] = inp(0x03c9);
+    }
+}
+
+/* ***** */
 void gfx_vSync()
 {
     while((inp(0x03da) & 8));

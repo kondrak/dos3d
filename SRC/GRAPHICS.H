@@ -114,6 +114,9 @@ extern "C" {
     // set current VGA palette
     void gfx_setPalette(const unsigned char *palette);
 
+    // read current VGA palette
+    void gfx_getPalette(unsigned char *outPalette);
+
     // wait for retrace
     void gfx_vSync();
 

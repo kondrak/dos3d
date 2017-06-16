@@ -15,6 +15,13 @@ typedef struct
     CubeTexQuad walls[6];
 } TexCube;
 
+enum DrawModeType
+{
+    COLOR_CUBE,
+    DEPTH_VALUES,
+    DRAWMODE_CNT
+};
+
 // helper functions
 void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture);
 void setupTexCube(TexCube *c, gfx_Bitmap *texture);
@@ -39,16 +46,20 @@ void testRotatingCube()
 {
     unsigned long int now, last = 0;
     const unsigned short *keysPressed;
+    unsigned char grayScalePalette[256*3];
     TexCube cube;
-    int texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0;
+    int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0, drawModeFlipped = 0;
+    int drawMode = COLOR_CUBE;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
-    gfx_drawBuffer buffer;
+    gfx_drawBuffer buffer, depthDebug;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
     buffer.drawOpts.cullMode  = FC_BACK;
     buffer.drawOpts.depthFunc = DF_LESS;
+
+    ALLOC_DRAWBUFFER(depthDebug, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
     if(!buffer.colorBuffer)
     {
@@ -83,12 +94,19 @@ void testRotatingCube()
 
     setupTexCube(&cube, &bmp);
 
+    for(i = 0; i < 768; i += 3)
+    {
+        grayScalePalette[i] = 3*255*i/768;
+        grayScalePalette[i+1] = 3*255*i/768;
+        grayScalePalette[i+2] = 3*255*i/768;
+    }
+
     keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {
-        int i, j, k;
+        int j, k;
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
@@ -123,7 +141,7 @@ void testRotatingCube()
         }
         else if(!keysPressed[KEY_C]) cullModeFlipped = 0;
 
-        if(keysPressed[KEY_D] && !depthFuncFlipped)
+        if(keysPressed[KEY_D] && !depthFuncFlipped && drawMode != DEPTH_VALUES)
         {
             buffer.drawOpts.depthFunc = buffer.drawOpts.depthFunc == DF_ALWAYS ? DF_LESS : DF_ALWAYS;
             depthFuncFlipped = 1;
@@ -131,17 +149,51 @@ void testRotatingCube()
         }
         else if(!keysPressed[KEY_D]) depthFuncFlipped = 0;
 
-        ROTATE_CUBE(-0.001f, 1.f, 0.f, 0.f);
-        ROTATE_CUBE(-0.001f, 0.f, 1.f, 0.f);
+        if(!keysPressed[KEY_R])
+        {
+            ROTATE_CUBE(-0.001f, 1.f, 0.f, 0.f);
+            ROTATE_CUBE(-0.001f, 0.f, 1.f, 0.f);
+        }
+        
+        if(keysPressed[KEY_SPACE] && !drawModeFlipped)
+        {
+            drawMode++;
+            if(drawMode == DRAWMODE_CNT)
+                drawMode = COLOR_CUBE;
+
+            // viewing depth values requires depth testing to be enabled
+            if(drawMode == DEPTH_VALUES) buffer.drawOpts.depthFunc = DF_LESS;
+            drawModeFlipped = 1;
+        }
+        else if(!keysPressed[KEY_SPACE]) drawModeFlipped = 0;
 
         gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
-        fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
-        fprintf(stdout, buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF\r\n" : "[C]ulling BF: ON\r\n");
-        fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
-        fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);
 
         drawTexCube(&cube, &modelViewProj, &buffer);
-        gfx_updateScreen(&buffer);
+
+        if(drawMode == DEPTH_VALUES)
+        {
+            gfx_setPalette(grayScalePalette);
+
+            for(i = 0; i < buffer.width * buffer.height; ++i)
+            {
+                depthDebug.colorBuffer[i] = (unsigned char)((int)(buffer.depthBuffer[i] * 256 * 2.6) % 256);
+            }
+            
+            gfx_updateScreen(&depthDebug);
+            fprintf(stdout, "1/Z depth values\r");
+        }
+        else
+        {
+            gfx_setPalette(bmp.palette);
+            gfx_updateScreen(&buffer);
+            fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
+            fprintf(stdout, buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF\r\n" : "[C]ulling BF: ON\r\n");
+            fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
+            fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);
+        }
+
+        gfx_vSync();
 
         keysPressed = kbd_getInput();
         fflush(stdout);
@@ -150,6 +202,7 @@ void testRotatingCube()
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);
+    FREE_DRAWBUFFER(depthDebug);
     gfx_freeBitmap(&bmp);
 }
 

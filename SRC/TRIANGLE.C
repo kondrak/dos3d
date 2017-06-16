@@ -238,8 +238,6 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
     invZ2  = 1.f / v2->position.z;
     invY02 = 1.f / (v0->position.y - v2->position.y);
 
-    gfx_setPalette(tex->palette);
-
     for(y = v0->position.y; ; y += yDir)
     {
         float startInvZ, endInvZ, r1, invLineLength = 0.f;
@@ -344,8 +342,6 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
         invZ2  = 1.f / v2->position.z;
         invY02 = 1.f / (v0->position.y - v2->position.y);
     }
-
-    gfx_setPalette(tex->palette);
 
     for(y = v0->position.y; ; y += yDir)
     {
