@@ -46,6 +46,9 @@ extern "C" {
         double w;
     } mth_Quaternion;
 
+    // helper macro to reduce boilerplate when initializing a mth_Vector4
+    #define VEC4(vec, vx, vy, vz) { vec.x = vx; vec.y = vy; vec.z = vz; vec.w = 1.0; }
+
     /* *** Interface *** */
 
     /*

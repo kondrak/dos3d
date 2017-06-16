@@ -31,25 +31,10 @@ void testPerspective()
     mth_matIdentity(&modelViewProj);
 
     // setup camera
-    cam.position.x = 0;
-    cam.position.y = 0;
-    cam.position.z = 150.f;
-    cam.position.w = 1.f;
-
-    cam.up.x = 0.f;
-    cam.up.y = 1.f;
-    cam.up.z = 0.f;
-    cam.up.w = 1.f;
-
-    cam.right.x = 1.f;
-    cam.right.y = 0.f;
-    cam.right.z = 0.f;
-    cam.right.w = 1.f;
-
-    cam.target.x = 0.f;
-    cam.target.y = 0.f;
-    cam.target.z = -1.f;
-    cam.target.w = 1.f;
+    VEC4(cam.position, 0, 0, 150);
+    VEC4(cam.up, 0, 1, 0);
+    VEC4(cam.right, 1, 0, 0);
+    VEC4(cam.target, 0, 0, -1);
 
     // setup world coordinates for pseudo-cube
     setupCube(&cube);

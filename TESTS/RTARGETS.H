@@ -34,42 +34,16 @@ void testRenderTargets()
     mth_matIdentity(&modelViewProj);
 
     // setup camera
-    cam.position.x = 0;
-    cam.position.y = 0;
-    cam.position.z = 60.f;
-    cam.position.w = 1.f;
-
-    cam.up.x = 0.f;
-    cam.up.y = 1.f;
-    cam.up.z = 0.f;
-    cam.up.w = 1.f;
-
-    cam.right.x = 1.f;
-    cam.right.y = 0.f;
-    cam.right.z = 0.f;
-    cam.right.w = 1.f;
-
-    cam.target.x = 0.f;
-    cam.target.y = 0.f;
-    cam.target.z = -1.f;
-    cam.target.w = 1.f;
+    VEC4(cam.position, 0, 0, 60);
+    VEC4(cam.up, 0, 1, 0);
+    VEC4(cam.right, 1, 0, 0);
+    VEC4(cam.target, 0, 0, -1);
 
     triangle.color = rand() % 103 + 1;
     triangle.texture = NULL;
-    triangle.vertices[0].position.x = -20;
-    triangle.vertices[0].position.y = 20;
-    triangle.vertices[0].position.z = 0;
-    triangle.vertices[0].position.w = 1.f;
-
-    triangle.vertices[1].position.x = 0;
-    triangle.vertices[1].position.y = -20;
-    triangle.vertices[1].position.z = 0;
-    triangle.vertices[1].position.w = 1.f;
-
-    triangle.vertices[2].position.x = 20;
-    triangle.vertices[2].position.y = 20;
-    triangle.vertices[2].position.z = 0;
-    triangle.vertices[2].position.w = 1.f;
+    VEC4(triangle.vertices[0].position, -20,  20, 0);
+    VEC4(triangle.vertices[1].position,   0, -20, 0);
+    VEC4(triangle.vertices[2].position,  20,  20, 0);
 
     keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)renderTargets[0].width / (float)renderTargets[0].height, 0.1f, 500.f);

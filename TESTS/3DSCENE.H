@@ -54,25 +54,10 @@ void test3DScene()
     mth_matIdentity(&modelViewProj);
 
     // setup camera
-    cam.position.x = 0;
-    cam.position.y = -20.f;
-    cam.position.z = 40.f;
-    cam.position.w = 1.f;
-
-    cam.up.x = 0.f;
-    cam.up.y = 1.f;
-    cam.up.z = 0.f;
-    cam.up.w = 1.f;
-
-    cam.right.x = 1.f;
-    cam.right.y = 0.f;
-    cam.right.z = 0.f;
-    cam.right.w = 1.f;
-
-    cam.target.x = 0.f;
-    cam.target.y = 0.f;
-    cam.target.z = -1.f;
-    cam.target.w = 1.f;
+    VEC4(cam.position, 0, -20, 40);
+    VEC4(cam.up, 0, 1, 0);
+    VEC4(cam.right, 1, 0, 0);
+    VEC4(cam.target, 0, 0, -1);
 
     keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
@@ -113,43 +98,26 @@ void setupSceneQuad(SceneQuad *q, int qx, int qy, int qz, int qx2, int qy2, int 
 {
     q->tris[0].color = 1;
     q->tris[0].texture = texture;
-    q->tris[0].vertices[0].position.x = qx;
-    q->tris[0].vertices[0].position.y = qy2;
-    q->tris[0].vertices[0].position.z = qz;
-    q->tris[0].vertices[0].position.w = 1.f;
+    
+    VEC4(q->tris[0].vertices[0].position, qx, qy2, qz);
     q->tris[0].vertices[0].uv.u = 0;
     q->tris[0].vertices[0].uv.v = v;
-    q->tris[0].vertices[1].position.x = qx2;
-    q->tris[0].vertices[1].position.y = qy;
-    q->tris[0].vertices[1].position.z = qz2;
-    q->tris[0].vertices[1].position.w = 1.f;
+    VEC4(q->tris[0].vertices[1].position, qx2, qy, qz2);
     q->tris[0].vertices[1].uv.u = u;
     q->tris[0].vertices[1].uv.v = 0;
-    q->tris[0].vertices[2].position.x = qx;
-    q->tris[0].vertices[2].position.y = qy;
-    q->tris[0].vertices[2].position.z = qz;
-    q->tris[0].vertices[2].position.w = 1.f;
+    VEC4(q->tris[0].vertices[2].position, qx, qy, qz);
     q->tris[0].vertices[2].uv.u = 0;
     q->tris[0].vertices[2].uv.v = 0;
 
     q->tris[1].color = 1;
     q->tris[1].texture = texture;
-    q->tris[1].vertices[0].position.x = qx;
-    q->tris[1].vertices[0].position.y = qy2;
-    q->tris[1].vertices[0].position.z = qz;
-    q->tris[1].vertices[0].position.w = 1.f;
+    VEC4(q->tris[1].vertices[0].position, qx, qy2, qz);
     q->tris[1].vertices[0].uv.u = 0;
     q->tris[1].vertices[0].uv.v = v;
-    q->tris[1].vertices[1].position.x = qx2;
-    q->tris[1].vertices[1].position.y = qy2;
-    q->tris[1].vertices[1].position.z = qz2;
-    q->tris[1].vertices[1].position.w = 1.f;
+    VEC4(q->tris[1].vertices[1].position, qx2, qy2, qz2);
     q->tris[1].vertices[1].uv.u = u;
     q->tris[1].vertices[1].uv.v = v;
-    q->tris[1].vertices[2].position.x = qx2;
-    q->tris[1].vertices[2].position.y = qy;
-    q->tris[1].vertices[2].position.z = qz2;
-    q->tris[1].vertices[2].position.w = 1.f;
+    VEC4(q->tris[1].vertices[2].position, qx2, qy, qz2);
     q->tris[1].vertices[2].uv.u = u;
     q->tris[1].vertices[2].uv.v = 0; 
 }
