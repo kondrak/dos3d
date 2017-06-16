@@ -21,8 +21,11 @@ void gfx_setMode(const unsigned char mode)
 /* ***** */
 void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buffer)
 {
+    int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
+    int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
+
     // naive "clipping"
-    if(x >= buffer->width || x < 0 || y >= buffer->height || y < 0) return;
+    if(x >= bufferW || x < 0 || y >= bufferH || y < 0) return;
 
     if(!buffer)
         VGA[(y << 8) + (y << 6) + x] = color;
@@ -33,8 +36,11 @@ void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buff
 /* ***** */
 void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer)
 {
+    int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
+    int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
+
     // naive "clipping"
-    if(x >= buffer->width || x < 0 || y >= buffer->height || y < 0) return;
+    if(x >= bufferW || x < 0 || y >= bufferH || y < 0) return;
 
     // no depth info for VGA array, so ignore invZ
     if(!buffer)
