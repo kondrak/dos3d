@@ -94,7 +94,7 @@ extern "C" {
     void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer);
 
     // Bresenham line drawing
-    void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, gfx_drawBuffer *buffer);
+    void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned char color, gfx_drawBuffer *buffer);
 
     // Bresenham line drawing - using mth_Vector4 structs
     void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsigned char color, gfx_drawBuffer *buffer);

@@ -1,4 +1,5 @@
 #include "src/graphics.h"
+#include "src/utils.h"
 
 #include <conio.h>
 #include <math.h>
@@ -59,9 +60,11 @@ void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx
 }
 
 /* ***** */
-void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, gfx_drawBuffer *buffer)
+void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned char color, gfx_drawBuffer *buffer)
 {
     // Bresenham line drawing
+    int startX = x0;
+    float invLineLength = x1 - x0 ? 1.f / (x1 - x0) : 1.f;
     int x = x1 - x0;
     int y = y1 - y0;
     int ax = abs(x), ay = abs(y);
@@ -69,6 +72,8 @@ void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, gfx
     int dy1 = y < 0 ? -1 : y > 0 ? 1 : 0;
     int dx2 = dx1, dy2 = 0;
     int n, i = 0;
+    float startInvZ = z0 ? 1.f / z0 : 1.f;
+    float endInvZ   = z1 ? 1.f / z1 : 1.f;
 
     if(ax <= ay)
     {
@@ -81,7 +86,15 @@ void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, gfx
 
     while(i++ <= ax)
     {
-        gfx_drawPixel(x0, y0, color, buffer);
+        if(buffer->drawOpts.depthFunc != DF_ALWAYS)
+        {
+            float r = (x0 - startX) * invLineLength;
+            float lerpInvZ = LERP(startInvZ, endInvZ, r);
+            gfx_drawPixelDepth(x0, y0, lerpInvZ, color, buffer);
+        }
+        else
+            gfx_drawPixel(x0, y0, color, buffer);
+
         n  += ay;
         x0 += n >= ax ? dx1 : dx2;
         y0 += n >= ax ? dy1 : dy2;
@@ -92,7 +105,7 @@ void gfx_drawLine(int x0, int y0, int x1, int y1, const unsigned char color, gfx
 /* ***** */
 void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsigned char color, gfx_drawBuffer *buffer)
 {
-    gfx_drawLine(from->x, from->y, to->x, to->y, color, buffer);
+    gfx_drawLine(from->x, from->y, from->z, to->x, to->y, to->z, color, buffer);
 }
 
 /* ***** */
