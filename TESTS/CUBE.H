@@ -17,13 +17,14 @@ typedef struct
 
 enum DrawModeType
 {
-    COLOR_CUBE,
+    TEX_CUBE,
     DEPTH_VALUES,
+    FLAT_COLOR,
     DRAWMODE_CNT
 };
 
 // helper functions
-void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture);
+void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, unsigned char color, gfx_Bitmap *texture);
 void setupTexCube(TexCube *c, gfx_Bitmap *texture);
 void drawCubeTexQuad(const CubeTexQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
 void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
@@ -41,15 +42,25 @@ void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
             } \
         }
 
+#define SET_TEXTURE(tex) {\
+            for(j = 0; j < 6; ++j) \
+            { \
+                for(k = 0; k < 2; ++k) \
+                { \
+                    cube.walls[j].tris[k].texture = tex; \
+                } \
+            } \
+        }
+
 // Rotating cube test
 void testRotatingCube()
 {
     unsigned long int now, last = 0;
     const unsigned short *keysPressed;
-    unsigned char grayScalePalette[256*3];
+    unsigned char defaultPalette[256*3], grayScalePalette[256*3];
     TexCube cube;
     int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0, drawModeFlipped = 0;
-    int drawMode = COLOR_CUBE;
+    int drawMode = TEX_CUBE;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
@@ -94,12 +105,14 @@ void testRotatingCube()
 
     setupTexCube(&cube, &bmp);
 
+    gfx_getPalette(defaultPalette);
     for(i = 0; i < 768; i += 3)
     {
         grayScalePalette[i] = 3*255*i/768;
         grayScalePalette[i+1] = 3*255*i/768;
         grayScalePalette[i+2] = 3*255*i/768;
     }
+    gfx_setPalette(bmp.palette);
 
     keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
@@ -159,10 +172,26 @@ void testRotatingCube()
         {
             drawMode++;
             if(drawMode == DRAWMODE_CNT)
-                drawMode = COLOR_CUBE;
+                drawMode = TEX_CUBE;
+
+            // use image palette in textured cube mode and reset texture pointers
+            if(drawMode == TEX_CUBE)
+            {
+                gfx_setPalette(bmp.palette);
+                SET_TEXTURE(&bmp);
+            }
 
             // viewing depth values requires depth testing to be enabled
-            if(drawMode == DEPTH_VALUES) buffer.drawOpts.depthFunc = DF_LESS;
+            if(drawMode == DEPTH_VALUES)
+                buffer.drawOpts.depthFunc = DF_LESS;
+
+            // for flat color view clear texture pointer and reset palette
+            if(drawMode == FLAT_COLOR)
+            {
+                gfx_setPalette(defaultPalette);
+                SET_TEXTURE(NULL);
+            }
+
             drawModeFlipped = 1;
         }
         else if(!keysPressed[KEY_SPACE]) drawModeFlipped = 0;
@@ -185,7 +214,6 @@ void testRotatingCube()
         }
         else
         {
-            gfx_setPalette(bmp.palette);
             gfx_updateScreen(&buffer);
             fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
             fprintf(stdout, buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF\r\n" : "[C]ulling BF: ON\r\n");
@@ -207,9 +235,9 @@ void testRotatingCube()
 }
 
 
-void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap *texture)
+void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, unsigned char color, gfx_Bitmap *texture)
 {
-    q->tris[0].color = 1;
+    q->tris[0].color = color;
     q->tris[0].texture = texture;
     q->tris[0].vertices[0].position.x = qx;
     q->tris[0].vertices[0].position.y = qh;
@@ -230,7 +258,7 @@ void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, gfx_Bitmap
     q->tris[0].vertices[2].uv.u = 0;
     q->tris[0].vertices[2].uv.v = 0;
 
-    q->tris[1].color = 1;
+    q->tris[1].color = color;
     q->tris[1].texture = texture;
     q->tris[1].vertices[0].position.x = qx;
     q->tris[1].vertices[0].position.y = qh;
@@ -265,7 +293,7 @@ void setupTexCube(TexCube *c, gfx_Bitmap *texture)
         mth_Vector4 axis;
         
         axis.x = 0.f; axis.y = 0.f; axis.z = 0.f;
-        setupCubeTexQuad(&c->walls[i], -CUBE_SIZE, -CUBE_SIZE, CUBE_SIZE, CUBE_SIZE, texture);
+        setupCubeTexQuad(&c->walls[i], -CUBE_SIZE, -CUBE_SIZE, CUBE_SIZE, CUBE_SIZE, i+1, texture);
         
         mth_matIdentity(&wallModel);
         
