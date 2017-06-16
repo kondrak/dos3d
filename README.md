@@ -30,5 +30,5 @@ TODO
 -------
 
 - subpixel, subtexel and general precision improvements
-- add proper clipping
+- add proper polygon clipping
 - ???
