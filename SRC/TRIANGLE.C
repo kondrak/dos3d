@@ -10,9 +10,9 @@ enum TriangleType
 };
 
 // internal: perform triangle rendering based on its type
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type);
-static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type);
-static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type);
+static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
+static void perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
+static void affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
 
 // determine if triangle is degenerate
 #define DEGENERATE(v0, v1, v2) ( (v0.position.x == v1.position.x && v0.position.x == v2.position.x) || \
@@ -35,6 +35,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
     int bufferHalfWidth  = buffer->width >> 1;
     int bufferHalfHeight = buffer->height >> 1;
     gfx_Vertex v0, v1, v2;
+    gfx_Triangle sortedTriangle = *t;
 
     // DF_NEVER - don't draw anything, abort
     if(buffer->drawOpts.depthFunc == DF_NEVER)
@@ -92,9 +93,19 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
 
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
-        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM);
+    {
+        sortedTriangle.vertices[0] = v0;
+        sortedTriangle.vertices[1] = v1;
+        sortedTriangle.vertices[2] = v2;
+        drawTriangleType(&sortedTriangle, buffer, FLAT_BOTTOM);
+    }
     else if(v0.position.y == v1.position.y)
-        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP);
+    {
+        sortedTriangle.vertices[0] = v2;
+        sortedTriangle.vertices[1] = v1;
+        sortedTriangle.vertices[2] = v0;
+        drawTriangleType(&sortedTriangle, buffer, FLAT_TOP);
+    }
     else
     {
         // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
@@ -147,10 +158,20 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
 
         // draw the composition of both triangles to form the desired shape
         if(!DEGENERATE(v0, v3, v2))
-            drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM);
+        {
+            sortedTriangle.vertices[0] = v0;
+            sortedTriangle.vertices[1] = v3;
+            sortedTriangle.vertices[2] = v2;
+            drawTriangleType(&sortedTriangle, buffer, FLAT_BOTTOM);
+        }
 
         if(!DEGENERATE(v1, v3, v2))
-            drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP);
+        {
+            sortedTriangle.vertices[0] = v1;
+            sortedTriangle.vertices[1] = v3;
+            sortedTriangle.vertices[2] = v2;
+            drawTriangleType(&sortedTriangle, buffer, FLAT_TOP);
+        }
     }
 }
 
@@ -167,8 +188,12 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
  * |     \    |/
  * v2-----v1  v2
  */
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type)
+static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type)
 {
+    const gfx_Vertex *v0 = &t->vertices[0];
+    const gfx_Vertex *v1 = &t->vertices[1];
+    const gfx_Vertex *v2 = &t->vertices[2];
+
     // no texture? draw a flat-colored
     if(!t->texture)
     {
@@ -235,19 +260,22 @@ static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const 
     else
     {
         if(buffer->drawOpts.texMapMode == TM_AFFINE)
-            affineTextureMap(t->texture, v0, v1, v2, buffer, type);
+            affineTextureMap(t, buffer, type);
         else
-            perspectiveTextureMap(t->texture, v0, v1, v2, buffer, type);
+            perspectiveTextureMap(t, buffer, type);
     }
 }
 
 /* ***** */
-static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type)
+static void perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type)
 {
+    const gfx_Vertex *v0 = &t->vertices[0];
+    const gfx_Vertex *v1 = &t->vertices[1];
+    const gfx_Vertex *v2 = &t->vertices[2];
     double x, y, invDy, dxLeft, dxRight, yDir = 1;
     int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
-    int   texW = tex->width - 1;
-    int   texH = tex->height - 1;
+    int   texW = t->texture->width - 1;
+    int   texH = t->texture->height - 1;
     int   texArea = texW * texH;
     float startX  = v0->position.x;
     float endX    = startX;
@@ -310,7 +338,7 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
             float v = z * LERP(startV, endV, r);
 
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-            unsigned char pixel = tex->data[((int)u + ((int)v * tex->height)) % texArea];
+            unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
             if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
             {
@@ -330,14 +358,17 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
 }
 
 /* ***** */
-static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, gfx_drawBuffer *buffer, enum TriangleType type)
+static void affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type)
 {
+    const gfx_Vertex *v0 = &t->vertices[0];
+    const gfx_Vertex *v1 = &t->vertices[1];
+    const gfx_Vertex *v2 = &t->vertices[2];
     double x, y, invDy, dxLeft, dxRight, yDir = 1;
     int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
     float duLeft, dvLeft, duRight, dvRight;
     float startU, startV, invDx, du, dv, startX, endX;
-    float texW = tex->width - 1;
-    float texH = tex->height - 1;
+    float texW = t->texture->width - 1;
+    float texH = t->texture->height - 1;
     int   texArea = texW * texH;
     // variables used only if depth test is enabled
     float invZ0, invZ1, invZ2, invY02 = 1.f;
@@ -402,7 +433,7 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
         // interpolate 1/z only if depth testing is enabled
         if(buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
-            float r1 = (v0->position.y - y) * invY02;
+            float r1  = (v0->position.y - y) * invY02;
             startInvZ = LERP(invZ0, invZ2, r1);
             endInvZ   = LERP(invZ0, invZ1, r1);
 
@@ -413,7 +444,7 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
         for(x = startX; x <= endX; ++x)
         {
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-            unsigned char pixel = tex->data[((int)u + ((int)v * tex->height)) % texArea];
+            unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
             if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
             {

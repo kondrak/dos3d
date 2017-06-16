@@ -29,6 +29,6 @@ The executable is a set of pre-made tests that demonstrate each feature in detai
 TODO
 -------
 
-- subpixel and subtexel precision improvements
+- subpixel, subtexel and general precision improvements
 - add proper clipping
 - ???
