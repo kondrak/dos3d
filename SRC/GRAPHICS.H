@@ -35,12 +35,13 @@ extern "C" {
 
     enum DepthFunc
     {
-        DF_ALWAYS  = 1 << 0,
-        DF_LESS    = 1 << 1,
-        DF_LEQUAL  = 1 << 2,
-        DF_GEQUAL  = 1 << 3,
-        DF_GREATER = 1 << 4,
-        DF_NEVER   = 1 << 3
+        DF_ALWAYS   = 1 << 0,
+        DF_LESS     = 1 << 1,
+        DF_LEQUAL   = 1 << 2,
+        DF_GEQUAL   = 1 << 3,
+        DF_GREATER  = 1 << 4,
+        DF_NOTEQUAL = 1 << 5,
+        DF_NEVER    = 1 << 6
     };
 
     // basic vertex: position and UV mapping for textures

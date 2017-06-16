@@ -63,10 +63,11 @@ void gfx_drawPixelDepth(int x, int y, float invZ, const unsigned char color, gfx
         // note that this is *opposite* to how modern APIs make checks
         switch(buffer->drawOpts.depthFunc)
         {
-            case DF_LESS:    drawPixel = buffer->depthBuffer[idx] < invZ; break;
-            case DF_LEQUAL:  drawPixel = buffer->depthBuffer[idx] <= invZ; break;
-            case DF_GEQUAL:  drawPixel = buffer->depthBuffer[idx] >= invZ; break;
-            case DF_GREATER: drawPixel = buffer->depthBuffer[idx] > invZ; break;
+            case DF_LESS:     drawPixel = buffer->depthBuffer[idx] < invZ; break;
+            case DF_LEQUAL:   drawPixel = buffer->depthBuffer[idx] <= invZ; break;
+            case DF_GEQUAL:   drawPixel = buffer->depthBuffer[idx] >= invZ; break;
+            case DF_GREATER:  drawPixel = buffer->depthBuffer[idx] > invZ; break;
+            case DF_NOTEQUAL: drawPixel = buffer->depthBuffer[idx] != invZ; break;
             default:
             break;
         }
