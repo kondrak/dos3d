@@ -193,10 +193,10 @@ void testRotatingCube()
             fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);
         }
 
+        fflush(stdout);
         gfx_vSync();
 
         keysPressed = kbd_getInput();
-        fflush(stdout);
         last = now;
     }
 
