@@ -108,8 +108,9 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         if(diff.y != 0)
             ratioV = diff2.y / diff.y;
 
-        // lerp Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions
-        if(buffer->drawOpts.texMapMode != TM_AFFINE)
+        // lerp Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions;
+        // perform this step for affine texture mapping if depth testing is enabled, since then correct Z is needed for v3!
+        if(buffer->drawOpts.texMapMode != TM_AFFINE || buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
             float invV0Z = 1.f/v0.position.z;
             float invV1Z = 1.f/v1.position.z;
@@ -120,12 +121,13 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
             else
                 v3.position.z = v0.position.z;
 
+            // this will affect how affine texture map looks on the final polygon if depth test is enabled!
             v3.uv.u = v3.position.z * LERP(v0.uv.u*invV0Z, v1.uv.u*invV1Z, ratioU);
             v3.uv.v = v3.position.z * LERP(v0.uv.v*invV0Z, v1.uv.v*invV1Z, ratioV);
         }
         else
         {
-            // simple Intercept Theorem is fine in case of affine texture mapping (skip v3.w again)
+            // simple Intercept Theorem is fine in case of affine texture mapping if depth testing is inactive (skip v3.w again)
             v3.position.z = v0.position.z + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.z - v0.position.z);
             v3.uv.u = LERP(v0.uv.u, v1.uv.u, ratioU);
             v3.uv.v = LERP(v0.uv.v, v1.uv.v, ratioV);
@@ -279,10 +281,11 @@ static void perspectiveTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, c
 
             if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
             {
-                if(buffer->drawOpts.depthFunc != DF_ALWAYS)
-                    gfx_drawPixelDepth(x, y, lerpInvZ, pixel, buffer);
-                else
+                // DF_ALWAYS = no depth test
+                if(buffer->drawOpts.depthFunc == DF_ALWAYS)
                     gfx_drawPixel(x, y, pixel, buffer);
+                else
+                    gfx_drawPixelDepth(x, y, lerpInvZ, pixel, buffer);
             }
         }
 
@@ -302,6 +305,8 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
     float texW = tex->width - 1;
     float texH = tex->height - 1;
     int   texArea = texW * texH;
+    // variables used only if depth test is enabled
+    float invZ0, invZ1, invZ2, invY02 = 1.f;
     int   finished = 0;
 
     if(type == FLAT_BOTTOM)
@@ -331,12 +336,23 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
     startX = v0->position.x;
     endX   = startX;
 
+    // skip the unnecessary divisions if there's no depth testing
+    if(buffer->drawOpts.depthFunc != DF_ALWAYS)
+    {
+        invZ0  = 1.f / v0->position.z;
+        invZ1  = 1.f / v1->position.z;
+        invZ2  = 1.f / v2->position.z;
+        invY02 = 1.f / (v0->position.y - v2->position.y);
+    }
+
     gfx_setPalette(tex->palette);
 
     for(y = v0->position.y; ; y += yDir)
     {
         float u = startU;
         float v = startV;
+        // variables used only if depth test is enabled
+        float startInvZ, endInvZ, invLineLength = 0.f;
 
         if(type == FLAT_BOTTOM && y > v2->position.y)
         {
@@ -350,13 +366,34 @@ static void affineTextureMap(const gfx_Bitmap *tex, const gfx_Vertex *v0, const 
         else if ( type == FLAT_TOP && y < v2->position.y)
             break;
 
+        // skip if no depth testing
+        if(buffer->drawOpts.depthFunc != DF_ALWAYS)
+        {
+            float r1 = (v0->position.y - y) * invY02;
+            startInvZ = LERP(invZ0, invZ2, r1);
+            endInvZ   = LERP(invZ0, invZ1, r1);
+
+            if(startX != endX)
+                invLineLength = 1.f / (endX - startX);
+        }
+
         for(x = startX; x <= endX; ++x)
         {
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
             unsigned char pixel = tex->data[((int)u + ((int)v * tex->height)) % texArea];
 
             if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
-                gfx_drawPixel(x, y, pixel, buffer);
+            {
+                // DF_ALWAYS = no depth test
+                if(buffer->drawOpts.depthFunc == DF_ALWAYS)
+                    gfx_drawPixel(x, y, pixel, buffer);
+                else
+                {
+                    float r = (x - startX) * invLineLength;
+                    float lerpInvZ = LERP(startInvZ, endInvZ, r);
+                    gfx_drawPixelDepth(x, y, lerpInvZ, pixel, buffer);
+                }
+            }
             u += du;
             v += dv;
         }

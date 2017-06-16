@@ -22,21 +22,21 @@ extern "C" {
 
     enum TextureMappingMode
     {
-        TM_AFFINE,
-        TM_PERSPECTIVE
+        TM_AFFINE = 1 << 0,
+        TM_PERSPECTIVE = 1 << 1
     };
 
     enum FaceCullingMode
     {
-        FC_BACK,
-        FC_FRONT,
-        FC_NONE
+        FC_BACK  = 1 << 0,
+        FC_FRONT = 1 << 1,
+        FC_NONE  = 1 << 2
     };
 
     enum DepthFunc
     {
-        DF_ALWAYS,
-        DF_LESS
+        DF_ALWAYS = 1 << 0,
+        DF_LESS   = 1 << 1
     };
 
     // basic vertex: position and UV mapping for textures

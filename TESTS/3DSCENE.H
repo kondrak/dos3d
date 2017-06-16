@@ -42,6 +42,7 @@ void test3DScene()
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
     buffer.drawOpts.colorKey = COLOR_MAGENTA;
+    buffer.drawOpts.depthFunc = DF_LESS;
 
     if(!buffer.colorBuffer)
     {
@@ -219,12 +220,12 @@ void setupScene(Scene *s)
         }
     } 
 
-    // back wall
-    setupSceneQuad(&s->walls[1], -80, -120, -120, 80, 40, -120, 1.f, 1.f, &s->textures[1]);
     // right wall
-    setupSceneQuad(&s->walls[2],  80, -40, -120, 100, 40, -40, 1.f, 1.f, &s->textures[3]);
+    setupSceneQuad(&s->walls[1],  80, -40, -120, 100, 40, -40, 1.f, 1.f, &s->textures[3]);
     // left wall
-    setupSceneQuad(&s->walls[3], -100, -40, -40, -80, 40, -120, 1.f, 1.f, &s->textures[3]);
+    setupSceneQuad(&s->walls[2], -100, -40, -40, -80, 40, -120, 1.f, 1.f, &s->textures[3]);
+    // back wall
+    setupSceneQuad(&s->walls[3], -80, -120, -120, 80, 40, -120, 1.f, 1.f, &s->textures[1]);
     // baron of hell
     setupSceneQuad(&s->walls[4], 20, -20, -65, 84, 44, -65, 1.f, 1.f, &s->textures[4]);
     // cacodemon

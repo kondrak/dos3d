@@ -14,6 +14,7 @@ void testFirstPerson()
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
+    buffer.drawOpts.depthFunc = DF_LESS;
 
     // setup camera
     cam.position.x = 0;

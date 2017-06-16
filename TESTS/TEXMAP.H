@@ -20,13 +20,15 @@ void testTextureMapping()
     unsigned long int now, last = 0;
     const unsigned short *keysPressed;
     TexQuad quad;
-    int texMapFlipped = 0;
+    int texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
+    buffer.drawOpts.cullMode  = FC_BACK;
+    buffer.drawOpts.depthFunc = DF_LESS;
 
     if(!buffer.colorBuffer)
     {
@@ -73,7 +75,7 @@ void testTextureMapping()
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
-        if(keysPressed[KEY_A])
+        if(keysPressed[KEY_RIGHT])
         {
             for(k = 0; k < 2; ++k)
             {
@@ -84,7 +86,7 @@ void testTextureMapping()
             }
         }
 
-        if(keysPressed[KEY_D])
+        if(keysPressed[KEY_LEFT])
         {
             for(k = 0; k < 2; ++k)
             {
@@ -95,7 +97,7 @@ void testTextureMapping()
             }
         }
 
-        if(keysPressed[KEY_W])
+        if(keysPressed[KEY_UP])
         {
             for(k = 0; k < 2; ++k)
             {
@@ -106,7 +108,7 @@ void testTextureMapping()
             }
         }
 
-        if(keysPressed[KEY_S])
+        if(keysPressed[KEY_DOWN])
         {
             for(k = 0; k < 2; ++k)
             {
@@ -117,16 +119,35 @@ void testTextureMapping()
             }
         }
 
-        if(keysPressed[KEY_G] && !texMapFlipped)
+        if(keysPressed[KEY_T] && !texMapFlipped)
         {
             buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
             texMapFlipped = 1;
             
         }
-        else if(!keysPressed[KEY_G]) texMapFlipped = 0;
+        else if(!keysPressed[KEY_T]) texMapFlipped = 0;
+
+        if(keysPressed[KEY_C] && !cullModeFlipped)
+        {
+            buffer.drawOpts.cullMode = buffer.drawOpts.cullMode == FC_NONE ? FC_BACK : FC_NONE;
+            cullModeFlipped = 1;
+            
+        }
+        else if(!keysPressed[KEY_C]) cullModeFlipped = 0;
+
+        if(keysPressed[KEY_D] && !depthFuncFlipped)
+        {
+            buffer.drawOpts.depthFunc = buffer.drawOpts.depthFunc == DF_ALWAYS ? DF_LESS : DF_ALWAYS;
+            depthFuncFlipped = 1;
+            
+        }
+        else if(!keysPressed[KEY_D]) depthFuncFlipped = 0;
 
         gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
-        fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "Affine\r" : "Perspective\r");
+        fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
+        fprintf(stdout, buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF\r\n" : "[C]ulling BF: ON\r\n");
+        fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
+        fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);
 
         drawTexQuad(&quad, &modelViewProj, &buffer);
         gfx_updateScreen(&buffer);
