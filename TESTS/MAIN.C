@@ -8,6 +8,7 @@
 #include "src/graphics.h"
 #include "src/input.h"
 #include "tests/3dscene.h"
+#include "tests/cube.h"
 #include "tests/fpp.h"
 #include "tests/linedraw.h"
 #include "tests/project.h"
@@ -24,8 +25,9 @@ void printMenu()
     printf("3. Triangle rendering\n");
     printf("4. Render targets\n");
     printf("5. Texture mapping\n");
-    printf("6. First person WASD camera\n");
-    printf("7. Test 3D scene\n");
+    printf("6. Rotating cube\n");
+    printf("7. First person WASD camera\n");
+    printf("8. Test 3D scene\n");
     printf("\nq. Exit!\n");
     printf("\nInput:\n");
 }
@@ -74,10 +76,16 @@ int main(int argc, char **argv)
             if(keysPressed[KEY_6])
             {
                 gfx_setMode(0x13);
-                testFirstPerson();
+                testRotatingCube();
                 demoFinished = 1;
             }
             if(keysPressed[KEY_7])
+            {
+                gfx_setMode(0x13);
+                testFirstPerson();
+                demoFinished = 1;
+            }
+            if(keysPressed[KEY_8])
             {
                 gfx_setMode(0x13);
                 test3DScene();
