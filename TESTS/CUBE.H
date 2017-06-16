@@ -59,8 +59,9 @@ void testRotatingCube()
     const unsigned short *keysPressed;
     unsigned char defaultPalette[256*3], grayScalePalette[256*3];
     TexCube cube;
-    int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0, drawModeFlipped = 0;
+    int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0, drawModeFlipped = 0, rotFlipped = 0;
     int drawMode = TEX_CUBE;
+    int rotating = 1;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
@@ -158,11 +159,17 @@ void testRotatingCube()
         {
             buffer.drawOpts.depthFunc = buffer.drawOpts.depthFunc == DF_ALWAYS ? DF_LESS : DF_ALWAYS;
             depthFuncFlipped = 1;
-            
         }
         else if(!keysPressed[KEY_D]) depthFuncFlipped = 0;
 
-        if(!keysPressed[KEY_R])
+        if(keysPressed[KEY_R] && !rotFlipped)
+        {
+            rotating = ~rotating + 2;
+            rotFlipped = 1;
+        }
+        else if(!keysPressed[KEY_R]) rotFlipped = 0;
+
+        if(rotating)
         {
             ROTATE_CUBE(-0.001f, 1.f, 0.f, 0.f);
             ROTATE_CUBE(-0.001f, 0.f, 1.f, 0.f);
