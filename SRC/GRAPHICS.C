@@ -161,13 +161,19 @@ void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *tar
     int i;
     if(target)
     {
-        for(i = 0; i < src->height; ++i)
-            memcpy(&target[x + (i + y) * target->width], &src->colorBuffer[i * src->width], src->width);
+        int width  = MIN(src->width, target->width - x);
+        int height = MIN(src->height, target->height - y);
+
+        for(i = 0; i < height; ++i)
+            memcpy(&target->colorBuffer[x + (i + y) * target->width], &src->colorBuffer[i * src->width], width);
     }
     else
     {
-        for(i = 0; i < src->height; ++i)
-            memcpy(&VGA[(y << 8) + (y << 6) + x + i * SCREEN_WIDTH], &src->colorBuffer[i * src->width], src->width);
+        int width  = MIN(src->width, SCREEN_WIDTH - x);
+        int height = MIN(src->height, SCREEN_HEIGHT - y);
+
+        for(i = 0; i < height; ++i)
+            memcpy(&VGA[(y << 8) + (y << 6) + x + i * SCREEN_WIDTH], &src->colorBuffer[i * src->width], width);
     }
 }
 

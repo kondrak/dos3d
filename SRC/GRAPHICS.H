@@ -122,7 +122,7 @@ extern "C" {
     // fills color buffer to specific color (depth buffer is untouched)
     void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color);
 
-    // copy contents of one buffer to another (at x,y offset) - buffers must be the same size (if target is NULL - blits to VGA)
+    // copy contents of one buffer to another (at x,y offset), if target is NULL - blits to VGA
     void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target);
 
     // fast copy buffer contents straight to VGA memory - buffer must be the same size as VGA screen buffer
