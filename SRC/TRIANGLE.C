@@ -183,73 +183,8 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
  */
 static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type)
 {
-    const gfx_Vertex *v0 = &t->vertices[0];
-    const gfx_Vertex *v1 = &t->vertices[1];
-    const gfx_Vertex *v2 = &t->vertices[2];
-
-    // no texture? draw a flat-colored
-    if(!t->texture)
-    {
-        double invDy, dxLeft, dxRight, xLeft, xRight;
-        double y, yDir = 1;
-        // variables used if depth test is enabled
-        float startInvZ, endInvZ, invZ0, invZ1, invZ2, invY02;
-
-        if(type == FLAT_BOTTOM)
-        {
-            invDy  = 1.f / (v2->position.y - v0->position.y);
-        }
-        else
-        {
-            invDy  = 1.f / (v0->position.y - v2->position.y);
-            yDir = -1;
-        }
-
-        dxLeft  = (v2->position.x - v0->position.x) * invDy;
-        dxRight = (v1->position.x - v0->position.x) * invDy;
-        xLeft   = v0->position.x;
-        xRight  = xLeft;
-
-        // skip the unnecessary divisions if there's no depth testing
-        if(buffer->drawOpts.depthFunc != DF_ALWAYS)
-        {
-            invZ0  = 1.f / v0->position.z;
-            invZ1  = 1.f / v1->position.z;
-            invZ2  = 1.f / v2->position.z;
-            invY02 = 1.f / (v0->position.y - v2->position.y);
-        }
-
-        for(y = v0->position.y; ; y += yDir)
-        {
-            if(type == FLAT_TOP && y < v2->position.y)
-            {
-                break;
-            }
-            else if(type == FLAT_BOTTOM && y > v2->position.y)
-            {
-                // to avoid pixel wide gaps, render extra line at the junction between two final points
-                if(buffer->drawOpts.depthFunc != DF_ALWAYS)
-                    gfx_drawLine(xLeft-dxLeft, y, 1.f/startInvZ, xRight-dxRight, y, 1.f/endInvZ, t->color, buffer);
-                else
-                    gfx_drawLine(xLeft-dxLeft, y, 0.f, xRight-dxRight, y, 0.f, t->color, buffer);
-                break;
-            }
-
-            // interpolate 1/z only if depth testing is enabled
-            if(buffer->drawOpts.depthFunc != DF_ALWAYS)
-            {
-                float r1  = (v0->position.y - y) * invY02;
-                startInvZ = LERP(invZ0, invZ2, r1);
-                endInvZ   = LERP(invZ0, invZ1, r1);
-                gfx_drawLine(xLeft, y, 1.f/startInvZ, xRight, y, 1.f/endInvZ, t->color, buffer);
-            }
-            else
-                gfx_drawLine(xLeft, y, 0.f, xRight, y, 0.f, t->color, buffer);
-
-            xLeft  += dxLeft;
-            xRight += dxRight;
-        }
-    }
+    if(!t->texture || buffer->drawOpts.texMapMode == TM_NONE)
+        gfx_flatFill(t, buffer, type);
     else
     {
         if(buffer->drawOpts.texMapMode == TM_AFFINE)

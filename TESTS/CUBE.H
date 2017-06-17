@@ -42,16 +42,6 @@ void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
             } \
         }
 
-#define SET_TEXTURE(tex) {\
-            for(j = 0; j < 6; ++j) \
-            { \
-                for(k = 0; k < 2; ++k) \
-                { \
-                    cube.walls[j].tris[k].texture = tex; \
-                } \
-            } \
-        }
-
 // Rotating cube test
 void testRotatingCube()
 {
@@ -170,22 +160,22 @@ void testRotatingCube()
             if(drawMode == DRAWMODE_CNT)
                 drawMode = TEX_CUBE;
 
-            // use image palette in textured cube mode and reset texture pointers
+            // use image palette in textured cube
             if(drawMode == TEX_CUBE)
             {
                 gfx_setPalette(bmp.palette);
-                SET_TEXTURE(&bmp);
+                buffer.drawOpts.texMapMode = TM_PERSPECTIVE;
             }
 
             // viewing depth values requires depth testing to be enabled
             if(drawMode == DEPTH_VALUES)
                 buffer.drawOpts.depthFunc = DF_LESS;
 
-            // for flat color view clear texture pointer and reset palette
+            // for flat color reset to default palette
             if(drawMode == FLAT_COLOR)
             {
                 gfx_setPalette(defaultPalette);
-                SET_TEXTURE(NULL);
+                buffer.drawOpts.texMapMode = TM_NONE;
             }
 
             drawModeFlipped = 1;

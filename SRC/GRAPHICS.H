@@ -24,8 +24,9 @@ extern "C" {
     // texture mapping type
     enum TextureMappingMode
     {
-        TM_AFFINE = 1 << 0,
-        TM_PERSPECTIVE = 1 << 1
+        TM_AFFINE      = 1 << 0,
+        TM_PERSPECTIVE = 1 << 1, // default
+        TM_NONE        = 1 << 2  // will draw flat colored polygon
     };
 
     // face culling mode
@@ -33,13 +34,13 @@ extern "C" {
     {
         FC_BACK  = 1 << 0,
         FC_FRONT = 1 << 1,
-        FC_NONE  = 1 << 2
+        FC_NONE  = 1 << 2  // default - no culling
     };
 
     // depth function type (OpenGL style)
     enum DepthFunc
     {
-        DF_ALWAYS   = 1 << 0,
+        DF_ALWAYS   = 1 << 0, // default - no depth testing
         DF_LESS     = 1 << 1,
         DF_LEQUAL   = 1 << 2,
         DF_GEQUAL   = 1 << 3,

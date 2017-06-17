@@ -13,6 +13,10 @@
 extern "C" {
 #endif
 
+    // flat color fill
+    void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
+
+    // texture mapping
     void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
     void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
 
