@@ -1,6 +1,6 @@
 Software renderer for DOS
 ================
-This is a small playground where I test various graphics features that can be done in software. It is also my attempt to provide some working DOS code to the public, since finding it on the Internet is getting increasingly more difficult due to the platform's age. DOS played a big part in the history of software development, so having working samples that can do something more than print "Hello World" is mandatory!
+This is a small playground for testing various graphics features that can be done in software. It is also my attempt to provide some working DOS code to the public, since finding it on the Internet is getting increasingly more difficult due to the platform's age. DOS played a big part in the history of software development, so having working samples that can do something more than print "Hello World" is mandatory!
 
 The project can be built on modern systems using the [Open Watcom](http://www.openwatcom.org/) compiler. This was chosen, since Watcom comes with easy to use memory extender for DOS.
 
