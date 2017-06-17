@@ -152,25 +152,24 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
 /* ***** */
 void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer)
 {
-    int j, lineLen;
+    int j, scanlineLength;
     int screenOffset = x + y * buffer->width;
     int texArea = bmp->width * bmp->height;
     int height  = MIN(bmp->height, buffer->height - y);
-
+    int targetWidth = buffer->width - x;
     if(xOffset < 0) xOffset += bmp->width;
     if(yOffset < 0) yOffset += bmp->height;
 
     for(j = 0; j < height; j++)
     {
-        lineLen = bmp->width - xOffset;
+        scanlineLength = bmp->width - xOffset;
+        if(scanlineLength > bmp->width)  scanlineLength -= bmp->width;
+        if(scanlineLength > targetWidth) scanlineLength = targetWidth;
 
-        if(lineLen > bmp->width)    lineLen -= bmp->width;
-        if(lineLen > buffer->width) lineLen = buffer->width;
+        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[(xOffset + (j + yOffset) * bmp->width) % texArea], scanlineLength);
 
-        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[(xOffset + (j + yOffset) * bmp->width) % texArea], lineLen);
-
-        if(buffer->width > lineLen)
-            memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width + lineLen], &bmp->data[(j + yOffset) * bmp->width % texArea], buffer->width - lineLen);
+        if(targetWidth > scanlineLength)
+            memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width + scanlineLength], &bmp->data[(j + yOffset) * bmp->width % texArea], targetWidth - scanlineLength);
     }
 }
 
