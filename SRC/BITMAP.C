@@ -1,5 +1,6 @@
 #include "src/bitmap.h"
 #include "src/graphics.h"
+#include "src/utils.h"
 #include <conio.h>
 #include <mem.h>
 #include <stdio.h>
@@ -141,31 +142,38 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
 {
     int j;
     int screenOffset = x + y * buffer->width;
-    int bmpOffset = 0;
+    int width  = MIN(bmp->width, buffer->width);
+    int height = MIN(bmp->height, buffer->height);
 
-    for(j = 0; j < bmp->height; j++)
-    {
-        memcpy(&buffer->colorBuffer[screenOffset], &bmp->data[bmpOffset], bmp->width);
-        bmpOffset    += bmp->width;
-        screenOffset += buffer->width;
-    }
+    for(j = 0; j < height; j++)
+        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[j * bmp->width], width);
 }
 
 /* ***** */
 void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer)
 {
-    int j;
+    int j, lineLen;
     int screenOffset = x + y * buffer->width;
     int texArea = bmp->width * bmp->height;
-    int bmpOffset = 0;
+    int height  = MIN(bmp->height, buffer->height);
 
-    for(j = 0; j < bmp->height; j++)
+    if(xOffset < 0)
+        xOffset += bmp->width;
+
+    if(yOffset < 0)
+        yOffset += bmp->height;
+
+    for(j = 0; j < height; j++)
     {
-        memcpy(&buffer->colorBuffer[screenOffset], &bmp->data[(bmpOffset + xOffset + yOffset * bmp->width) % texArea], bmp->width - xOffset);
-        memcpy(&buffer->colorBuffer[screenOffset + bmp->width - xOffset], &bmp->data[(bmpOffset + yOffset * bmp->width) % texArea], xOffset);
+        lineLen = bmp->width - xOffset;
 
-        bmpOffset    += bmp->width;
-        screenOffset += buffer->width;
+        if(lineLen > bmp->width)    lineLen -= bmp->width;
+        if(lineLen > buffer->width) lineLen = buffer->width;
+        
+        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[(xOffset + (j + yOffset) * bmp->width) % texArea], lineLen);
+
+        if(buffer->width > lineLen)
+            memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width + lineLen], &bmp->data[(j + yOffset) * bmp->width % texArea], buffer->width - lineLen);
     }
 }
 
@@ -174,19 +182,19 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
 {
     int i,j;
     int screenOffset = y * buffer->width;
-    int bmpOffset = 0;
+    int width  = MIN(bmp->width, buffer->width);
+    int height = MIN(bmp->height, buffer->height);
     unsigned char data;
 
-    for(j = 0; j < bmp->height; j++)
+    for(j = 0; j < height; j++)
     {
-        for(i = 0; i < bmp->width; i++, bmpOffset++)
+        for(i = 0; i < width; i++)
         {
-            data = bmp->data[bmpOffset];
+            data = bmp->data[i + j * bmp->height];
             // skip a pixel if it's the same color as colorKey
             if(data != (unsigned char)colorKey)
-                buffer->colorBuffer[screenOffset+x+i] = data;
+                buffer->colorBuffer[screenOffset + x + i + j * buffer->width] = data;
         }
-        screenOffset += buffer->width;
     }
 }
 
