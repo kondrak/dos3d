@@ -13,6 +13,12 @@
 extern "C" {
 #endif
 
+    enum TriangleType
+    {
+        FLAT_BOTTOM,
+        FLAT_TOP
+    };
+
     typedef struct
     {
         int color;
