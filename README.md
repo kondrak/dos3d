@@ -1,4 +1,4 @@
-Software renderer for DOS
+Software renderer for DOS (mode 13h)
 ================
 This is a small playground for testing various graphics features that can be done in software. It is also my attempt to provide some working DOS code to the public, since finding it on the Internet is getting increasingly more difficult due to the platform's age. DOS played a big part in the history of software development, so having working samples that can do something more than print "Hello World" is mandatory!
 
