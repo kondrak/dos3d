@@ -141,35 +141,49 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
 void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
 {
     int j;
-    int screenOffset = x + y * buffer->width;
-    int width  = MIN(bmp->width, buffer->width - x);
+    // adjust for offscreen positioning
+    int startX = x < 0 ? -x : 0;
+    int startY = y < 0 ? -y : 0;
+    int screenOffset = x + startX + (y + startY) * buffer->width;
+    int width  = MIN(bmp->width, buffer->width - (x < 0 ? startX : x));
     int height = MIN(bmp->height, buffer->height - y);
 
-    for(j = 0; j < height; j++)
-        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[j * bmp->width], width);
+    // attempting to write offscreen
+    if(width < 0 || x > buffer->width) return;
+
+    for(j = 0; j < height - startY; j++)
+        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[startX + (j + startY) * bmp->width], width);
 }
 
 /* ***** */
 void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer)
 {
     int j, scanlineLength;
-    int screenOffset = x + y * buffer->width;
+    // adjust for offscreen positioning
+    int startX = x < 0 ? -x : 0;
+    int startY = y < 0 ? -y : 0;
+    int screenOffset = x + startX + (y + startY) * buffer->width;
     int texArea = bmp->width * bmp->height;
     int height  = MIN(bmp->height, buffer->height - y);
-    int targetWidth = buffer->width - x;
+    int targetWidth = buffer->width - (x < 0 ? startX : x);
+
+    // attemtping to write offscreen
+    if(targetWidth < 0 || x > buffer->width) return;
+
+    xOffset -= startX;
     if(xOffset < 0) xOffset += bmp->width;
     if(yOffset < 0) yOffset += bmp->height;
 
-    for(j = 0; j < height; j++)
+    for(j = 0; j < height - startY; j++)
     {
         scanlineLength = bmp->width - xOffset;
         if(scanlineLength > bmp->width)  scanlineLength -= bmp->width;
         if(scanlineLength > targetWidth) scanlineLength = targetWidth;
 
-        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[(xOffset + (j + yOffset) * bmp->width) % texArea], scanlineLength);
+        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[(xOffset + (j + yOffset + startY) * bmp->width) % texArea], scanlineLength);
 
         if(targetWidth > scanlineLength)
-            memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width + scanlineLength], &bmp->data[(j + yOffset) * bmp->width % texArea], targetWidth - scanlineLength);
+            memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width + scanlineLength], &bmp->data[(j + yOffset + startY) * bmp->width % texArea], targetWidth - scanlineLength);
     }
 }
 
@@ -177,16 +191,22 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
 void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const short colorKey)
 {
     int i,j;
-    int screenOffset = y * buffer->width;
-    int width  = MIN(bmp->width, buffer->width);
-    int height = MIN(bmp->height, buffer->height);
+    // adjust for offscreen positioning
+    int startX = x < 0 ? -x : 0;
+    int startY = y < 0 ? -y : 0;
+    int screenOffset = (y + startY) * buffer->width;
+    int width  = MIN(bmp->width, buffer->width - (x < 0 ? startX : x));
+    int height = MIN(bmp->height, buffer->height - y);
     unsigned char data;
 
-    for(j = 0; j < height; j++)
+    // attemtping to write offscreen
+    if(width < 0 || x > buffer->width) return;
+
+    for(j = 0; j < height - startY; j++)
     {
         for(i = 0; i < width; i++)
         {
-            data = bmp->data[i + j * bmp->height];
+            data = bmp->data[i + startX + (j + startY) * bmp->height];
             // skip a pixel if it's the same color as colorKey
             if(data != (unsigned char)colorKey)
                 buffer->colorBuffer[screenOffset + x + i + j * buffer->width] = data;

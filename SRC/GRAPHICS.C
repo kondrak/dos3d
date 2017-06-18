@@ -142,7 +142,7 @@ void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType)
 
     // CAUTION: C-standard does not guarantee that memsetting() float array to 0 will produce desired results,
     // this is platform dependent and may not work on architecture where 0.f is not represented by all 0 bits!
-    if(bType & DB_DEPTH && buffer->depthBuffer)
+    if(bType & DB_DEPTH && buffer && buffer->depthBuffer)
         memset(buffer->depthBuffer, 0, sizeof(float) * buffer->width * buffer->height);
 }
 
@@ -159,21 +159,29 @@ void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color)
 void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target)
 {
     int i;
+    // adjust for offscreen positioning
+    int startX = x < 0 ? -x : 0;
+    int startY = y < 0 ? -y : 0;
+
     if(target)
     {
-        int width  = MIN(src->width, target->width - x);
+        int width  = MIN(src->width, target->width - (x < 0 ? startX : x));
         int height = MIN(src->height, target->height - y);
 
-        for(i = 0; i < height; ++i)
-            memcpy(&target->colorBuffer[x + (i + y) * target->width], &src->colorBuffer[i * src->width], width);
+        if(width < 0 || x > target->width) return;
+
+        for(i = 0; i < height - startY; ++i)
+            memcpy(&target->colorBuffer[x + startX + (i + y + startY) * target->width], &src->colorBuffer[startX + (i + startY) * src->width], width);
     }
     else
     {
-        int width  = MIN(src->width, SCREEN_WIDTH - x);
+        int width  = MIN(src->width, SCREEN_WIDTH - (x < 0 ? startX : x));
         int height = MIN(src->height, SCREEN_HEIGHT - y);
 
-        for(i = 0; i < height; ++i)
-            memcpy(&VGA[(y << 8) + (y << 6) + x + i * SCREEN_WIDTH], &src->colorBuffer[i * src->width], width);
+        if(width < 0 || x > SCREEN_WIDTH) return;
+
+        for(i = 0; i < height - startY; ++i)
+            memcpy(&VGA[((y + startY) << 8) + ((y + startY) << 6) + x + startX + i * SCREEN_WIDTH], &src->colorBuffer[startX + (i + startY) * src->width], width);
     }
 }
 
