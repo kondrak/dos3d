@@ -37,19 +37,19 @@ void testTriangles()
     keysPressed = kbd_getInput();
     gfx_clrBufferColor(&buffer, 105);
 
+    mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
+    modelViewProj = mth_matMul(&cam.view, &cam.projection);
+    modelViewProj = mth_matMul(&model, &modelViewProj);
+    triangle.texture = NULL;
+
     while(!keysPressed[KEY_ESC])
     {
         // render randomly scattered triangles of arbitrary size
         triangle.color = rand() % 103 + 1;
-        triangle.texture = NULL;
         VEC4(triangle.vertices[0].position, rand() % 320, rand() % 200, 0);
         VEC4(triangle.vertices[1].position, rand() % 320, rand() % 200, 0);
         VEC4(triangle.vertices[2].position, rand() % 320, rand() % 200, 0);
-
-        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
-        modelViewProj = mth_matMul(&cam.view, &cam.projection);
-        modelViewProj = mth_matMul(&model, &modelViewProj);
 
         // pause rendering when holding down space bar
         if(!keysPressed[KEY_SPACE])

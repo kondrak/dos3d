@@ -107,7 +107,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         mth_Vector4 diff, diff2;
         double ratioU = 1, ratioV = 1;
 
-        v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
+        v3.position.x = v0.position.x + (v1.position.x - v0.position.x) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
         v3.position.y = v2.position.y;
 
         diff  = mth_vecSub(&v1.position, &v0.position);
@@ -126,7 +126,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
             float invV0Z = 1.f/v0.position.z;
             float invV1Z = 1.f/v1.position.z;
 
-            // get the z value for v3 by interpolating 1/z, since that can be done using lerp (at this point we skip v3.w - it won't be relevant anymore)
+            // get the z value for v3 by interpolating 1/z (it's lerp-able), at this point we skip v3.w - it won't be relevant anymore
             if((v0.position.x - v1.position.x) != 0.0)
                 v3.position.z = 1.0 / LERP(invV1Z, invV0Z, (v3.position.x - v1.position.x) / (v0.position.x - v1.position.x));
             else
@@ -134,13 +134,13 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
 
             // this will affect how affine texture map looks on the final polygon if depth test is enabled!
             // we don't care though, since it's a distorted mapping anyway
-            v3.uv.u = v3.position.z * LERP(v0.uv.u*invV0Z, v1.uv.u*invV1Z, ratioU);
-            v3.uv.v = v3.position.z * LERP(v0.uv.v*invV0Z, v1.uv.v*invV1Z, ratioV);
+            v3.uv.u = v3.position.z * LERP(v0.uv.u * invV0Z, v1.uv.u * invV1Z, ratioU);
+            v3.uv.v = v3.position.z * LERP(v0.uv.v * invV0Z, v1.uv.v * invV1Z, ratioV);
         }
         else
         {
             // simple Intercept Theorem is fine in case of affine texture mapping if depth testing is inactive (skip v3.w again)
-            v3.position.z = v0.position.z + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.z - v0.position.z);
+            v3.position.z = v0.position.z + (v1.position.z - v0.position.z) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
             v3.uv.u = LERP(v0.uv.u, v1.uv.u, ratioU);
             v3.uv.v = LERP(v0.uv.v, v1.uv.v, ratioV);
         }

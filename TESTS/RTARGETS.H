@@ -46,7 +46,8 @@ void testRenderTargets()
     VEC4(triangle.vertices[2].position,  20,  20, 0);
 
     keysPressed = kbd_getInput();
-    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)renderTargets[0].width / (float)renderTargets[0].height, 0.1f, 500.f);
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, 
+                       (float)renderTargets[0].width / (float)renderTargets[0].height, 0.1f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {

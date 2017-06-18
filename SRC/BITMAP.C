@@ -166,6 +166,8 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
     int texArea = bmp->width * bmp->height;
     int height  = MIN(bmp->height, buffer->height - y);
     int targetWidth = buffer->width - (x < 0 ? startX : x);
+    unsigned char *dstBuff = buffer->colorBuffer;
+    unsigned char *bmpBuff = bmp->data;
 
     // attemtping to write offscreen
     if(targetWidth < 0 || x > buffer->width) return;
@@ -180,10 +182,12 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
         if(scanlineLength > bmp->width)  scanlineLength -= bmp->width;
         if(scanlineLength > targetWidth) scanlineLength = targetWidth;
 
-        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[(xOffset + (j + yOffset + startY) * bmp->width) % texArea], scanlineLength);
+        memcpy(&dstBuff[screenOffset + j * buffer->width], 
+               &bmpBuff[(xOffset + (j + yOffset + startY) * bmp->width) % texArea], scanlineLength);
 
         if(targetWidth > scanlineLength)
-            memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width + scanlineLength], &bmp->data[(j + yOffset + startY) * bmp->width % texArea], targetWidth - scanlineLength);
+            memcpy(&dstBuff[screenOffset + j * buffer->width + scanlineLength], 
+                   &bmpBuff[(j + yOffset + startY) * bmp->width % texArea], targetWidth - scanlineLength);
     }
 }
 

@@ -93,8 +93,8 @@ extern "C" {
             }
 
     // check pre-allocated buffer validity
-    #define DRAWBUFFER_VALID(b, f) ( (f & DB_COLOR ? b.colorBuffer != NULL : 1) && (f & DB_DEPTH ? b.depthBuffer != NULL : 1) )
-
+    #define DRAWBUFFER_VALID(b, f) ( (f & DB_COLOR ? b.colorBuffer != NULL : 1) && \
+                                     (f & DB_DEPTH ? b.depthBuffer != NULL : 1) )
     // draw buffer release
     #define FREE_DRAWBUFFER(b) {\
                 free(b.colorBuffer); \
