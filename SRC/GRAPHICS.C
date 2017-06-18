@@ -162,24 +162,20 @@ void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *tar
     // adjust for offscreen positioning
     int startX = x < 0 ? -x : 0;
     int startY = y < 0 ? -y : 0;
+    int targetWidth  = target ? target->width : SCREEN_WIDTH;
+    int targetHeight = target ? target->height : SCREEN_HEIGHT;
+    int width  = MIN(src->width - startX, targetWidth - (x < 0 ? startX : x));
+    int height = MIN(src->height, targetHeight - y);
+
+    if(width < 0 || x > targetWidth) return;
 
     if(target)
     {
-        int width  = MIN(src->width, target->width - (x < 0 ? startX : x));
-        int height = MIN(src->height, target->height - y);
-
-        if(width < 0 || x > target->width) return;
-
         for(i = 0; i < height - startY; ++i)
             memcpy(&target->colorBuffer[x + startX + (i + y + startY) * target->width], &src->colorBuffer[startX + (i + startY) * src->width], width);
     }
     else
     {
-        int width  = MIN(src->width, SCREEN_WIDTH - (x < 0 ? startX : x));
-        int height = MIN(src->height, SCREEN_HEIGHT - y);
-
-        if(width < 0 || x > SCREEN_WIDTH) return;
-
         for(i = 0; i < height - startY; ++i)
             memcpy(&VGA[((y + startY) << 8) + ((y + startY) << 6) + x + startX + i * SCREEN_WIDTH], &src->colorBuffer[startX + (i + startY) * src->width], width);
     }

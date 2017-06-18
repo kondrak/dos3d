@@ -145,7 +145,7 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
     int startX = x < 0 ? -x : 0;
     int startY = y < 0 ? -y : 0;
     int screenOffset = x + startX + (y + startY) * buffer->width;
-    int width  = MIN(bmp->width, buffer->width - (x < 0 ? startX : x));
+    int width  = MIN(bmp->width - startX, buffer->width - (x < 0 ? startX : x));
     int height = MIN(bmp->height, buffer->height - y);
 
     // attempting to write offscreen
@@ -195,7 +195,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
     int startX = x < 0 ? -x : 0;
     int startY = y < 0 ? -y : 0;
     int screenOffset = (y + startY) * buffer->width;
-    int width  = MIN(bmp->width, buffer->width - (x < 0 ? startX : x));
+    int width  = MIN(bmp->width - startX, buffer->width - (x < 0 ? startX : x));
     int height = MIN(bmp->height, buffer->height - y);
     unsigned char data;
 
