@@ -107,6 +107,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         mth_Vector4 diff, diff2;
         double ratioU = 1, ratioV = 1;
 
+        // calculate v3.x with Intercept Theorem, y is the same as v2
         v3.position.x = v0.position.x + (v1.position.x - v0.position.x) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
         v3.position.y = v2.position.y;
 
@@ -126,7 +127,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
             float invV0Z = 1.f/v0.position.z;
             float invV1Z = 1.f/v1.position.z;
 
-            // get the z value for v3 by interpolating 1/z (it's lerp-able)
+            // get v3.z value by interpolating 1/z (it's lerp-able)
             if((v0.position.x - v1.position.x) != 0.0)
                 v3.position.z = 1.0 / LERP(invV1Z, invV0Z, (v3.position.x - v1.position.x) / (v0.position.x - v1.position.x));
             else
@@ -139,7 +140,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         }
         else
         {
-            // simple Intercept Theorem is fine in case of affine texture mapping if depth testing is inactive
+            // for affine texture mapping and no depth test it's enough to approximate v3.z with Intercept Theorem
             v3.position.z = v0.position.z + (v1.position.z - v0.position.z) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
             v3.uv.u = LERP(v0.uv.u, v1.uv.u, ratioU);
             v3.uv.v = LERP(v0.uv.v, v1.uv.v, ratioV);
