@@ -48,15 +48,15 @@ void testRenderTargets()
     keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, 
                        (float)renderTargets[0].width / (float)renderTargets[0].height, 0.1f, 500.f);
+    mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+    modelViewProj = mth_matMul(&cam.view, &cam.projection);
+    modelViewProj = mth_matMul(&model, &modelViewProj);
 
     while(!keysPressed[KEY_ESC])
     {
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
-        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        modelViewProj = mth_matMul(&cam.view, &cam.projection);
-        modelViewProj = mth_matMul(&model, &modelViewProj);
 
         for(i = 0; i < 3; ++i)
         {
@@ -72,7 +72,7 @@ void testRenderTargets()
 
         // blit render targets to screen
         gfx_blitBuffer(0, 0, &renderTargets[0], NULL);
-        gfx_blitBuffer(SCREEN_WIDTH >> 1, 0, &renderTargets[1], NULL);
+        gfx_blitBuffer(SCREEN_WIDTH >> 1,  0, &renderTargets[1], NULL);
         gfx_blitBuffer(0, SCREEN_HEIGHT >> 1, &renderTargets[2], NULL);
         gfx_blitBuffer(SCREEN_WIDTH >> 1, SCREEN_HEIGHT >> 1, &renderTargets[3], NULL);
 

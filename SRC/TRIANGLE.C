@@ -126,7 +126,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
             float invV0Z = 1.f/v0.position.z;
             float invV1Z = 1.f/v1.position.z;
 
-            // get the z value for v3 by interpolating 1/z (it's lerp-able), at this point we skip v3.w - it won't be relevant anymore
+            // get the z value for v3 by interpolating 1/z (it's lerp-able)
             if((v0.position.x - v1.position.x) != 0.0)
                 v3.position.z = 1.0 / LERP(invV1Z, invV0Z, (v3.position.x - v1.position.x) / (v0.position.x - v1.position.x));
             else
@@ -139,7 +139,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         }
         else
         {
-            // simple Intercept Theorem is fine in case of affine texture mapping if depth testing is inactive (skip v3.w again)
+            // simple Intercept Theorem is fine in case of affine texture mapping if depth testing is inactive
             v3.position.z = v0.position.z + (v1.position.z - v0.position.z) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
             v3.uv.u = LERP(v0.uv.u, v1.uv.u, ratioU);
             v3.uv.v = LERP(v0.uv.v, v1.uv.v, ratioV);
@@ -167,7 +167,6 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         }
     }
 }
-
 
 /*
  * Depending on the triangle type, the order of processed vertices is as follows:
