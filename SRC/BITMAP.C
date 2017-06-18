@@ -170,7 +170,7 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
     // attemtping to write offscreen
     if(targetWidth < 0 || x > buffer->width) return;
 
-    xOffset -= startX;
+    xOffset += xOffset > 0 ? -startX : startX;
     if(xOffset < 0) xOffset += bmp->width;
     if(yOffset < 0) yOffset += bmp->height;
 
