@@ -1,84 +1,59 @@
 #include "src/camera.h"
-#include "src/graphics.h"
-#include <stdlib.h>
+#include "src/timer.h"
+#include "src/triangle.h"
 
-// First person WASD camera
+// First person WASD camera (warning: a bit faulty with z-clipping until proper clipping is implemented!)
 void testFirstPerson()
 {
+    unsigned long int now, last = 0;
     const unsigned short *keysPressed;
-    unsigned int i;
     mth_Vector4 ts, rs;
-    mth_Vector4 square[4];
     gfx_Camera cam;
+    gfx_Triangle triangle;
     mth_Matrix4 viewProj;
-    unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    gfx_drawBuffer buffer;
+
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
+    buffer.drawOpts.depthFunc = DF_LESS;
 
     // setup camera
-    cam.position.x = 0;
-    cam.position.y = 0;
-    cam.position.z = 1.f;
-    cam.position.w = 1.f;
-
-    cam.up.x = 0.f;
-    cam.up.y = 1.f;
-    cam.up.z = 0.f;
-    cam.up.w = 1.f;
-
-    cam.right.x = 1.f;
-    cam.right.y = 0.f;
-    cam.right.z = 0.f;
-    cam.right.w = 1.f;
-
-    cam.target.x = 0.f;
-    cam.target.y = 0.f;
-    cam.target.z = -1.f;
-    cam.target.w = 1.f;
+    VEC4(cam.position, 0, 0, 40);
+    VEC4(cam.up, 0, 1, 0);
+    VEC4(cam.right, 1, 0, 0);
+    VEC4(cam.target, 0, 0, -1);
     
-    if(!buffer)
+    triangle.color = 3;
+    triangle.texture = NULL;
+    VEC4(triangle.vertices[0].position, -10, 10, 0);
+    VEC4(triangle.vertices[1].position,  10,  0, 0);
+    VEC4(triangle.vertices[2].position, -10,  0, 0);
+
+    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
     {
         printf("Out of memory!");
         exit(1);
     }
-    
+
+    tmr_start();
     keysPressed = kbd_getInput();
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 1.0f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {
-        for(i = 0; i < 4; i++)
-        {
-            square[i].x = 0 + 50*(i%2);
-            square[i].y = 0 + 50*(i > 1 ? 1 : 0);
-            square[i].z = -80.f;
-            square[i].w = 1.f;
-        }
-
+        float dt;
+        now = tmr_getMs();
+        dt = (float)(now - last);
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
         viewProj = mth_matMul(&cam.view, &cam.projection);
 
-        for(i = 0; i < 4; i++)
-        {
-            square[i] = mth_matMulVec(&viewProj, &square[i]);
-
-            // translate position to screen pixels
-            square[i].x = (square[i].x * (float)SCREEN_WIDTH)  / (2.0f * square[i].w) + (SCREEN_WIDTH >> 1);
-            square[i].y = (square[i].y * (float)SCREEN_HEIGHT) / (2.0f * square[i].w) + (SCREEN_HEIGHT >> 1);
-            square[i].z /= square[i].w;
-        }
-
-        gfx_clrBuffer(buffer);
-
-        gfx_drawLineVec(&square[0], &square[1], 3, buffer);
-        gfx_drawLineVec(&square[1], &square[3], 3, buffer);
-        gfx_drawLineVec(&square[0], &square[2], 3, buffer);
-        gfx_drawLineVec(&square[2], &square[3], 3, buffer);
-
-        gfx_updateScreen(buffer);
+        gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
+        gfx_drawTriangle(&triangle, &viewProj, &buffer);
+        gfx_updateScreen(&buffer);
 
         keysPressed = kbd_getInput();
 
-        ts = mth_vecScale(&cam.target, 0.1f);
-        rs = mth_vecScale(&cam.right, 0.1f);
+        ts = mth_vecScale(&cam.target, 0.05f*dt);
+        rs = mth_vecScale(&cam.right, 0.05f*dt);
 
         if(keysPressed[KEY_W])
             cam.position = mth_vecAdd(&cam.position, &ts);
@@ -94,28 +69,30 @@ void testFirstPerson()
 
         if(keysPressed[KEY_LEFT])
         {
-            mth_rotateVecAxisAngle(&cam.target, 0.001f, cam.up.x, cam.up.y, cam.up.z);
+            mth_rotateVecAxisAngle(&cam.target, 0.002f*dt, cam.up.x, cam.up.y, cam.up.z);
             cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
         if(keysPressed[KEY_RIGHT])
         {
-            mth_rotateVecAxisAngle(&cam.target, -0.001f, cam.up.x, cam.up.y, cam.up.z);
+            mth_rotateVecAxisAngle(&cam.target, -0.002f*dt, cam.up.x, cam.up.y, cam.up.z);
             cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
-        if(keysPressed[KEY_PGUP])
+        if(keysPressed[KEY_R])
         {
-            mth_rotateVecAxisAngle(&cam.target, -0.001f, cam.right.x, cam.right.y, cam.right.z);
-            cam.right = mth_crossProduct(&cam.target, &cam.up);
-        }
-
-        if(keysPressed[KEY_PGDN])
-        {
-            mth_rotateVecAxisAngle(&cam.target, 0.001f, cam.right.x, cam.right.y, cam.right.z);
+            mth_rotateVecAxisAngle(&cam.target, -0.002f*dt, cam.right.x, cam.right.y, cam.right.z);
             cam.up = mth_crossProduct(&cam.right, &cam.target);
         }
+
+        if(keysPressed[KEY_F])
+        {
+            mth_rotateVecAxisAngle(&cam.target, 0.002f*dt, cam.right.x, cam.right.y, cam.right.z);
+            cam.up = mth_crossProduct(&cam.right, &cam.target);
+        }
+        last = now;
     }
 
-    free(buffer);
+    tmr_finish();
+    FREE_DRAWBUFFER(buffer);
 }

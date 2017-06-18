@@ -1,6 +1,6 @@
 #include "src/camera.h"
 #include "src/graphics.h"
-#include <stdlib.h>
+#include "src/timer.h"
 
 // helper function
 void setupCube(mth_Vector4 *c);
@@ -9,42 +9,32 @@ void setupCube(mth_Vector4 *c);
 void testPerspective()
 {
     const unsigned short *keysPressed;
+    unsigned long int now, last = 0;
     float t = 0.f;
     mth_Vector4 cube[16];
     gfx_Camera cam;
     mth_Matrix4 model;
     mth_Matrix4 modelViewProj;
-    unsigned char *buffer = (unsigned char *)malloc(SCREEN_WIDTH * SCREEN_HEIGHT);
+    gfx_drawBuffer buffer;
 
-    if(!buffer)
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
+
+    if(!DRAWBUFFER_VALID(buffer, DB_COLOR))
     {
         printf("Out of memory!");
         exit(1);
     }
 
+    tmr_start();
+
     mth_matIdentity(&model);
     mth_matIdentity(&modelViewProj);
 
     // setup camera
-    cam.position.x = 0;
-    cam.position.y = 0;
-    cam.position.z = 150.f;
-    cam.position.w = 1.f;
-
-    cam.up.x = 0.f;
-    cam.up.y = 1.f;
-    cam.up.z = 0.f;
-    cam.up.w = 1.f;
-
-    cam.right.x = 1.f;
-    cam.right.y = 0.f;
-    cam.right.z = 0.f;
-    cam.right.w = 1.f;
-
-    cam.target.x = 0.f;
-    cam.target.y = 0.f;
-    cam.target.z = -1.f;
-    cam.target.w = 1.f;
+    VEC4(cam.position, 0, 0, 150);
+    VEC4(cam.up, 0, 1, 0);
+    VEC4(cam.right, 1, 0, 0);
+    VEC4(cam.target, 0, 0, -1);
 
     // setup world coordinates for pseudo-cube
     setupCube(&cube);
@@ -53,53 +43,57 @@ void testPerspective()
     model.m[13] = -20.f;
 
     keysPressed = kbd_getInput();
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
 
     while(!keysPressed[KEY_ESC])
     {
         int i;
+        float dt;
         // screen coordinates for the cube we will calculate here
         mth_Vector4 screenCube[16];
+        now = tmr_getMs();
+        dt = (float)(now - last);
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 5.f);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
-        t += 0.001f;
+        t += 0.0015f*dt;
         for(i = 0; i < 16; i++)
         {
             // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
-            mth_rotateVecAxisAngle(&cube[i], 0.001f, 1.f, 1.f, 1.f);
+            mth_rotateVecAxisAngle(&cube[i], 0.0015f*dt, 1.f, 1.f, 1.f);
             model.m[14] = sin(t) * 80.f;
             
             // calculate screen coordinates for transformed square vertices
             screenCube[i] = mth_matMulVec(&modelViewProj, &cube[i]);
 
             // translate position to screen pixels
-            screenCube[i].x = (screenCube[i].x * (float)SCREEN_WIDTH)  / (2.0f * screenCube[i].w) + (SCREEN_WIDTH >> 1);
-            screenCube[i].y = (screenCube[i].y * (float)SCREEN_HEIGHT) / (2.0f * screenCube[i].w) + (SCREEN_HEIGHT >> 1);
-            screenCube[i].z /= screenCube[i].w;
+            screenCube[i].x = (screenCube[i].x * (float)buffer.width)  / (2.0f * screenCube[i].w) + (buffer.width >> 1);
+            screenCube[i].y = (screenCube[i].y * (float)buffer.height) / (2.0f * screenCube[i].w) + (buffer.height >> 1);
         }
 
-        gfx_clrBuffer(buffer);
+        gfx_clrBuffer(&buffer, DB_COLOR);
 
         // render the cube walls
         for(i = 0; i < 4; i++)
         {
-            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 1], 3+i, buffer);
-            gfx_drawLineVec(&screenCube[4*i + 1], &screenCube[4*i + 3], 3+i, buffer);
-            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 2], 3+i, buffer);
-            gfx_drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, buffer);
+            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 1], 3+i, &buffer);
+            gfx_drawLineVec(&screenCube[4*i + 1], &screenCube[4*i + 3], 3+i, &buffer);
+            gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 2], 3+i, &buffer);
+            gfx_drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, &buffer);
         }
 
-        gfx_updateScreen(buffer);
+        gfx_updateScreen(&buffer);
 
         keysPressed = kbd_getInput();
+        last = now;
     }
-    
-    free(buffer);
+
+    tmr_finish();
+    FREE_DRAWBUFFER(buffer);
 }
 
-
+/* ***** */
 void setupCube(mth_Vector4 *c)
 {
     int i;

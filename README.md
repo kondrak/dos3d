@@ -1,6 +1,6 @@
-Software renderer for DOS
+Software renderer for DOS (mode 13h)
 ================
-This is a small playground where I test various graphics features that can be done in software. It is also my attempt to provide some good, working DOS code to the public, since finding it on the Internet is getting more and more difficult due to the system's obscurity. DOS played a big part in the history of software development, so I want to preserve at least some bits and pieces of how things were done back in the day!
+This is my small playground for testing various graphics features that can be done in software. It is also an attempt to provide some working DOS code to the public, since finding it on the Internet is getting increasingly more difficult due to the platform's age. 
 
 The project can be built on modern systems using the [Open Watcom](http://www.openwatcom.org/) compiler. This was chosen, since Watcom comes with easy to use memory extender for DOS.
 
@@ -8,26 +8,28 @@ Features
 -------
 
 - triangle rasterization
-- quad rasterization (using triangle composition)
-- affine texture mapping
+- front/back face culling (CCW surfaces are considered "back")
+- affine and perspective corrected texture mapping
+- multiple render targets
+- depth testing (using a 1/Z buffer)
 - perspective and view calculations - "DOF6 Camera Ready (tm)"
 - line and point rendering
-- loading, resizing and displaying bitmaps (8bpp) with optional color keying
-- bitmap scrolling
+- loading, resizing, scrolling and displaying bitmaps (8bpp) with optional color keying
 - texture atlas support
 - double buffering
 
-The executable is a set of pre-made tests that demonstrate each feature in detail.
+The executable is a set of pre-made tests that demonstrate each feature.
 
 ![Screenshot](http://kondrak.info/images/dos3d/1.png?raw=true)
 ![Screenshot](http://kondrak.info/images/dos3d/2.png?raw=true)
 ![Screenshot](http://kondrak.info/images/dos3d/3.png?raw=true)
+![Screenshot](http://kondrak.info/images/dos3d/4.png?raw=true)
+![Screenshot](http://kondrak.info/images/dos3d/5.png?raw=true)
 
-Ideas
+TODO
 -------
 
-- use fixed point instead of floating point (and fix precision errors!)
-- apply optimizations detailed in [fatmap2.txt](http://www.multi.fi/~mbc/sources/fatmap2.txt)
-- add perspective correction to texture mapping
-- add proper clipping
+- subpixel, subtexel and general precision improvements
+- add proper polygon clipping
+- add shading samples
 - ???

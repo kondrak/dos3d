@@ -1,54 +1,104 @@
+#include "src/fillers.h"
 #include "src/triangle.h"
+#include "src/utils.h"
 
 #define VERTEX_SWAP(v1, v2) { gfx_Vertex s = v2; v2 = v1; v1 = s; }
 
-// simplest case: will plot either a flat bottom or flat top triangles
-enum TriangleType
-{
-    FLAT_BOTTOM,
-    FLAT_TOP
-};
-
 // internal: perform triangle rendering based on its type
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, short colorKey);
+static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
 
-/* ***** */
-void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer)
-{
-    // draw triangle to screen buffer without any color keying
-    gfx_drawTriangleColorKey(t, buffer, -1);
-}
+// determine if triangle is degenerate
+#define DEGENERATE(v0, v1, v2) ( (v0.position.x == v1.position.x && v0.position.x == v2.position.x) || \
+                                 (v0.position.y == v1.position.y && v0.position.y == v2.position.y) )
 
+// determine if either coordinate of all vertices is offscreen
+#define COORD_CLIPPED(p0, p1, p2, c) ( (p0.c < -p0.w && p1.c < -p1.w && p2.c < -p2.w) || \
+                                       (p0.c >  p0.w && p1.c >  p1.w && p2.c >  p2.w ) )
+#define X_CLIPPED(p0, p1, p2)        COORD_CLIPPED(p0, p1, p2, x)
+#define Y_CLIPPED(p0, p1, p2)        COORD_CLIPPED(p0, p1, p2, y)
+#define Z_CLIPPED(p0, p1, p2)        ( (p0.z < 0    && p1.z < 0    && p2.z < 0) || \
+                                       (p0.z > p0.w && p1.z > p1.w && p2.z > p2.w) )
+
+#define TRIANGLE_OFFSCREEN(v0, v1, v2) ( X_CLIPPED(v0.position, v1.position, v2.position) || \
+                                         Y_CLIPPED(v0.position, v1.position, v2.position) || \
+                                         Z_CLIPPED(v0.position, v1.position, v2.position) )
 /* ***** */
-void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, short colorKey)
+void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
 {
+    int bufferHalfWidth  = buffer->width >> 1;
+    int bufferHalfHeight = buffer->height >> 1;
     gfx_Vertex v0, v1, v2;
+    gfx_Triangle sortedTriangle = *t;
+
+    // DF_NEVER - don't draw anything, abort
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
+        return;
 
     v0 = t->vertices[0];
     v1 = t->vertices[1];
     v2 = t->vertices[2];
 
-    // sort vertices so that v0 is topmost, then v2, then v1
-    if(v2.position.y > v1.position.y)
+    // transform the vertices
+    v0.position = mth_matMulVec(matrix, &v0.position);
+    v1.position = mth_matMulVec(matrix, &v1.position);
+    v2.position = mth_matMulVec(matrix, &v2.position);
+
+    // skip rendering if triangle is completely offscreen
+    if(TRIANGLE_OFFSCREEN(v0, v1, v2))
+        return;
+
+    // test if triangle face should be back/front face culled
+    if(buffer->drawOpts.cullMode != FC_NONE)
     {
-        v2 = t->vertices[1];
-        v1 = t->vertices[2];
+        mth_Vector4 d1 = mth_vecSub(&v1.position, &v0.position);
+        mth_Vector4 d2 = mth_vecSub(&v2.position, &v0.position);
+        mth_Vector4 n  = mth_crossProduct(&d1, &d2);
+        double dp = mth_dotProduct(&v0.position, &n);
+
+        // face culled? abort!
+        if(buffer->drawOpts.cullMode == FC_BACK && dp >= 0)
+            return;
+        else if(buffer->drawOpts.cullMode == FC_FRONT && dp < 0)
+            return;
     }
 
+    // transform x and y of each vertex to screen coordinates
+    v0.position.x = (v0.position.x * (float)buffer->width)  / (2.0f * v0.position.w) + bufferHalfWidth;
+    v0.position.y = (v0.position.y * (float)buffer->height) / (2.0f * v0.position.w) + bufferHalfHeight;
+    v1.position.x = (v1.position.x * (float)buffer->width)  / (2.0f * v1.position.w) + bufferHalfWidth;
+    v1.position.y = (v1.position.y * (float)buffer->height) / (2.0f * v1.position.w) + bufferHalfHeight;
+    v2.position.x = (v2.position.x * (float)buffer->width)  / (2.0f * v2.position.w) + bufferHalfWidth;
+    v2.position.y = (v2.position.y * (float)buffer->height) / (2.0f * v2.position.w) + bufferHalfHeight;
+
+    // sort vertices so that v0 is topmost, then v2, then v1
+    if(v2.position.y > v1.position.y)
+        VERTEX_SWAP(v1, v2)
+
     if(v0.position.y > v1.position.y)
-    {
-        v0 = v1;
-        v1 = t->vertices[0];
-    }
+        VERTEX_SWAP(v0, v1)
 
     if(v0.position.y > v2.position.y)
         VERTEX_SWAP(v0, v2)
 
+    // discard degenerate triangle
+    if(DEGENERATE(v0, v1, v2))
+        return;
+
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
-        drawTriangleType(t, &v0, &v1, &v2, buffer, FLAT_BOTTOM, colorKey);
+    {
+        sortedTriangle.vertices[0] = v0;
+        sortedTriangle.vertices[1] = v1;
+        sortedTriangle.vertices[2] = v2;
+        drawTriangleType(&sortedTriangle, buffer, FLAT_BOTTOM);
+    }
     else if(v0.position.y == v1.position.y)
-        drawTriangleType(t, &v2, &v1, &v0, buffer, FLAT_TOP, colorKey);
+    {
+        sortedTriangle.vertices[0] = v2;
+        sortedTriangle.vertices[1] = v1;
+        sortedTriangle.vertices[2] = v0;
+        drawTriangleType(&sortedTriangle, buffer, FLAT_TOP);
+    }
     else
     {
         // "Non-trivial" triangles will be broken down into a composition of flat bottom and flat top triangles.
@@ -57,10 +107,9 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
         mth_Vector4 diff, diff2;
         double ratioU = 1, ratioV = 1;
 
-        v3.position.x = v0.position.x + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.x - v0.position.x);
+        // calculate v3.x with Intercept Theorem, y is the same as v2
+        v3.position.x = v0.position.x + (v1.position.x - v0.position.x) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
         v3.position.y = v2.position.y;
-        v3.position.z = v0.position.z + ((float)(v2.position.y - v0.position.y) / (float)(v1.position.y - v0.position.y)) * (v1.position.z - v0.position.z);
-        v3.position.w = v2.position.w;
 
         diff  = mth_vecSub(&v1.position, &v0.position);
         diff2 = mth_vecSub(&v3.position, &v0.position);
@@ -71,20 +120,54 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
         if(diff.y != 0)
             ratioV = diff2.y / diff.y;
 
-        // lerp the UV mapping for the triangle
-        v3.uv.u = v1.uv.u * ratioU + v0.uv.u * (1.0 - ratioU);
-        v3.uv.v = v1.uv.v * ratioV + v0.uv.v * (1.0 - ratioV);
+        // lerp 1/Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions;
+        // perform this step for affine texture mapping only if depth testing is enabled, since then correct Z is needed for v3!
+        if(buffer->drawOpts.texMapMode != TM_AFFINE || buffer->drawOpts.depthFunc != DF_ALWAYS)
+        {
+            float invV0Z = 1.f/v0.position.z;
+            float invV1Z = 1.f/v1.position.z;
+
+            // get v3.z value by interpolating 1/z (it's lerp-able)
+            if((v0.position.x - v1.position.x) != 0.0)
+                v3.position.z = 1.0 / LERP(invV1Z, invV0Z, (v3.position.x - v1.position.x) / (v0.position.x - v1.position.x));
+            else
+                v3.position.z = v0.position.z;
+
+            // this will affect how affine texture map looks on the final polygon if depth test is enabled!
+            // we don't care though, since it's a distorted mapping anyway
+            v3.uv.u = v3.position.z * LERP(v0.uv.u * invV0Z, v1.uv.u * invV1Z, ratioU);
+            v3.uv.v = v3.position.z * LERP(v0.uv.v * invV0Z, v1.uv.v * invV1Z, ratioV);
+        }
+        else
+        {
+            // for affine texture mapping and no depth test it's enough to approximate v3.z with Intercept Theorem
+            v3.position.z = v0.position.z + (v1.position.z - v0.position.z) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
+            v3.uv.u = LERP(v0.uv.u, v1.uv.u, ratioU);
+            v3.uv.v = LERP(v0.uv.v, v1.uv.v, ratioV);
+        }
 
         // this swap is done to maintain consistent renderer behavior
         if(v3.position.x < v2.position.x)
             VERTEX_SWAP(v3, v2)
 
         // draw the composition of both triangles to form the desired shape
-        drawTriangleType(t, &v0, &v3, &v2, buffer, FLAT_BOTTOM, colorKey);
-        drawTriangleType(t, &v1, &v3, &v2, buffer, FLAT_TOP, colorKey);
+        if(!DEGENERATE(v0, v3, v2))
+        {
+            sortedTriangle.vertices[0] = v0;
+            sortedTriangle.vertices[1] = v3;
+            sortedTriangle.vertices[2] = v2;
+            drawTriangleType(&sortedTriangle, buffer, FLAT_BOTTOM);
+        }
+
+        if(!DEGENERATE(v1, v3, v2))
+        {
+            sortedTriangle.vertices[0] = v1;
+            sortedTriangle.vertices[1] = v3;
+            sortedTriangle.vertices[2] = v2;
+            drawTriangleType(&sortedTriangle, buffer, FLAT_TOP);
+        }
     }
 }
-
 
 /*
  * Depending on the triangle type, the order of processed vertices is as follows:
@@ -98,107 +181,15 @@ void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, shor
  * |     \    |/
  * v2-----v1  v2
  */
-static void drawTriangleType(const gfx_Triangle *t, const gfx_Vertex *v0, const gfx_Vertex *v1, const gfx_Vertex *v2, unsigned char *buffer, enum TriangleType type, const short colorKey)
+static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type)
 {
-    double invDy, dxLeft, dxRight, xLeft, xRight;
-    double x, y, yDir = 1;
-    int useColorKey = colorKey != -1 ? 1 : 0;
-
-    if(type == FLAT_BOTTOM)
-    {
-        invDy  = 1.f / (v2->position.y - v0->position.y);
-    }
+    if(!t->texture || buffer->drawOpts.texMapMode == TM_NONE)
+        gfx_flatFill(t, buffer, type);
     else
     {
-        invDy  = 1.f / (v0->position.y - v2->position.y);
-        yDir = -1;
-    }
-    dxLeft  = (v2->position.x - v0->position.x) * invDy;
-    dxRight = (v1->position.x - v0->position.x) * invDy;
-    xLeft  = v0->position.x;
-    xRight = xLeft;
-
-    if(!t->texture)
-    {
-        for(y = v0->position.y; ; y += yDir)
-        {
-            if(type == FLAT_TOP && y < v2->position.y)
-            {
-                break;
-            }
-            else if(type == FLAT_BOTTOM && y > v2->position.y)
-            {
-                // to avoid pixel wide gaps, render extra line at the junction between two final points
-                gfx_drawLine(xLeft-dxLeft, y, xRight-dxRight, y, t->color, buffer);
-                break;
-            }
-
-            gfx_drawLine(xLeft, y, xRight, y, t->color, buffer);
-            xLeft  += dxLeft;
-            xRight += dxRight;
-
-        }
-    }
-    else
-    {
-        float texW = t->texture->width - 1;
-        float texH = t->texture->height - 1;
-        int   texArea = texW * texH;
-        float duLeft  = texW * (v2->uv.u - v0->uv.u) * invDy;
-        float dvLeft  = texH * (v2->uv.v - v0->uv.v) * invDy;
-        float duRight = texW * (v1->uv.u - v0->uv.u) * invDy;
-        float dvRight = texH * (v1->uv.v - v0->uv.v) * invDy;
-
-        float startU = texW * v0->uv.u;
-        float startV = texH * v0->uv.v;
-        // With triangles the texture gradients (u,v slopes over the triangle surface)
-        // are guaranteed to be constant, so we need to calculate du and dv only once.
-        float invDx = 1.f / (dxRight - dxLeft);
-        float du = (duRight - duLeft) * invDx;
-        float dv = (dvRight - dvLeft) * invDx;
-        float startX = xLeft;
-        float endX   = xRight;
-
-        gfx_setPalette(t->texture->palette);
-
-        for(y = v0->position.y; ; y += yDir)
-        {
-            float u = startU;
-            float v = startV;
-
-            if(type == FLAT_BOTTOM && y > v2->position.y)
-            {
-                u -= du;
-                v -= dv;
-                for(x = startX-dxLeft; x <= endX-dxRight; ++x)
-                {
-                    unsigned char pixel = t->texture->data[(int)u + ((int)v * t->texture->height)];
-
-                    if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                        gfx_drawPixel(x, y, pixel, buffer);
-                    u += du;
-                    v += dv;
-                }
-                break;
-            }
-            else if ( type == FLAT_TOP && y < v2->position.y)
-                break;
-
-            for(x = startX; x <= endX; ++x)
-            {
-                // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-                unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
-
-                if(!useColorKey || (useColorKey && pixel != (unsigned char)colorKey))
-                    gfx_drawPixel(x, y, pixel, buffer);
-                u += du;
-                v += dv;
-            }
-
-            startX += dxLeft;
-            endX   += dxRight;
-            startU += duLeft;
-            startV += dvLeft;
-        }
+        if(buffer->drawOpts.texMapMode == TM_AFFINE)
+            gfx_affineTextureMap(t, buffer, type);
+        else
+            gfx_perspectiveTextureMap(t, buffer, type);
     }
 }

@@ -3,6 +3,7 @@
 
 #include "src/bitmap.h"
 #include "src/graphics.h"
+#include "src/math.h"
 
 /*
  * Triangle definition and rendering.
@@ -11,6 +12,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+    enum TriangleType
+    {
+        FLAT_BOTTOM,
+        FLAT_TOP
+    };
 
     typedef struct
     {
@@ -21,11 +28,8 @@ extern "C" {
 
     /* *** Interface *** */
 
-    // draw triangle to buffer (no color keying)
-    void gfx_drawTriangle(const gfx_Triangle *t, unsigned char *buffer);
-
-    // draw triangle to buffer with colorKey as the tranpsarent color
-    void gfx_drawTriangleColorKey(const gfx_Triangle *t, unsigned char *buffer, const short colorKey);
+    // draw triangle to buffer using a transformation matrix
+    void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
 
 #ifdef __cplusplus
 }

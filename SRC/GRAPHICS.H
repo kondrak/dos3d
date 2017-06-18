@@ -2,9 +2,10 @@
 #define GRAPHICS_H
 
 #include "src/math.h"
+#include <stdlib.h>
 
 /*
- * Common graphics functionality.
+ * Common graphics functions and data structures.
  */
 
 #ifdef __cplusplus
@@ -13,6 +14,41 @@ extern "C" {
     #define SCREEN_WIDTH  320
     #define SCREEN_HEIGHT 200
 
+    // draw buffer type
+    enum BufferType
+    {
+        DB_COLOR = 1 << 0, // color buffer
+        DB_DEPTH = 1 << 1  // depth buffer
+    };
+
+    // texture mapping type
+    enum TextureMappingMode
+    {
+        TM_AFFINE      = 1 << 0,
+        TM_PERSPECTIVE = 1 << 1, // default
+        TM_NONE        = 1 << 2  // will draw flat colored polygon
+    };
+
+    // face culling mode
+    enum FaceCullingMode
+    {
+        FC_BACK  = 1 << 0,
+        FC_FRONT = 1 << 1,
+        FC_NONE  = 1 << 2  // default - no culling
+    };
+
+    // depth function type (OpenGL style)
+    enum DepthFunc
+    {
+        DF_ALWAYS   = 1 << 0, // default - no depth testing
+        DF_LESS     = 1 << 1,
+        DF_LEQUAL   = 1 << 2,
+        DF_GEQUAL   = 1 << 3,
+        DF_GREATER  = 1 << 4,
+        DF_NOTEQUAL = 1 << 5,
+        DF_NEVER    = 1 << 6
+    };
+
     // basic vertex: position and UV mapping for textures
     typedef struct
     {
@@ -20,29 +56,83 @@ extern "C" {
         mth_Vector2 uv;
     } gfx_Vertex;
 
-    // set graphics mode
-    void gfx_setMode(unsigned char mode);
+    // common draw options for a draw buffer
+    typedef struct
+    {
+        enum TextureMappingMode texMapMode;
+        enum FaceCullingMode cullMode;
+        enum DepthFunc depthFunc;
+        short colorKey;
+    } gfx_drawOptions;
 
-    // draw pixel to buffer
-    void gfx_drawPixel(int x, int y, unsigned char color, unsigned char *buffer);
+    // draw buffer/render target
+    typedef struct
+    {
+        int width;
+        int height;
+        gfx_drawOptions drawOpts;
+        unsigned char *colorBuffer;
+        float *depthBuffer; // depth buffer based on 1/z values per pixel
+    } gfx_drawBuffer;
+
+    // default draw options initialization since the compiler can't handle struct constructors
+    #define DRAWOPTS_DEFAULT(o) {\
+                o.texMapMode = TM_PERSPECTIVE; \
+                o.cullMode = FC_NONE; \
+                o.depthFunc = DF_ALWAYS; \
+                o.colorKey   = -1; \
+            }
+
+    // draw buffer allocation and default initialization
+    #define ALLOC_DRAWBUFFER(b, w, h, f) {\
+                b.width  = w; \
+                b.height = h; \
+                DRAWOPTS_DEFAULT(b.drawOpts); \
+                b.colorBuffer = f & DB_COLOR ? (unsigned char *)malloc(sizeof(unsigned char) * w * h) : NULL; \
+                b.depthBuffer = f & DB_DEPTH ? (float *)malloc(sizeof(float) * w * h) : NULL; \
+            }
+
+    // check pre-allocated buffer validity
+    #define DRAWBUFFER_VALID(b, f) ( (f & DB_COLOR ? b.colorBuffer != NULL : 1) && \
+                                     (f & DB_DEPTH ? b.depthBuffer != NULL : 1) )
+    // draw buffer release
+    #define FREE_DRAWBUFFER(b) {\
+                free(b.colorBuffer); \
+                free(b.depthBuffer); \
+            }
+
+    // set graphics mode
+    void gfx_setMode(const unsigned char mode);
+
+    // draw pixel to buffer (ignore depth)
+    void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buffer);
+
+    // draw pixel and take depth into account
+    void gfx_drawPixelWithDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer);
 
     // Bresenham line drawing
-    void gfx_drawLine(int x0, int y0, int x1, int y1, unsigned char color, unsigned char *buffer);
+    void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned char color, gfx_drawBuffer *buffer);
 
     // Bresenham line drawing - using mth_Vector4 structs
-    void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, unsigned char color, unsigned char *buffer);
+    void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsigned char color, gfx_drawBuffer *buffer);
 
     // clears buffer to 0
-    void gfx_clrBuffer(unsigned char *buffer);
+    void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType);
 
-    // clears buffer to specific color
-    void gfx_clrBufferColor(unsigned char *buffer, unsigned char color);
+    // fills color buffer to specific color (depth buffer is untouched)
+    void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color);
 
-    // copy buffer contents to VGA memory
-    void gfx_updateScreen(unsigned char *buffer);
+    // copy contents of one buffer to another (at x,y offset), if target is NULL - blits to VGA
+    void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target);
+
+    // fast copy buffer contents straight to VGA memory - buffer must be the same size as VGA screen buffer
+    void gfx_updateScreen(gfx_drawBuffer *buffer);
 
     // set current VGA palette
-    void gfx_setPalette(unsigned char *palette);
+    void gfx_setPalette(const unsigned char *palette);
+
+    // read current VGA palette
+    void gfx_getPalette(unsigned char *outPalette);
 
     // wait for retrace
     void gfx_vSync();

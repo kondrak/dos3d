@@ -4,10 +4,10 @@ projectIdent
 VpeMain
 1
 WRect
-2048
-123
+1104
+426
 7680
-9301
+8978
 2
 MProject
 3
@@ -31,7 +31,7 @@ WRect
 0
 0
 5680
-4238
+4171
 0
 0
 9
@@ -39,5 +39,5 @@ WFileName
 9
 dos3d.tgt
 0
-20
+25
 7
