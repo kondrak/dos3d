@@ -10,7 +10,7 @@
 static void fskip(FILE *fp, int num_bytes)
 {
     int i;
-    for (i = 0; i < num_bytes; i++)
+    for (i = 0; i < num_bytes; ++i)
         fgetc(fp);
 }
 
@@ -57,7 +57,7 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     }
 
     // read the palette information
-    for(index = 0; index < num_colors; index++)
+    for(index = 0; index < num_colors; ++index)
     {
         bmp.palette[(int)(index*3+2)] = fgetc(fp) >> 2;
         bmp.palette[(int)(index*3+1)] = fgetc(fp) >> 2;
@@ -67,7 +67,7 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
 
     // read the bitmap
     for(index = (bmp.height-1) * bmp.width; index >= 0; index -= bmp.width)
-        for(x = 0; x < bmp.width; x++)
+        for(x = 0; x < bmp.width; ++x)
             bmp.data[ index + x ] = (unsigned char)fgetc(fp);
 
     fclose(fp);
@@ -90,9 +90,9 @@ gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int
         exit(1);
     }
     
-    for(p = 0, cy = y; cy < y+h; cy++)
+    for(p = 0, cy = y; cy < y+h; ++cy)
     {
-        for(cx = x; cx < x+w; cx++, p++)
+        for(cx = x; cx < x+w; ++cx, ++p)
         {
             subImage.data[p] = atlas->data[cy * atlas->width + cx];
         }
@@ -105,8 +105,8 @@ gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int
 gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
 {
     int cx,cy;
-    float scaleX = (float)w / bmp->width;
-    float scaleY = (float)h / bmp->height;
+    float scaleX = (float)bmp->width / w;
+    float scaleY = (float)bmp->height / h;
     gfx_Bitmap resized;
     resized.width  = w;
     resized.height = h;
@@ -119,12 +119,12 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
     }
 
     // rescale bitmap using nearest neighbour algorithm
-    for(cy = 0; cy < h; cy++)
+    for(cy = 0; cy < h; ++cy)
     {
-        for(cx = 0; cx < w; cx++)
+        for(cx = 0; cx < w; ++cx)
         {
             int p = cy * w + cx;
-            int nn = (((int)(cy / scaleY) * bmp->width) + ((int)(cx / scaleX)));
+            int nn = (((int)(cy * scaleY) * bmp->width) + ((int)(cx * scaleX)));
 
             resized.data[p]   = bmp->data[nn];
             resized.data[p+1] = bmp->data[nn+1];
@@ -142,17 +142,17 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
 {
     int j;
     // adjust for offscreen positioning
-    int startX = x < 0 ? -x : 0;
-    int startY = y < 0 ? -y : 0;
-    int screenOffset = x + startX + (y + startY) * buffer->width;
-    int width  = MIN(bmp->width - startX, buffer->width - (x < 0 ? startX : x));
+    int offscreenX = x < 0 ? -x : 0;
+    int offscreenY = y < 0 ? -y : 0;
+    int screenOffset = x + offscreenX + (y + offscreenY) * buffer->width;
+    int width  = MIN(bmp->width - offscreenX, buffer->width - (x < 0 ? offscreenX : x));
     int height = MIN(bmp->height, buffer->height - y);
 
     // attempting to write offscreen
     if(width < 0 || x > buffer->width) return;
 
-    for(j = 0; j < height - startY; j++)
-        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[startX + (j + startY) * bmp->width], width);
+    for(j = 0; j < height - offscreenY; ++j)
+        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[offscreenX + (j + offscreenY) * bmp->width], width);
 }
 
 /* ***** */
@@ -160,34 +160,34 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
 {
     int j, scanlineLength;
     // adjust for offscreen positioning
-    int startX = x < 0 ? -x : 0;
-    int startY = y < 0 ? -y : 0;
-    int screenOffset = x + startX + (y + startY) * buffer->width;
+    int offscreenX = x < 0 ? -x : 0;
+    int offscreenY = y < 0 ? -y : 0;
+    int screenOffset = x + offscreenX + (y + offscreenY) * buffer->width;
     int texArea = bmp->width * bmp->height;
     int height  = MIN(bmp->height, buffer->height - y);
-    int targetWidth = buffer->width - (x < 0 ? startX : x);
+    int targetWidth = buffer->width - (x < 0 ? offscreenX : x);
     unsigned char *dstBuff = buffer->colorBuffer;
     unsigned char *bmpBuff = bmp->data;
 
     // attemtping to write offscreen
     if(targetWidth < 0 || x > buffer->width) return;
 
-    xOffset += xOffset > 0 ? -startX : startX;
+    xOffset += xOffset > 0 ? -offscreenX : offscreenX;
     if(xOffset < 0) xOffset += bmp->width;
     if(yOffset < 0) yOffset += bmp->height;
 
-    for(j = 0; j < height - startY; j++)
+    for(j = 0; j < height - offscreenY; ++j)
     {
         scanlineLength = bmp->width - xOffset;
         if(scanlineLength > bmp->width)  scanlineLength -= bmp->width;
         if(scanlineLength > targetWidth) scanlineLength = targetWidth;
 
         memcpy(&dstBuff[screenOffset + j * buffer->width], 
-               &bmpBuff[(xOffset + (j + yOffset + startY) * bmp->width) % texArea], scanlineLength);
+               &bmpBuff[(xOffset + (j + yOffset + offscreenY) * bmp->width) % texArea], scanlineLength);
 
         if(targetWidth > scanlineLength)
             memcpy(&dstBuff[screenOffset + j * buffer->width + scanlineLength], 
-                   &bmpBuff[(j + yOffset + startY) * bmp->width % texArea], targetWidth - scanlineLength);
+                   &bmpBuff[(j + yOffset + offscreenY) * bmp->width % texArea], targetWidth - scanlineLength);
     }
 }
 
@@ -196,21 +196,21 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
 {
     int i,j;
     // adjust for offscreen positioning
-    int startX = x < 0 ? -x : 0;
-    int startY = y < 0 ? -y : 0;
-    int screenOffset = (y + startY) * buffer->width;
-    int width  = MIN(bmp->width - startX, buffer->width - (x < 0 ? startX : x));
+    int offscreenX = x < 0 ? -x : 0;
+    int offscreenY = y < 0 ? -y : 0;
+    int screenOffset = (y + offscreenY) * buffer->width;
+    int width  = MIN(bmp->width - offscreenX, buffer->width - (x < 0 ? offscreenX : x));
     int height = MIN(bmp->height, buffer->height - y);
     unsigned char data;
 
     // attemtping to write offscreen
     if(width < 0 || x > buffer->width) return;
 
-    for(j = 0; j < height - startY; j++)
+    for(j = 0; j < height - offscreenY; ++j)
     {
-        for(i = 0; i < width; i++)
+        for(i = 0; i < width; ++i)
         {
-            data = bmp->data[i + startX + (j + startY) * bmp->height];
+            data = bmp->data[i + offscreenX + (j + offscreenY) * bmp->height];
             // skip a pixel if it's the same color as colorKey
             if(data != (unsigned char)colorKey)
                 buffer->colorBuffer[screenOffset + x + i + j * buffer->width] = data;

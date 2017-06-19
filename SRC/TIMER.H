@@ -2,7 +2,7 @@
 #define TIMER_H
 
 /*
- *   1 ms resolution timer based on IRQ0 (interrupt 8)
+ *   IRQ0 (interrupt 8) timer with 1ms granularity
  */
 
 #ifdef __cplusplus

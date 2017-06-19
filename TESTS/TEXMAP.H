@@ -62,6 +62,8 @@ void testTextureMapping()
 
     keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
+    mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+    modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
     while(!keysPressed[KEY_ESC])
     {
@@ -69,8 +71,6 @@ void testTextureMapping()
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
-        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
         if(keysPressed[KEY_RIGHT])
             ROTATE_QUAD(0.002f, 0.f, 1.f, 0.f);

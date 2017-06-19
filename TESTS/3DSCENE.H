@@ -61,6 +61,8 @@ void test3DScene()
 
     keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
+    mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+    modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
     while(!keysPressed[KEY_ESC])
     {
@@ -74,9 +76,6 @@ void test3DScene()
             texMapFlipped = 1;
         }
         else if(!keysPressed[KEY_T]) texMapFlipped = 0;
-
-        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
         // clear depth buffer
         gfx_clrBuffer(&buffer, DB_DEPTH);
