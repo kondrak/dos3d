@@ -150,9 +150,9 @@ void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType)
 void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color)
 {
     if(!buffer)
-        memset(VGA, color, SCREEN_WIDTH * SCREEN_HEIGHT);
+        memset(VGA, color, sizeof(unsigned char) * SCREEN_WIDTH * SCREEN_HEIGHT);
     else
-        memset(buffer->colorBuffer, color, buffer->width * buffer->height);
+        memset(buffer->colorBuffer, color, sizeof(unsigned char) * buffer->width * buffer->height);
 }
 
 /* ***** */

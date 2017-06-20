@@ -49,7 +49,7 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     // assume we are working with an 8-bit file
     if(!num_colors) num_colors = 256;
 
-    if((bmp.data = (unsigned char *)malloc(bmp.width * bmp.height)) == NULL)
+    if((bmp.data = (unsigned char *)malloc(sizeof(unsigned char) * bmp.width * bmp.height)) == NULL)
     {
         fclose(fp);
         printf("Error allocating memory for file %s.\n",filename);
@@ -84,7 +84,7 @@ gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int
     // retain the palette of the atlas
     memcpy(subImage.palette, atlas->palette, sizeof(unsigned char)*256*3);
     
-    if ((subImage.data = (unsigned char *) malloc(w*h)) == NULL)
+    if ((subImage.data = (unsigned char *)malloc(sizeof(unsigned char) * w * h)) == NULL)
     {
         printf("Error allocating memory for atlas sub image bitmap!\n");
         exit(1);
@@ -112,7 +112,7 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
     resized.height = h;
     memcpy(resized.palette, bmp->palette, sizeof(unsigned char)*256*3);
 
-    if ((resized.data = (unsigned char *) malloc(w*h)) == NULL)
+    if ((resized.data = (unsigned char *)malloc(sizeof(unsigned char) * w * h)) == NULL)
     {
         printf("Error allocating memory for resized bitmap!\n");
         exit(1);
