@@ -120,10 +120,10 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
         startInvZ = LERP(invZ0, invZ2, r1);
         endInvZ   = LERP(invZ0, invZ1, r1);
 
-        startU *= LERP(v0->uv.u*invZ0, v2->uv.u*invZ2, r1);
-        startV *= LERP(v0->uv.v*invZ0, v2->uv.v*invZ2, r1);
-        endU   *= LERP(v0->uv.u*invZ0, v1->uv.u*invZ1, r1);
-        endV   *= LERP(v0->uv.v*invZ0, v1->uv.v*invZ1, r1);
+        startU *= LERP(v0->uv.u * invZ0, v2->uv.u * invZ2, r1);
+        startV *= LERP(v0->uv.v * invZ0, v2->uv.v * invZ2, r1);
+        endU   *= LERP(v0->uv.u * invZ0, v1->uv.u * invZ1, r1);
+        endV   *= LERP(v0->uv.v * invZ0, v1->uv.v * invZ1, r1);
 
         if(startX != endX)
             invLineLength = 1.f / (endX - startX);

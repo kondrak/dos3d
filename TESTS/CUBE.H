@@ -34,7 +34,7 @@ void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
             { \
                 for(k = 0; k < 2; ++k) \
                 { \
-                    for(i = 0; i < 3; i++) \
+                    for(i = 0; i < 3; ++i) \
                     { \
                         mth_rotateVecAxisAngle(&cube.walls[j].tris[k].vertices[i].position, delta*dt, x, y, z); \
                     } \

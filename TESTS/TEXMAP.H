@@ -17,7 +17,7 @@ void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
 #define ROTATE_QUAD(delta, x, y, z) {\
             for(k = 0; k < 2; ++k) \
             { \
-                for(i = 0; i < 3; i++) \
+                for(i = 0; i < 3; ++i) \
                 { \
                     mth_rotateVecAxisAngle(&quad.tris[k].vertices[i].position, delta*dt, x, y, z); \
                 } \

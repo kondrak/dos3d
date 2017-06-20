@@ -17,7 +17,7 @@ void testRenderTargets()
 
     // create 4 draw buffers
     for(i = 0; i < 4; ++i)
-        ALLOC_DRAWBUFFER(renderTargets[i], SCREEN_WIDTH/2, SCREEN_HEIGHT/2, DB_COLOR);
+        ALLOC_DRAWBUFFER(renderTargets[i], SCREEN_WIDTH >> 1, SCREEN_HEIGHT >> 1, DB_COLOR);
 
     for(i = 0; i < 4; ++i)
     {

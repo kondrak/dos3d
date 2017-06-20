@@ -85,16 +85,16 @@ extern "C" {
 
     // draw buffer allocation and default initialization
     #define ALLOC_DRAWBUFFER(b, w, h, f) {\
-                b.width  = w; \
-                b.height = h; \
+                b.width  = (w); \
+                b.height = (h); \
                 DRAWOPTS_DEFAULT(b.drawOpts); \
-                b.colorBuffer = f & DB_COLOR ? (unsigned char *)malloc(sizeof(unsigned char) * w * h) : NULL; \
-                b.depthBuffer = f & DB_DEPTH ? (float *)malloc(sizeof(float) * w * h) : NULL; \
+                b.colorBuffer = (f) & DB_COLOR ? (unsigned char *)malloc(sizeof(unsigned char) * (w) * (h)) : NULL; \
+                b.depthBuffer = (f) & DB_DEPTH ? (float *)malloc(sizeof(float) * (w) * (h)) : NULL; \
             }
 
     // check pre-allocated buffer validity
-    #define DRAWBUFFER_VALID(b, f) ( (f & DB_COLOR ? b.colorBuffer != NULL : 1) && \
-                                     (f & DB_DEPTH ? b.depthBuffer != NULL : 1) )
+    #define DRAWBUFFER_VALID(b, f) ( ((f) & DB_COLOR ? b.colorBuffer != NULL : 1) && \
+                                     ((f) & DB_DEPTH ? b.depthBuffer != NULL : 1) )
     // draw buffer release
     #define FREE_DRAWBUFFER(b) {\
                 free(b.colorBuffer); \

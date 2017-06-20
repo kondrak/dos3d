@@ -58,7 +58,7 @@ void testPerspective()
         modelViewProj = mth_matMul(&model, &modelViewProj);
 
         t += 0.0015f*dt;
-        for(i = 0; i < 16; i++)
+        for(i = 0; i < 16; ++i)
         {
             // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
             mth_rotateVecAxisAngle(&cube[i], 0.0015f*dt, 1.f, 1.f, 1.f);
@@ -75,7 +75,7 @@ void testPerspective()
         gfx_clrBuffer(&buffer, DB_COLOR);
 
         // render the cube walls
-        for(i = 0; i < 4; i++)
+        for(i = 0; i < 4; ++i)
         {
             gfx_drawLineVec(&screenCube[4*i + 0], &screenCube[4*i + 1], 3+i, &buffer);
             gfx_drawLineVec(&screenCube[4*i + 1], &screenCube[4*i + 3], 3+i, &buffer);
@@ -97,7 +97,7 @@ void testPerspective()
 void setupCube(mth_Vector4 *c)
 {
     int i;
-    for(i = 0; i < 4; i++)
+    for(i = 0; i < 4; ++i)
     {
         c[i].x = 40*(i%2);
         c[i].y = 40*(i > 1 ? 1 : 0);
@@ -105,7 +105,7 @@ void setupCube(mth_Vector4 *c)
         c[i].w = 1.f;
     }
     
-    for(i = 4; i < 8; i++)
+    for(i = 4; i < 8; ++i)
     {
         c[i].x = 40;
         c[i].y = 40*(i > 5 ? 1 : 0);
@@ -113,7 +113,7 @@ void setupCube(mth_Vector4 *c)
         c[i].w = 1.f;
     }
     
-    for(i = 8; i < 12; i++)
+    for(i = 8; i < 12; ++i)
     {
         c[i].x = 40*(i%2);
         c[i].y = 40*(i > 9 ? 1 : 0);
@@ -121,7 +121,7 @@ void setupCube(mth_Vector4 *c)
         c[i].w = 1.f;
     }
     
-    for(i = 12; i < 16; i++)
+    for(i = 12; i < 16; ++i)
     {
         c[i].x = 0;
         c[i].y = 40*(i > 13 ? 1 : 0);

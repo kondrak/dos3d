@@ -38,7 +38,7 @@ void test3DScene()
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
-    buffer.drawOpts.colorKey = COLOR_MAGENTA;
+    buffer.drawOpts.colorKey  = COLOR_MAGENTA;
     buffer.drawOpts.depthFunc = DF_LESS;
 
     if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
@@ -179,7 +179,7 @@ void setupScene(Scene *s)
     //rotate and shift the floor
     for(k = 0; k < 2; ++k)
     {
-        for(i = 0; i < 3; i++)
+        for(i = 0; i < 3; ++i)
         {
             mth_rotateVecAxisAngle(&s->walls[0].tris[k].vertices[i].position, 90.f * M_PI / 180.f, 1.f, 0.f, 0.f);
             s->walls[0].tris[k].vertices[i].position = mth_matMulVec(&floorModel, &s->walls[0].tris[k].vertices[i].position);
@@ -204,6 +204,6 @@ void setupScene(Scene *s)
 void freeScene(Scene *s)
 {
     int w;
-    for(w = 0; w < NUM_TEXTURES; w++)
+    for(w = 0; w < NUM_TEXTURES; ++w)
         gfx_freeBitmap(&s->textures[w]);
 }
