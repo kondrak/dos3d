@@ -95,7 +95,7 @@ int main(int argc, char **argv)
             if(keysPressed[KEY_Q])
             {
                 gfx_setMode(0x03);
-                exit(0);
+                break;
             }
             
             keysPressed = kbd_getInput();
@@ -106,4 +106,6 @@ int main(int argc, char **argv)
             demoFinished = 0;
         }
     }
+
+    return 0;
 }
