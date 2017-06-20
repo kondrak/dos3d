@@ -49,7 +49,7 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     // assume we are working with an 8-bit file
     if(!num_colors) num_colors = 256;
 
-    if((bmp.data = (unsigned char *)malloc(bmp.width*bmp.height)) == NULL)
+    if((bmp.data = (unsigned char *)malloc(bmp.width * bmp.height)) == NULL)
     {
         fclose(fp);
         printf("Error allocating memory for file %s.\n",filename);
@@ -59,9 +59,9 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     // read the palette information
     for(index = 0; index < num_colors; ++index)
     {
-        bmp.palette[(int)(index*3+2)] = fgetc(fp) >> 2;
-        bmp.palette[(int)(index*3+1)] = fgetc(fp) >> 2;
-        bmp.palette[(int)(index*3+0)] = fgetc(fp) >> 2;
+        bmp.palette[(int)(index*3 + 2)] = fgetc(fp) >> 2;
+        bmp.palette[(int)(index*3 + 1)] = fgetc(fp) >> 2;
+        bmp.palette[(int)(index*3 + 0)] = fgetc(fp) >> 2;
         x = fgetc(fp);
     }
 
@@ -147,12 +147,17 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
     int screenOffset = x + offscreenX + (y + offscreenY) * buffer->width;
     int width  = MIN(bmp->width - offscreenX, buffer->width - (x < 0 ? offscreenX : x));
     int height = MIN(bmp->height, buffer->height - y);
+    unsigned char *dstBuff = buffer->colorBuffer;
+    unsigned char *bmpBuff = bmp->data;
 
     // attempting to write offscreen
     if(width < 0 || x > buffer->width) return;
 
     for(j = 0; j < height - offscreenY; ++j)
-        memcpy(&buffer->colorBuffer[screenOffset + j * buffer->width], &bmp->data[offscreenX + (j + offscreenY) * bmp->width], width);
+    {
+        memcpy(&dstBuff[screenOffset + j * buffer->width], 
+               &bmpBuff[offscreenX + (j + offscreenY) * bmp->width], width);
+    }
 }
 
 /* ***** */
