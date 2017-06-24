@@ -7,19 +7,21 @@ void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleTy
     const gfx_Vertex *v0 = &t->vertices[0];
     const gfx_Vertex *v1 = &t->vertices[1];
     const gfx_Vertex *v2 = &t->vertices[2];
-    double invDy, dxLeft, dxRight, xLeft, xRight;
-    double y, yDir = 1;
+    double y, invDy, dxLeft, dxRight, xLeft, xRight;
+    int currLine, numScanlines, yDir = 1;
     // variables used if depth test is enabled
     float startInvZ, endInvZ, invZ0, invZ1, invZ2, invY02;
 
     if(type == FLAT_BOTTOM)
     {
-        invDy  = 1.f / (v2->position.y - v0->position.y);
+        invDy  = 1.0 / (v2->position.y - v0->position.y);
+        numScanlines = ceil(v2->position.y) - ceil(v0->position.y);
     }
     else
     {
-        invDy  = 1.f / (v0->position.y - v2->position.y);
+        invDy  = 1.0 / (v0->position.y - v2->position.y);
         yDir = -1;
+        numScanlines = ceil(v0->position.y) - ceil(v2->position.y);
     }
 
     dxLeft  = (v2->position.x - v0->position.x) * invDy;
@@ -36,20 +38,8 @@ void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleTy
         invY02 = 1.f / (v0->position.y - v2->position.y);
     }
 
-    for(y = v0->position.y; ; y += yDir)
+    for(currLine = 0, y = v0->position.y; currLine <= numScanlines; y += yDir)
     {
-        if(type == FLAT_TOP && y < v2->position.y)
-            break;
-        else if(type == FLAT_BOTTOM && y > v2->position.y)
-        {
-            // to avoid pixel wide gaps, render extra line at the junction between two final points
-            if(buffer->drawOpts.depthFunc != DF_ALWAYS)
-                gfx_drawLine(xLeft-dxLeft, y, 1.f/startInvZ, xRight-dxRight, y, 1.f/endInvZ, t->color, buffer);
-            else
-                gfx_drawLine(xLeft-dxLeft, y, 0.f, xRight-dxRight, y, 0.f, t->color, buffer);
-            break;
-        }
-
         // interpolate 1/z only if depth testing is enabled
         if(buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
@@ -63,6 +53,12 @@ void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleTy
 
         xLeft  += dxLeft;
         xRight += dxRight;
+
+        if(++currLine == numScanlines)
+        {
+            xLeft -= dxLeft;
+            xRight -= dxRight;
+        }
     }
 }
 
@@ -80,15 +76,17 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
     float startX  = v0->position.x;
     float endX    = startX;
     float invZ0, invZ1, invZ2, invY02 = 1.f;
-    int   finished = 0;
+    int   currLine, numScanlines;
 
     if(type == FLAT_BOTTOM)
     {
-        invDy  = 1.f / (v2->position.y - v0->position.y);
+        invDy  = 1.0 / (v2->position.y - v0->position.y);
+        numScanlines = ceil(v2->position.y) - ceil(v0->position.y);
     }
     else
     {
-        invDy  = 1.f / (v0->position.y - v2->position.y);
+        invDy  = 1.0 / (v0->position.y - v2->position.y);
+        numScanlines = ceil(v0->position.y) - ceil(v2->position.y);
         yDir = -1;
     }
 
@@ -100,21 +98,10 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
     invZ2  = 1.f / v2->position.z;
     invY02 = 1.f / (v0->position.y - v2->position.y);
 
-    for(y = v0->position.y; ; y += yDir)
+    for(currLine = 0, y = v0->position.y; currLine <= numScanlines; y += yDir)
     {
         float startInvZ, endInvZ, r1, invLineLength = 0.f;
         float startU = texW, startV = texH, endU = texW, endV = texH;
-
-        if(type == FLAT_BOTTOM && y > v2->position.y)
-        {
-            // in final iteration draw extra scanline to avoid pixel wide gaps
-            startX -= dxLeft;
-            endX   -= dxRight;
-            y = v2->position.y;
-            finished = 1;
-        }
-        else if ( type == FLAT_TOP && y < v2->position.y)
-            break;
 
         r1 = (v0->position.y - y) * invY02;
         startInvZ = LERP(invZ0, invZ2, r1);
@@ -153,7 +140,11 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
         startX += dxLeft;
         endX   += dxRight;
 
-        if(finished) break;
+        if(++currLine == numScanlines)
+        {
+            startX -= dxLeft;
+            endX   -= dxRight;
+        }
     }
 }
 
@@ -172,15 +163,17 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
     int   texArea = texW * texH;
     // variables used only if depth test is enabled
     float invZ0, invZ1, invZ2, invY02 = 1.f;
-    int   finished = 0;
+    int   currLine, numScanlines;
 
     if(type == FLAT_BOTTOM)
     {
         invDy  = 1.f / (v2->position.y - v0->position.y);
+        numScanlines = ceil(v2->position.y) - ceil(v0->position.y);
     }
     else
     {
         invDy  = 1.f / (v0->position.y - v2->position.y);
+        numScanlines = ceil(v0->position.y) - ceil(v2->position.y);
         yDir = -1;
     }
 
@@ -211,24 +204,12 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
         invY02 = 1.f / (v0->position.y - v2->position.y);
     }
 
-    for(y = v0->position.y; ; y += yDir)
+    for(currLine = 0, y = v0->position.y; currLine <= numScanlines ; y += yDir)
     {
         float u = startU;
         float v = startV;
         // variables used only if depth test is enabled
         float startInvZ, endInvZ, invLineLength = 0.f;
-
-        if(type == FLAT_BOTTOM && y > v2->position.y)
-        {
-            // in final iteration draw extra scanline to avoid pixel wide gaps
-            u -= duLeft;
-            v -= dvLeft;
-            startX -= dxLeft;
-            endX   -= dxRight;
-            finished = 1;
-        }
-        else if ( type == FLAT_TOP && y < v2->position.y)
-            break;
 
         // interpolate 1/z only if depth testing is enabled
         if(buffer->drawOpts.depthFunc != DF_ALWAYS)
@@ -267,6 +248,12 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
         startU += duLeft;
         startV += dvLeft;
 
-        if(finished) break;
+        if(++currLine == numScanlines)
+        {
+            startX -= dxLeft;
+            endX   -= dxRight;
+            startU -= duLeft;
+            startV -= dvLeft;
+        }
     }
 }
