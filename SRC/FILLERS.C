@@ -74,30 +74,39 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
     const gfx_Vertex *v0 = &t->vertices[0];
     const gfx_Vertex *v1 = &t->vertices[1];
     const gfx_Vertex *v2 = &t->vertices[2];
-    double x, y, invDy, dxLeft, dxRight, yDir = 1;
+    double x, y, invDy, dxLeft, dxRight, prestep, yDir = 1;
+    double startX, endX, startXPrestep, endXPrestep;
     int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
     int   texW = t->texture->width - 1;
     int   texH = t->texture->height - 1;
     int   texArea = texW * texH;
-    float startX  = v0->position.x;
-    float endX    = startX;
-    float invZ0, invZ1, invZ2, invY02 = 1.f;
     int   currLine, numScanlines;
+    float invZ0, invZ1, invZ2, invY02 = 1.f;
 
     if(type == FLAT_BOTTOM)
     {
         invDy  = 1.0 / (v2->position.y - v0->position.y);
         numScanlines = ceil(v2->position.y) - ceil(v0->position.y);
+        prestep = ceil(v0->position.y) - v0->position.y;
+        // todo: handle line sizes of height < 1
+        if(v2->position.y - v0->position.y < 1) return;
     }
     else
     {
         invDy  = 1.0 / (v0->position.y - v2->position.y);
-        numScanlines = ceil(v0->position.y) - ceil(v2->position.y);
         yDir = -1;
+        numScanlines = ceil(v0->position.y) - ceil(v2->position.y);
+        prestep = ceil(v2->position.y) - v2->position.y;
+        // todo: handle line sizes of height < 1
+        if(v0->position.y - v2->position.y < 1) return;
     }
 
     dxLeft  = (v2->position.x - v0->position.x) * invDy;
     dxRight = (v1->position.x - v0->position.x) * invDy;
+    startX  = v0->position.x;
+    endX    = startX;
+    startXPrestep = v0->position.x + dxLeft * prestep;
+    endXPrestep   = v0->position.x + dxRight * prestep;
 
     invZ0  = 1.f / v0->position.z;
     invZ1  = 1.f / v1->position.z;
@@ -121,7 +130,7 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
         if(startX != endX)
             invLineLength = 1.f / (endX - startX);
 
-        for(x = startX; x <= endX; ++x)
+        for(x = startXPrestep; x <= endXPrestep; ++x)
         {
             // interpolate 1/z for each pixel in the scanline
             float r = (x - startX) * invLineLength;
@@ -137,9 +146,9 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
             {
                 // DF_ALWAYS = no depth test
                 if(buffer->drawOpts.depthFunc == DF_ALWAYS)
-                    gfx_drawPixel(x, y, pixel, buffer);
+                    gfx_drawPixel(ceil(x), ceil(y), pixel, buffer);
                 else
-                    gfx_drawPixelWithDepth(x, y, lerpInvZ, pixel, buffer);
+                    gfx_drawPixelWithDepth(ceil(x), ceil(y), lerpInvZ, pixel, buffer);
             }
         }
 
@@ -147,6 +156,8 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
         {
             startX += dxLeft;
             endX   += dxRight;
+            startXPrestep += dxLeft;
+            endXPrestep   += dxRight;
         }
     }
 }
@@ -157,27 +168,33 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
     const gfx_Vertex *v0 = &t->vertices[0];
     const gfx_Vertex *v1 = &t->vertices[1];
     const gfx_Vertex *v2 = &t->vertices[2];
-    double x, y, invDy, dxLeft, dxRight, yDir = 1;
-    int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
+    double x, y, invDy, dxLeft, dxRight, prestep, yDir = 1;
+    double startU, startV, invDx, du, dv, startX, endX;
     float duLeft, dvLeft, duRight, dvRight;
-    float startU, startV, invDx, du, dv, startX, endX;
     float texW = t->texture->width - 1;
     float texH = t->texture->height - 1;
+    int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
     int   texArea = texW * texH;
+    int   currLine, numScanlines;
     // variables used only if depth test is enabled
     float invZ0, invZ1, invZ2, invY02 = 1.f;
-    int   currLine, numScanlines;
 
     if(type == FLAT_BOTTOM)
     {
         invDy  = 1.f / (v2->position.y - v0->position.y);
         numScanlines = ceil(v2->position.y) - ceil(v0->position.y);
+        prestep = ceil(v0->position.y) - v0->position.y;
+        // todo: handle line sizes of height < 1
+        if(v2->position.y - v0->position.y < 1) return;
     }
     else
     {
         invDy  = 1.f / (v0->position.y - v2->position.y);
-        numScanlines = ceil(v0->position.y) - ceil(v2->position.y);
         yDir = -1;
+        numScanlines = ceil(v0->position.y) - ceil(v2->position.y);
+        prestep = ceil(v2->position.y) - v2->position.y;
+        // todo: handle line sizes of height < 1
+        if(v0->position.y - v2->position.y < 1) return;
     }
 
     dxLeft  = (v2->position.x - v0->position.x) * invDy;
@@ -188,15 +205,15 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
     duRight = texW * (v1->uv.u - v0->uv.u) * invDy;
     dvRight = texH * (v1->uv.v - v0->uv.v) * invDy;
 
-    startU = texW * v0->uv.u;
-    startV = texH * v0->uv.v;
+    startU = texW * v0->uv.u + duLeft * prestep;
+    startV = texH * v0->uv.v + dvLeft * prestep;
     // With triangles the texture gradients (u,v slopes over the triangle surface)
     // are guaranteed to be constant, so we need to calculate du and dv only once.
     invDx = 1.f / (dxRight - dxLeft);
     du = (duRight - duLeft) * invDx;
     dv = (dvRight - dvLeft) * invDx;
-    startX = v0->position.x;
-    endX   = startX;
+    startX = v0->position.x + dxLeft * prestep;
+    endX   = v0->position.x + dxRight * prestep;
 
     // skip the unnecessary divisions if there's no depth testing
     if(buffer->drawOpts.depthFunc != DF_ALWAYS)
@@ -207,7 +224,7 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
         invY02 = 1.f / (v0->position.y - v2->position.y);
     }
 
-    for(currLine = 0, y = v0->position.y; currLine <= numScanlines ; y += yDir)
+    for(currLine = 0, y = v0->position.y; currLine <= numScanlines; y += yDir)
     {
         float u = startU;
         float v = startV;
@@ -234,12 +251,12 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
             {
                 // DF_ALWAYS = no depth test
                 if(buffer->drawOpts.depthFunc == DF_ALWAYS)
-                    gfx_drawPixel(x, y, pixel, buffer);
+                    gfx_drawPixel(ceil(x), ceil(y), pixel, buffer);
                 else
                 {
                     float r = (x - startX) * invLineLength;
                     float lerpInvZ = LERP(startInvZ, endInvZ, r);
-                    gfx_drawPixelWithDepth(x, y, lerpInvZ, pixel, buffer);
+                    gfx_drawPixelWithDepth(ceil(x), ceil(y), lerpInvZ, pixel, buffer);
                 }
             }
             u += du;
