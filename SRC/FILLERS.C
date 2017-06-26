@@ -75,7 +75,7 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
     const gfx_Vertex *v1 = &t->vertices[1];
     const gfx_Vertex *v2 = &t->vertices[2];
     double x, y, invDy, dxLeft, dxRight, prestep, yDir = 1;
-    double startX, endX, startXPrestep, endXPrestep;
+    double startX, endX, startXPrestep, endXPrestep, lineLength;
     int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
     int   texW = t->texture->width - 1;
     int   texH = t->texture->height - 1;
@@ -115,8 +115,9 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
 
     for(currLine = 0, y = v0->position.y; currLine <= numScanlines; y += yDir)
     {
-        float startInvZ, endInvZ, r1, invLineLength = 0.f;
+        float startInvZ, endInvZ, r1, invLineLength;
         float startU = texW, startV = texH, endU = texW, endV = texH;
+        lineLength = endX - startX;
 
         r1 = (v0->position.y - y) * invY02;
         startInvZ = LERP(invZ0, invZ2, r1);
@@ -127,28 +128,31 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
         endU   *= LERP(v0->uv.u * invZ0, v1->uv.u * invZ1, r1);
         endV   *= LERP(v0->uv.v * invZ0, v1->uv.v * invZ1, r1);
 
-        if(startX != endX)
-            invLineLength = 1.f / (endX - startX);
-
-        for(x = startXPrestep; x <= endXPrestep; ++x)
+        // skip zero-length lines
+        if(lineLength)
         {
-            // interpolate 1/z for each pixel in the scanline
-            float r = (x - startX) * invLineLength;
-            float lerpInvZ = LERP(startInvZ, endInvZ, r);
-            float z = 1.f/lerpInvZ;
-            float u = z * LERP(startU, endU, r);
-            float v = z * LERP(startV, endV, r);
+            invLineLength = 1.f / lineLength;
 
-            // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-            unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
-
-            if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
+            for(x = startXPrestep; x <= endXPrestep; ++x)
             {
-                // DF_ALWAYS = no depth test
-                if(buffer->drawOpts.depthFunc == DF_ALWAYS)
-                    gfx_drawPixel(ceil(x), ceil(y), pixel, buffer);
-                else
-                    gfx_drawPixelWithDepth(ceil(x), ceil(y), lerpInvZ, pixel, buffer);
+                // interpolate 1/z for each pixel in the scanline
+                float r = (x - startX) * invLineLength;
+                float lerpInvZ = LERP(startInvZ, endInvZ, r);
+                float z = 1.f/lerpInvZ;
+                float u = z * LERP(startU, endU, r);
+                float v = z * LERP(startV, endV, r);
+
+                // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
+                unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
+
+                if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
+                {
+                    // DF_ALWAYS = no depth test
+                    if(buffer->drawOpts.depthFunc == DF_ALWAYS)
+                        gfx_drawPixel(ceil(x), ceil(y), pixel, buffer);
+                    else
+                        gfx_drawPixelWithDepth(ceil(x), ceil(y), lerpInvZ, pixel, buffer);
+                }
             }
         }
 
@@ -170,7 +174,7 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
     const gfx_Vertex *v1 = &t->vertices[1];
     const gfx_Vertex *v2 = &t->vertices[2];
     double x, y, invDy, dxLeft, dxRight, prestep, yDir = 1;
-    double startU, startV, invDx, du, dv;
+    double startU, startV, invDx, du, dv, lineLength;
     double startX, endX, startXPrestep, endXPrestep;
     float duLeft, dvLeft, duRight, dvRight;
     float texW = t->texture->width - 1;
@@ -233,7 +237,8 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
         float u = startU;
         float v = startV;
         // variables used only if depth test is enabled
-        float startInvZ, endInvZ, invLineLength = 0.f;
+        float startInvZ, endInvZ, invLineLength;
+        lineLength = endX - startX;
 
         // interpolate 1/z only if depth testing is enabled
         if(buffer->drawOpts.depthFunc != DF_ALWAYS)
@@ -242,29 +247,33 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
             startInvZ = LERP(invZ0, invZ2, r1);
             endInvZ   = LERP(invZ0, invZ1, r1);
 
-            if(startX != endX)
-                invLineLength = 1.f / (endX - startX);
+            if(lineLength)
+                invLineLength = 1.f / lineLength;
         }
 
-        for(x = startXPrestep; x <= endXPrestep; ++x)
+        // skip zero-length lines
+        if(lineLength)
         {
-            // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-            unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
-
-            if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
+            for(x = startXPrestep; x <= endXPrestep; ++x)
             {
-                // DF_ALWAYS = no depth test
-                if(buffer->drawOpts.depthFunc == DF_ALWAYS)
-                    gfx_drawPixel(ceil(x), ceil(y), pixel, buffer);
-                else
+                // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
+                unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
+
+                if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
                 {
-                    float r = (x - startX) * invLineLength;
-                    float lerpInvZ = LERP(startInvZ, endInvZ, r);
-                    gfx_drawPixelWithDepth(ceil(x), ceil(y), lerpInvZ, pixel, buffer);
+                    // DF_ALWAYS = no depth test
+                    if(buffer->drawOpts.depthFunc == DF_ALWAYS)
+                        gfx_drawPixel(ceil(x), ceil(y), pixel, buffer);
+                    else
+                    {
+                        float r = (x - startX) * invLineLength;
+                        float lerpInvZ = LERP(startInvZ, endInvZ, r);
+                        gfx_drawPixelWithDepth(ceil(x), ceil(y), lerpInvZ, pixel, buffer);
+                    }
                 }
+                u += du;
+                v += dv;
             }
-            u += du;
-            v += dv;
         }
 
         startX += dxLeft;
