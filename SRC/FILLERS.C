@@ -170,7 +170,8 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
     const gfx_Vertex *v1 = &t->vertices[1];
     const gfx_Vertex *v2 = &t->vertices[2];
     double x, y, invDy, dxLeft, dxRight, prestep, yDir = 1;
-    double startU, startV, invDx, du, dv, startX, endX;
+    double startU, startV, invDx, du, dv;
+    double startX, endX, startXPrestep, endXPrestep;
     float duLeft, dvLeft, duRight, dvRight;
     float texW = t->texture->width - 1;
     float texH = t->texture->height - 1;
@@ -213,8 +214,10 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
     invDx = 1.f / (dxRight - dxLeft);
     du = (duRight - duLeft) * invDx;
     dv = (dvRight - dvLeft) * invDx;
-    startX = v0->position.x + dxLeft * prestep;
-    endX   = v0->position.x + dxRight * prestep;
+    startX = v0->position.x;
+    endX   = startX;
+    startXPrestep = v0->position.x + dxLeft * prestep;
+    endXPrestep   = v0->position.x + dxRight * prestep;
 
     // skip the unnecessary divisions if there's no depth testing
     if(buffer->drawOpts.depthFunc != DF_ALWAYS)
@@ -243,7 +246,7 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
                 invLineLength = 1.f / (endX - startX);
         }
 
-        for(x = startX; x <= endX; ++x)
+        for(x = startXPrestep; x <= endXPrestep; ++x)
         {
             // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
             unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
@@ -264,10 +267,13 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
             v += dv;
         }
 
+        startX += dxLeft;
+        endX   += dxRight;
+
         if(++currLine < numScanlines)
         {
-            startX += dxLeft;
-            endX   += dxRight;
+            startXPrestep += dxLeft;
+            endXPrestep   += dxRight;
             startU += duLeft;
             startV += dvLeft;
         }
