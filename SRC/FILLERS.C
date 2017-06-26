@@ -152,10 +152,11 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
             }
         }
 
+        startX += dxLeft;
+        endX   += dxRight;
+
         if(++currLine < numScanlines)
         {
-            startX += dxLeft;
-            endX   += dxRight;
             startXPrestep += dxLeft;
             endXPrestep   += dxRight;
         }
