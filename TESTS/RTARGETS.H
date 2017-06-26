@@ -45,18 +45,18 @@ void testRenderTargets()
     VEC4(triangle.vertices[1].position,   0, -20, 0);
     VEC4(triangle.vertices[2].position,  20,  20, 0);
 
-    keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, 
                        (float)renderTargets[0].width / (float)renderTargets[0].height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
     modelViewProj = mth_matMul(&model, &modelViewProj);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
 
         for(i = 0; i < 3; ++i)
         {
@@ -78,7 +78,7 @@ void testRenderTargets()
 
         keysPressed = kbd_getInput();
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
 

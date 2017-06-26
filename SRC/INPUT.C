@@ -1,5 +1,6 @@
 #include "src/input.h"
 #include <conio.h>
+#include <memory.h>
 
 static unsigned short keys[0x81];
 
@@ -27,4 +28,9 @@ const unsigned short *kbd_getInput()
     if (key < 0x80)  keys[key] = 1;
 
     return &keys[0];
+}
+
+void kbd_flush()
+{
+    memset(keys, 0, sizeof(unsigned short) * 0x81);
 }

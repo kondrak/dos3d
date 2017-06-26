@@ -42,10 +42,9 @@ void testPerspective()
     model.m[12] = -20.f;
     model.m[13] = -20.f;
 
-    keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         int i;
         float dt;
@@ -53,6 +52,8 @@ void testPerspective()
         mth_Vector4 screenCube[16];
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
+
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
@@ -87,7 +88,7 @@ void testPerspective()
 
         keysPressed = kbd_getInput();
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

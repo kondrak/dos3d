@@ -35,14 +35,16 @@ void testFirstPerson()
     }
 
     tmr_start();
-    keysPressed = kbd_getInput();
+
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 1.0f, 500.f);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
+
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         viewProj = mth_matMul(&cam.view, &cam.projection);
 
@@ -91,7 +93,7 @@ void testFirstPerson()
             cam.up = mth_crossProduct(&cam.right, &cam.target);
         }
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

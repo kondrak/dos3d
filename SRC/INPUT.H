@@ -44,6 +44,9 @@ extern "C" {
         // returns an integer array with each bit representing a keypress, mapped to KeyCode enum
         const unsigned short *kbd_getInput();
 
+        // clear pressed key states
+        void kbd_flush();
+
 #ifdef __cplusplus
 }
 #endif

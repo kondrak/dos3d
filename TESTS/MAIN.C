@@ -42,6 +42,8 @@ int main(int argc, char **argv)
   
     while(1)
     {
+        keysPressed = kbd_getInput();
+
         if (!demoFinished)
         {
             if(keysPressed[KEY_1])
@@ -97,8 +99,8 @@ int main(int argc, char **argv)
                 gfx_setMode(0x03);
                 break;
             }
-            
-            keysPressed = kbd_getInput();
+
+            kbd_flush();
         }
         else
         {

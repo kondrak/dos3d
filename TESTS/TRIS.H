@@ -34,7 +34,6 @@ void testTriangles()
     model.m[12] = -160.f;
     model.m[13] = -100.f;
 
-    keysPressed = kbd_getInput();
     gfx_clrBufferColor(&buffer, 105);
 
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
@@ -43,8 +42,9 @@ void testTriangles()
     modelViewProj = mth_matMul(&model, &modelViewProj);
     triangle.texture = NULL;
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
+        keysPressed = kbd_getInput();
         // render randomly scattered triangles of arbitrary size
         triangle.color = rand() % 103 + 1;
         VEC4(triangle.vertices[0].position, rand() % 320, rand() % 200, 0);
@@ -62,7 +62,7 @@ void testTriangles()
         }
 
         keysPressed = kbd_getInput();
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     FREE_DRAWBUFFER(buffer);
 }

@@ -60,17 +60,17 @@ void testTextureMapping()
     // setup textured quad
     setupTexQuad(&quad, -20, -20, 20, 20, &bmp);
 
-    keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         int i, k;
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
 
         if(keysPressed[KEY_RIGHT])
             ROTATE_QUAD(0.002f, 0.f, 1.f, 0.f);
@@ -114,7 +114,7 @@ void testTextureMapping()
         keysPressed = kbd_getInput();
         fflush(stdout);
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);
