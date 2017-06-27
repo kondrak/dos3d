@@ -200,10 +200,14 @@ void testRotatingCube()
             gfx_setPalette(grayScalePalette);
 
             // fill color buffer with depth buffer values and render it in grayscale
+            gfx_clrBufferColor(&depthDebug, 0x80);
             for(i = 0; i < buffer.width * buffer.height; ++i)
             {
-                int c = buffer.depthBuffer[i] ? 2.f / buffer.depthBuffer[i] : 0x80;
-                depthDebug.colorBuffer[i] = (unsigned char)(0x80 - (c > 0x80 ? 0x80 : c));
+                if(buffer.depthBuffer[i])
+                {
+                    unsigned char c = 2.f / buffer.depthBuffer[i];
+                    depthDebug.colorBuffer[i] = 0x80 - (c > 0x7B ? 0x7B : c);
+                }
             }
             
             gfx_updateScreen(&depthDebug);
