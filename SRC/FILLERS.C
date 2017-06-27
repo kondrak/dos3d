@@ -2,6 +2,17 @@
 #include "src/utils.h"
 
 /* ***** */
+void gfx_wireFrame(const gfx_Triangle *t, gfx_drawBuffer *buffer)
+{
+    gfx_drawLine(t->vertices[0].position.x, t->vertices[0].position.y, t->vertices[0].position.z, 
+                 t->vertices[1].position.x, t->vertices[1].position.y, t->vertices[1].position.z, t->color, buffer);
+    gfx_drawLine(t->vertices[1].position.x, t->vertices[1].position.y, t->vertices[1].position.z, 
+                 t->vertices[2].position.x, t->vertices[2].position.y, t->vertices[2].position.z, t->color, buffer);
+    gfx_drawLine(t->vertices[2].position.x, t->vertices[2].position.y, t->vertices[2].position.z, 
+                 t->vertices[0].position.x, t->vertices[0].position.y, t->vertices[0].position.z, t->color, buffer);
+}
+
+/* ***** */
 void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type)
 {
     const gfx_Vertex *v0 = &t->vertices[0];

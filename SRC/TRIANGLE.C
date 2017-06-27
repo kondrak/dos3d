@@ -84,6 +84,16 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
     if(DEGENERATE(v0, v1, v2))
         return;
 
+    // rendering wireframe?
+    if(buffer->drawOpts.drawMode & DM_WIREFRAME)
+    {
+        sortedTriangle.vertices[0] = v0;
+        sortedTriangle.vertices[1] = v1;
+        sortedTriangle.vertices[2] = v2;
+        gfx_wireFrame(&sortedTriangle, buffer);
+        return;
+    }
+
     // handle 2 basic cases of flat bottom and flat top triangles
     if(v1.position.y == v2.position.y)
     {
@@ -122,7 +132,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
 
         // lerp 1/Z and UV for v3. For perspective texture mapping calculate u/z, v/z, for affine skip unnecessary divisions;
         // perform this step for affine texture mapping only if depth testing is enabled, since then correct Z is needed for v3!
-        if(buffer->drawOpts.texMapMode != TM_AFFINE || buffer->drawOpts.depthFunc != DF_ALWAYS)
+        if(buffer->drawOpts.drawMode == DM_PERSPECTIVE || buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
             float invV0Z = 1.f/v0.position.z;
             float invV1Z = 1.f/v1.position.z;
@@ -183,11 +193,11 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
  */
 static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type)
 {
-    if(!t->texture || buffer->drawOpts.texMapMode == TM_NONE)
+    if(!t->texture || buffer->drawOpts.drawMode & DM_FLAT)
         gfx_flatFill(t, buffer, type);
     else
     {
-        if(buffer->drawOpts.texMapMode == TM_AFFINE)
+        if(buffer->drawOpts.drawMode & DM_AFFINE)
             gfx_affineTextureMap(t, buffer, type);
         else
             gfx_perspectiveTextureMap(t, buffer, type);

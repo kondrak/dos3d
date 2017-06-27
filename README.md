@@ -14,6 +14,7 @@ Features
 - depth testing (using a 1/Z buffer)
 - perspective and view calculations - "DOF6 Camera Ready (tm)"
 - line and point rendering
+- wireframe rendering
 - loading, resizing, scrolling and displaying bitmaps (8bpp) with optional color keying
 - texture atlas support
 - double buffering

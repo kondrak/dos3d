@@ -49,7 +49,8 @@ void testRotatingCube()
     const unsigned short *keysPressed;
     unsigned char defaultPalette[256*3], grayScalePalette[256*3];
     TexCube cube;
-    int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0, drawModeFlipped = 0, rotFlipped = 0;
+    int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0;
+    int wireFrameFlipped = 0, drawModeFlipped = 0, rotFlipped = 0;
     int drawMode = TEX_CUBE;
     int rotating = 1;
     gfx_Camera cam;
@@ -120,11 +121,19 @@ void testRotatingCube()
 
         if(keysPressed[KEY_T] && !texMapFlipped)
         {
-            buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
+            buffer.drawOpts.drawMode ^= ( DM_PERSPECTIVE | DM_AFFINE);
             texMapFlipped = 1;
             
         }
         else if(!keysPressed[KEY_T]) texMapFlipped = 0;
+
+        if(keysPressed[KEY_W] && !wireFrameFlipped)
+        {
+            buffer.drawOpts.drawMode ^= DM_WIREFRAME;
+            wireFrameFlipped = 1;
+            
+        }
+        else if(!keysPressed[KEY_W]) wireFrameFlipped = 0;
 
         if(keysPressed[KEY_C] && !cullModeFlipped)
         {
@@ -164,7 +173,7 @@ void testRotatingCube()
             if(drawMode == TEX_CUBE)
             {
                 gfx_setPalette(bmp.palette);
-                buffer.drawOpts.texMapMode = TM_PERSPECTIVE;
+                buffer.drawOpts.drawMode &= ~DM_FLAT;
             }
 
             // viewing depth values requires depth testing to be enabled
@@ -175,7 +184,7 @@ void testRotatingCube()
             if(drawMode == FLAT_COLOR)
             {
                 gfx_setPalette(defaultPalette);
-                buffer.drawOpts.texMapMode = TM_NONE;
+                buffer.drawOpts.drawMode |= DM_FLAT;
             }
 
             drawModeFlipped = 1;
@@ -202,9 +211,10 @@ void testRotatingCube()
         else
         {
             gfx_updateScreen(&buffer);
-            fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
+            fprintf(stdout, buffer.drawOpts.drawMode & DM_AFFINE    ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
             fprintf(stdout, buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF\r\n" : "[C]ulling BF: ON\r\n");
-            fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
+            fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r\n" : "[D]epth test: ON\r\n");
+            fprintf(stdout, buffer.drawOpts.drawMode & DM_WIREFRAME ? "[W]ireframe : ON\r" : "[W]ireframe : OFF\r");
             // reset carriage to top left corner of the screen
             fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);
         }

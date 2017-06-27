@@ -86,7 +86,7 @@ void testTextureMapping()
 
         if(keysPressed[KEY_T] && !texMapFlipped)
         {
-            buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
+            buffer.drawOpts.drawMode = buffer.drawOpts.drawMode == DM_AFFINE ? DM_PERSPECTIVE : DM_AFFINE;
             texMapFlipped = 1;
             
         }
@@ -105,7 +105,7 @@ void testTextureMapping()
         drawTexQuad(&quad, &modelViewProj, &buffer);
         gfx_updateScreen(&buffer);
 
-        fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
+        fprintf(stdout, buffer.drawOpts.drawMode == DM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
         fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
         // reset carriage to top left corner of the screen
         fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);        

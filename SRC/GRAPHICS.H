@@ -21,12 +21,13 @@ extern "C" {
         DB_DEPTH = 1 << 1  // depth buffer
     };
 
-    // texture mapping type
-    enum TextureMappingMode
+    // current draw mode for the buffer
+    enum DrawMode
     {
-        TM_AFFINE      = 1 << 0,
-        TM_PERSPECTIVE = 1 << 1, // default
-        TM_NONE        = 1 << 2  // will draw flat colored polygon
+        DM_AFFINE      = 1 << 0, // affine texture mapping
+        DM_PERSPECTIVE = 1 << 1, // default: perspective correct texture mapping
+        DM_FLAT        = 1 << 2, // flat colored rendering
+        DM_WIREFRAME   = 1 << 3  // wireframe polygon
     };
 
     // face culling mode
@@ -59,7 +60,7 @@ extern "C" {
     // common draw options for a draw buffer
     typedef struct
     {
-        enum TextureMappingMode texMapMode;
+        enum DrawMode drawMode;
         enum FaceCullingMode cullMode;
         enum DepthFunc depthFunc;
         short colorKey;
@@ -77,10 +78,10 @@ extern "C" {
 
     // default draw options initialization since the compiler can't handle struct constructors
     #define DRAWOPTS_DEFAULT(o) {\
-                o.texMapMode = TM_PERSPECTIVE; \
-                o.cullMode = FC_NONE; \
+                o.drawMode  = DM_PERSPECTIVE; \
+                o.cullMode  = FC_NONE; \
                 o.depthFunc = DF_ALWAYS; \
-                o.colorKey   = -1; \
+                o.colorKey  = -1; \
             }
 
     // draw buffer allocation and default initialization

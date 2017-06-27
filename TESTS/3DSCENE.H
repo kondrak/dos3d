@@ -72,7 +72,7 @@ void test3DScene()
 
         if(keysPressed[KEY_T] && !texMapFlipped)
         {
-            buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
+            buffer.drawOpts.drawMode = buffer.drawOpts.drawMode == DM_AFFINE ? DM_PERSPECTIVE : DM_AFFINE;
             texMapFlipped = 1;
         }
         else if(!keysPressed[KEY_T]) texMapFlipped = 0;
