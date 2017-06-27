@@ -89,9 +89,9 @@ void testRotatingCube()
     gfx_getPalette(defaultPalette);
     for(i = 0; i < 768; i += 3)
     {
-        grayScalePalette[i] = 3*255*i/768;
-        grayScalePalette[i+1] = 3*255*i/768;
-        grayScalePalette[i+2] = 3*255*i/768;
+        grayScalePalette[i] = i/3;
+        grayScalePalette[i+1] = i/3;
+        grayScalePalette[i+2] = i/3;
     }
     gfx_setPalette(bmp.palette);
 
@@ -199,10 +199,11 @@ void testRotatingCube()
         {
             gfx_setPalette(grayScalePalette);
 
-            // have to manually copy depth buffer since it's 1/z floats, so need to "scale up" to get actual color
+            // fill color buffer with depth buffer values and render it in grayscale
             for(i = 0; i < buffer.width * buffer.height; ++i)
             {
-                depthDebug.colorBuffer[i] = (unsigned char)((int)(buffer.depthBuffer[i] * 256 * 2.6) % 256);
+                int c = buffer.depthBuffer[i] ? 2.f / buffer.depthBuffer[i] : 0x80;
+                depthDebug.colorBuffer[i] = (unsigned char)(0x80 - (c > 0x80 ? 0x80 : c));
             }
             
             gfx_updateScreen(&depthDebug);
