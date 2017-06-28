@@ -58,7 +58,7 @@ void testTextureMapping()
     VEC4(cam.target, 0, 0, -1);
 
     // setup textured quad
-    setupTexQuad(&quad, -25, -25, 25, 25, &bmp);
+    setupTexQuad(&quad, -20, -20, 25, 25, &bmp);
 
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
