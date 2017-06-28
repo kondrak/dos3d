@@ -25,6 +25,7 @@ extern "C" {
         KEY_W = 17,
         KEY_R = 19,
         KEY_T = 20,
+        KEY_P = 25,
         KEY_A = 30,
         KEY_S = 31,
         KEY_D = 32,

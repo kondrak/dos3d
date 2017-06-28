@@ -175,6 +175,19 @@ void mth_matPerspective(mth_Matrix4 *m, const float fov, const float scrRatio, c
 }
 
 /* ***** */
+void mth_matOrtho(mth_Matrix4 *m, const float left, const float right, const float bottom, const float top, const float nearPlane, const float farPlane)
+{
+    mth_matIdentity(m);
+
+    m->m[0]  = 2.f / (right - left);
+    m->m[5]  = 2.f / (top - bottom);
+    m->m[10] = -2.f / (farPlane - nearPlane);
+    m->m[12] = -(right + left) / (right - left);
+    m->m[13] = -(top + bottom) / (top - bottom);
+    m->m[14] = -(farPlane + nearPlane) / (farPlane - nearPlane);
+}
+
+/* ***** */
 void mth_matView(mth_Matrix4 *m, const mth_Vector4 *eye, const mth_Vector4 *target, const mth_Vector4 *up)
 {
     mth_Vector4 x,y,z;

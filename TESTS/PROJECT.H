@@ -11,6 +11,8 @@ void testPerspective()
     const unsigned short *keysPressed;
     unsigned long int now, last = 0;
     float t = 0.f;
+    int projectionFlipped = 0;
+    int isPerspective = 1;
     mth_Vector4 cube[16];
     gfx_Camera cam;
     mth_Matrix4 model;
@@ -42,8 +44,6 @@ void testPerspective()
     model.m[12] = -20.f;
     model.m[13] = -20.f;
 
-    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
-
     do
     {
         int i;
@@ -53,6 +53,18 @@ void testPerspective()
         now = tmr_getMs();
         dt = (float)(now - last);
         keysPressed = kbd_getInput();
+
+        if(keysPressed[KEY_P] && !projectionFlipped)
+        {
+            isPerspective = !isPerspective;
+            projectionFlipped = 1;
+        }
+        else if(!keysPressed[KEY_P]) projectionFlipped = 0;
+
+        if(isPerspective)
+            mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
+        else
+            mth_matOrtho(&cam.projection, -160, 160, 100, -100, 0.1f, 500.f);
 
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
@@ -85,8 +97,8 @@ void testPerspective()
         }
 
         gfx_updateScreen(&buffer);
+        gfx_vSync();
 
-        keysPressed = kbd_getInput();
         last = now;
     } while(!keysPressed[KEY_ESC]);
 

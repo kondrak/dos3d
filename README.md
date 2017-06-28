@@ -30,7 +30,6 @@ The executable is a set of pre-made tests that demonstrate each feature.
 TODO
 -------
 
-- subpixel, subtexel and general precision improvements
+- switch from floats and doubles to fixed point for stable precision
 - add proper polygon clipping
-- add shading samples
 - ???

@@ -95,8 +95,11 @@ extern "C" {
     // transpose matrix m
     void mth_matTranspose(mth_Matrix4 *m);
 
-    // turn matrix m into perspective matrix
+    // turn matrix m into perspective projection matrix
     void mth_matPerspective(mth_Matrix4 *m, const float fov, const float scrRatio, const float nearPlane, const float farPlane);
+
+    // turn matrix m into orthographic projection matrix
+    void mth_matOrtho(mth_Matrix4 *m, const float left, const float right, const float bottom, const float top, const float nearPlane, const float farPlane);
 
     // turn matrix m into view matrix
     void mth_matView(mth_Matrix4 *m, const mth_Vector4 *eye, const mth_Vector4 *target, const mth_Vector4 *up);
