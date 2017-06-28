@@ -40,9 +40,6 @@ void testPerspective()
 
     // setup world coordinates for pseudo-cube
     setupCube(&cube);
-    // translate entire cube a bit
-    model.m[12] = -20.f;
-    model.m[13] = -20.f;
 
     do
     {
@@ -73,8 +70,8 @@ void testPerspective()
         t += 0.0015f*dt;
         for(i = 0; i < 16; ++i)
         {
-            // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
-            mth_rotateVecAxisAngle(&cube[i], 0.0015f*dt, 1.f, 1.f, 1.f);
+            // rotate cube on x axis and zoom in/out for better perspective test
+            mth_rotateVecAxisAngle(&cube[i], 0.0015f*dt, 1.f, 0.f, 0.f);
             model.m[14] = sin(t) * 80.f;
             
             // calculate screen coordinates for transformed square vertices
@@ -97,6 +94,8 @@ void testPerspective()
         }
 
         gfx_updateScreen(&buffer);
+        fprintf(stdout, "[P]rojection: %s\r", isPerspective ? "Perspective" : "Orthographic");
+        fflush(stdout);
         gfx_vSync();
 
         last = now;
@@ -112,33 +111,33 @@ void setupCube(mth_Vector4 *c)
     int i;
     for(i = 0; i < 4; ++i)
     {
-        c[i].x = 40*(i%2);
-        c[i].y = 40*(i > 1 ? 1 : 0);
-        c[i].z = 0.f;
+        c[i].x = 20*(i%2 ? 1 : -1);
+        c[i].y = 20*(i > 1 ? 1 : -1);
+        c[i].z = -20.f;
         c[i].w = 1.f;
     }
     
     for(i = 4; i < 8; ++i)
     {
-        c[i].x = 40;
-        c[i].y = 40*(i > 5 ? 1 : 0);
-        c[i].z = 40*(i%2);
+        c[i].x = 20;
+        c[i].y = 20*(i > 5 ? 1 : -1);
+        c[i].z = 20*(i%2 ? 1 : -1);
         c[i].w = 1.f;
     }
     
     for(i = 8; i < 12; ++i)
     {
-        c[i].x = 40*(i%2);
-        c[i].y = 40*(i > 9 ? 1 : 0);
-        c[i].z = 40;
+        c[i].x = 20*(i%2 ? 1 : -1);
+        c[i].y = 20*(i > 9 ? 1 : -1);
+        c[i].z = 20;
         c[i].w = 1.f;
     }
     
     for(i = 12; i < 16; ++i)
     {
-        c[i].x = 0;
-        c[i].y = 40*(i > 13 ? 1 : 0);
-        c[i].z = 40*(i%2);
+        c[i].x = -20;
+        c[i].y = 20*(i > 13 ? 1 : -1);
+        c[i].z = 20*(i%2 ? 1 : -1);
         c[i].w = 1.f;
     }
 }
