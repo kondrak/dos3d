@@ -33,11 +33,11 @@ void testTextureMapping()
     int texMapFlipped = 0, depthFuncFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
-    gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
+    gfx_Bitmap bmp = gfx_loadBitmap("images/quake.bmp");
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
-    buffer.drawOpts.depthFunc = DF_LESS;
+    buffer.drawOpts.depthFunc = DF_ALWAYS;
 
     if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
     {
@@ -58,7 +58,7 @@ void testTextureMapping()
     VEC4(cam.target, 0, 0, -1);
 
     // setup textured quad
-    setupTexQuad(&quad, -20, -20, 20, 20, &bmp);
+    setupTexQuad(&quad, -25, -25, 25, 25, &bmp);
 
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
