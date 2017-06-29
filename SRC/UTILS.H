@@ -2,12 +2,14 @@
 #define UTILS_H
 
 #include "src/graphics.h"
+#include <assert.h>
 #include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define ASSERT(x) assert(x)
 #define DBG(msg, ...) { fprintf(stdout, msg, __VA_ARGS__); fflush(stdout); }
 #define LERP(start, end, r) ( start * (1.0 - r) + end * r )
 #define MIN(a, b) ( a > b ? b : a )

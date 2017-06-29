@@ -17,8 +17,7 @@ void utl_drawPalette(gfx_drawBuffer *buffer)
 {
     const int tileW = 20;
     const int tileH = 12;
-    int x = 0, y = 0, c = 0;
-    int xOffset = 0, yOffset = 0;
+    int x, y, xOffset, yOffset, c = 0;
     char colorNum[3];
     int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
     int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
@@ -32,9 +31,7 @@ void utl_drawPalette(gfx_drawBuffer *buffer)
         for(y = yOffset * tileH; y < (yOffset + 1) * tileH && y < bufferHeight; ++y)
         {
             for(x = xOffset * tileW; x < (xOffset + 1) * tileW && x < bufferWidth; ++x)
-            {
                 gfx_drawPixel(x, y, c, buffer);
-            }
         }
 
         sprintf(colorNum, "%d", c);
