@@ -3,7 +3,7 @@
 #include "src/math.h"
 #include "src/timer.h"
 #include "src/triangle.h"
-#include <stdio.h>
+#include "src/utils.h"
 
 typedef struct
 {
@@ -209,22 +209,19 @@ void testRotatingCube()
                     depthDebug.colorBuffer[i] = 0x80 - (c > 0x7B ? 0x7B : c);
                 }
             }
-            
+
+            utl_printf("1/Z depth values", 0, 1, 48, 0, &depthDebug);
             gfx_updateScreen(&depthDebug);
-            fprintf(stdout, "1/Z depth values\r");
         }
         else
         {
+            utl_printf(buffer.drawOpts.drawMode & DM_AFFINE    ? "[T]exmapping: Affine" : "[T]exmapping: Perspective", 0, 1, 15, 0, &buffer);
+            utl_printf(buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF" : "[C]ulling BF: ON", 0, 10, 15, 0, &buffer);
+            utl_printf(buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF" : "[D]epth test: ON", 0, 19, 15, 0, &buffer);
+            utl_printf(buffer.drawOpts.drawMode & DM_WIREFRAME ? "[W]ireframe : ON"  : "[W]ireframe : OFF", 0, 28, 15, 0, &buffer);
             gfx_updateScreen(&buffer);
-            fprintf(stdout, buffer.drawOpts.drawMode & DM_AFFINE    ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
-            fprintf(stdout, buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF\r\n" : "[C]ulling BF: ON\r\n");
-            fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r\n" : "[D]epth test: ON\r\n");
-            fprintf(stdout, buffer.drawOpts.drawMode & DM_WIREFRAME ? "[W]ireframe : ON\r" : "[W]ireframe : OFF\r");
-            // reset carriage to top left corner of the screen
-            fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);
         }
 
-        fflush(stdout);
         gfx_vSync();
 
         last = now;

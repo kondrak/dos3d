@@ -1,6 +1,7 @@
 #include "src/camera.h"
 #include "src/graphics.h"
 #include "src/timer.h"
+#include "src/utils.h"
 
 // helper function
 void setupCube(mth_Vector4 *c);
@@ -93,9 +94,8 @@ void testPerspective()
             gfx_drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, &buffer);
         }
 
+        utl_printf(isPerspective ? "[P]rojection: Perspective" : "[P]rojection: Orthographic", 0, 1, 15, 0, &buffer);
         gfx_updateScreen(&buffer);
-        fprintf(stdout, "[P]rojection: %s\r", isPerspective ? "Perspective" : "Orthographic");
-        fflush(stdout);
         gfx_vSync();
 
         last = now;

@@ -4,7 +4,6 @@
 #include "src/timer.h"
 #include "src/triangle.h"
 #include "src/utils.h"
-#include <stdio.h>
 
 typedef struct
 {
