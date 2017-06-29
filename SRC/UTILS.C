@@ -44,7 +44,7 @@ void utl_drawPalette(gfx_drawBuffer *buffer)
                 gfx_drawPixel(x, y, c, buffer);
         }
 
-        utl_printf(buffer, xOffset * tileW, yOffset * tileH + 4, 15, c, "%x", c);
+        utl_printf(buffer, xOffset * tileW, yOffset * tileH + 4, 0, c, "%x", c);
     }
 }
 
