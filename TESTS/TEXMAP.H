@@ -126,8 +126,8 @@ void testTextureMapping()
         gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
         drawTexQuad(&quad, &modelViewProj, &buffer);
 
-        utl_printf(buffer.drawOpts.drawMode  == DM_AFFINE ? "[T]exmapping: Affine" : "[T]exmapping: Perspective", 0, 1, 253, 0, &buffer);
-        utl_printf(buffer.drawOpts.depthFunc == DF_ALWAYS ? "[D]epth test: OFF" : "[D]epth test: ON", 0, 10, 253, 0, &buffer);
+        utl_printf(&buffer, 0,  1, 253, 0, "[T]exmapping: %s", buffer.drawOpts.drawMode  == DM_AFFINE ? "Affine" : "Perspective");
+        utl_printf(&buffer, 0, 10, 253, 0, "[D]epth test: %s", buffer.drawOpts.depthFunc == DF_ALWAYS ? "OFF" : "ON");
         gfx_updateScreen(&buffer);
         gfx_vSync();
 

@@ -1,15 +1,26 @@
 #include "src/graphics.h"
 #include "src/utils.h"
+#include <stdarg.h>
+#include <string.h>
+
+// maximum lenght of a string processed by utl_printf()
+#define PRINTF_LEN 128
 
 // internal: render a single character
 static void drawChar(const int x, const int y, unsigned char c, const unsigned char fgCol, const unsigned char bgCol, gfx_drawBuffer *buffer);
 
 /* ***** */
-void utl_printf(const char *str, const int x, const int y, const unsigned char fgCol, const unsigned char bgCol, gfx_drawBuffer *buffer)
+void utl_printf(gfx_drawBuffer *buffer, const int x, const int y, const unsigned char fgCol, const unsigned char bgCol, const char *format, ...)
 {
     int i=-1;
-    while(str[++i])
-        drawChar(x + (i << 3), y, str[i], fgCol, bgCol, buffer);
+    char strBuffer[PRINTF_LEN];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(strBuffer, PRINTF_LEN, format, args);
+    va_end(args);
+
+    while(strBuffer[++i])
+        drawChar(x + (i << 3), y, strBuffer[i], fgCol, bgCol, buffer);
 }
 
 /* ***** */
@@ -18,7 +29,6 @@ void utl_drawPalette(gfx_drawBuffer *buffer)
     const int tileW = 20;
     const int tileH = 12;
     int x, y, xOffset, yOffset, c = 0;
-    char colorNum[3];
     int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
     int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
     gfx_clrBufferColor(buffer, c);
@@ -34,8 +44,7 @@ void utl_drawPalette(gfx_drawBuffer *buffer)
                 gfx_drawPixel(x, y, c, buffer);
         }
 
-        sprintf(colorNum, "%d", c);
-        utl_printf(colorNum, xOffset * tileW, yOffset * tileH, 15, c, buffer);
+        utl_printf(buffer, xOffset * tileW, yOffset * tileH, 15, c, "%d", c);
     }
 }
 

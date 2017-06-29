@@ -94,7 +94,7 @@ void testPerspective()
             gfx_drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, &buffer);
         }
 
-        utl_printf(isPerspective ? "[P]rojection: Perspective" : "[P]rojection: Orthographic", 0, 1, 15, 0, &buffer);
+        utl_printf(&buffer, 0, 1, 15, 0, "[P]rojection: %s", isPerspective ? "Perspective" : "Orthographic");
         gfx_updateScreen(&buffer);
         gfx_vSync();
 

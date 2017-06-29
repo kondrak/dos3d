@@ -210,15 +210,15 @@ void testRotatingCube()
                 }
             }
 
-            utl_printf("1/Z depth values", 0, 1, 48, 0, &depthDebug);
+            utl_printf(&depthDebug, 0, 1, 48, 0, "1/Z depth values");
             gfx_updateScreen(&depthDebug);
         }
         else
         {
-            utl_printf(buffer.drawOpts.drawMode & DM_AFFINE    ? "[T]exmapping: Affine" : "[T]exmapping: Perspective", 0, 1, 15, 0, &buffer);
-            utl_printf(buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF" : "[C]ulling BF: ON", 0, 10, 15, 0, &buffer);
-            utl_printf(buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF" : "[D]epth test: ON", 0, 19, 15, 0, &buffer);
-            utl_printf(buffer.drawOpts.drawMode & DM_WIREFRAME ? "[W]ireframe : ON"  : "[W]ireframe : OFF", 0, 28, 15, 0, &buffer);
+            utl_printf(&buffer, 0,  1, 15, 0, "[T]exmapping: %s", buffer.drawOpts.drawMode & DM_AFFINE ? "Affine" : "Perspective");
+            utl_printf(&buffer, 0, 10, 15, 0, "[C]ulling BF: %s", buffer.drawOpts.cullMode  == FC_NONE ? "OFF" : "ON");
+            utl_printf(&buffer, 0, 19, 15, 0, "[D]epth test: %s", buffer.drawOpts.depthFunc == DF_ALWAYS ? "OFF" : "ON");
+            utl_printf(&buffer, 0, 28, 15, 0, "[W]ireframe : %s", buffer.drawOpts.drawMode & DM_WIREFRAME ? "ON"  : "OFF");
             gfx_updateScreen(&buffer);
         }
 
