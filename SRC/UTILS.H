@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "src/graphics.h"
 #include <stdio.h>
 
 #ifdef __cplusplus
@@ -12,6 +13,9 @@ extern "C" {
 #define MIN(a, b) ( a > b ? b : a )
 #define MAX(a, b) ( a > b ? a : b )
 #define ROUND(a)  ( a < 0 ? (int)(a - 0.5) : (int)(a + 0.5) )
+
+    // debug text printing to buffer using standard mode 13h font glyphs
+    void utl_printf(const char *str, const int x, const int y, const unsigned char fgCol, const unsigned char bgCol, gfx_drawBuffer *buffer);
 
 #ifdef __cplusplus
 }
