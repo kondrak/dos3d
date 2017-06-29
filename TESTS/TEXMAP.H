@@ -3,6 +3,7 @@
 #include "src/math.h"
 #include "src/timer.h"
 #include "src/triangle.h"
+#include "src/utils.h"
 #include <stdio.h>
 
 typedef struct
@@ -125,16 +126,13 @@ void testTextureMapping()
         // clear buffers and draw the quad!
         gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
         drawTexQuad(&quad, &modelViewProj, &buffer);
-        gfx_updateScreen(&buffer);
 
-        fprintf(stdout, buffer.drawOpts.drawMode == DM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
-        fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
-        // reset carriage to top left corner of the screen
-        fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);        
+        utl_printf(buffer.drawOpts.drawMode  == DM_AFFINE ? "[T]exmapping: Affine" : "[T]exmapping: Perspective", 0, 1, 253, 0, &buffer);
+        utl_printf(buffer.drawOpts.depthFunc == DF_ALWAYS ? "[D]epth test: OFF" : "[D]epth test: ON", 0, 10, 253, 0, &buffer);
+        gfx_updateScreen(&buffer);
         gfx_vSync();
 
         keysPressed = kbd_getInput();
-        fflush(stdout);
         last = now;
     } while(!keysPressed[KEY_ESC]);
 

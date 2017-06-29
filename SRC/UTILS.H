@@ -17,6 +17,9 @@ extern "C" {
     // debug text printing to buffer using standard mode 13h font glyphs
     void utl_printf(const char *str, const int x, const int y, const unsigned char fgCol, const unsigned char bgCol, gfx_drawBuffer *buffer);
 
+    // draw numbered palette grid to buffer
+    void utl_drawPalette(gfx_drawBuffer *buffer);
+
 #ifdef __cplusplus
 }
 #endif
