@@ -38,13 +38,13 @@ void utl_drawPalette(gfx_drawBuffer *buffer)
         xOffset = c % 16;
         yOffset = c / 16;
 
-        for(y = yOffset * tileH; y < (yOffset + 1) * tileH && y < bufferHeight; ++y)
+        for(y = yOffset * tileH + 4; y < (yOffset + 1) * tileH + 4 && y < bufferHeight; ++y)
         {
             for(x = xOffset * tileW; x < (xOffset + 1) * tileW && x < bufferWidth; ++x)
                 gfx_drawPixel(x, y, c, buffer);
         }
 
-        utl_printf(buffer, xOffset * tileW, yOffset * tileH, 15, c, "%d", c);
+        utl_printf(buffer, xOffset * tileW, yOffset * tileH + 4, 15, c, "%x", c);
     }
 }
 
