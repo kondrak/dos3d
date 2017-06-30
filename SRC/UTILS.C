@@ -7,13 +7,13 @@
 #define PRINTF_LEN 128
 
 // internal: render a single character
-static void drawChar(const int x, const int y, unsigned char c, const unsigned char fgCol, const unsigned char bgCol, gfx_drawBuffer *buffer);
+static void drawChar(const int x, const int y, uint8_t c, const uint8_t fgCol, const uint8_t bgCol, gfx_drawBuffer *buffer);
 
 /* ***** */
-void utl_printf(gfx_drawBuffer *buffer, const int x, const int y, const unsigned char fgCol, const unsigned char bgCol, const char *format, ...)
+void utl_printf(gfx_drawBuffer *buffer, const int x, const int y, const uint8_t fgCol, const uint8_t bgCol, const uint8_t *format, ...)
 {
     int i=-1;
-    char strBuffer[PRINTF_LEN];
+    uint8_t strBuffer[PRINTF_LEN];
     va_list args;
     va_start(args, format);
     vsnprintf(strBuffer, PRINTF_LEN, format, args);
@@ -49,17 +49,17 @@ void utl_drawPalette(gfx_drawBuffer *buffer)
 }
 
 /* ***** */
-static void drawChar(const int x, const int y, unsigned char c, const unsigned char fgCol, const unsigned char bgCol, gfx_drawBuffer *buffer)
+static void drawChar(const int x, const int y, uint8_t c, const uint8_t fgCol, const uint8_t bgCol, gfx_drawBuffer *buffer)
 {
     // start address of ROM character set storage
-    static unsigned char *romCharSet = (unsigned char *)0xFFA6E;
-    unsigned char bitMask;
+    static uint8_t *romCharSet = (uint8_t *)0xFFA6E;
+    uint8_t bitMask;
     int xOffset, yOffset;
     int buffWidth  = buffer ? buffer->width : SCREEN_WIDTH;
     int buffHeight = buffer ? buffer->height : SCREEN_HEIGHT;
 
     // stored characters are 8x8 bitmaps
-    unsigned char *currChar = &romCharSet[c * 8];
+    uint8_t *currChar = &romCharSet[c * 8];
 
     for(yOffset = 0; yOffset < 8; ++yOffset) {
         if(y + yOffset < buffHeight) 

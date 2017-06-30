@@ -24,7 +24,7 @@ enum DrawModeType
 };
 
 // helper functions
-void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, unsigned char color, gfx_Bitmap *texture);
+void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, uint8_t color, gfx_Bitmap *texture);
 void setupTexCube(TexCube *c, gfx_Bitmap *texture);
 void drawCubeTexQuad(const CubeTexQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
 void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
@@ -46,8 +46,8 @@ void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
 void testRotatingCube()
 {
     unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
-    unsigned char defaultPalette[256*3], grayScalePalette[256*3];
+    const uint16_t *keysPressed;
+    uint8_t defaultPalette[256*3], grayScalePalette[256*3];
     TexCube cube;
     int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0;
     int wireFrameFlipped = 0, drawModeFlipped = 0, rotFlipped = 0;
@@ -202,7 +202,7 @@ void testRotatingCube()
             {
                 if(buffer.depthBuffer[i])
                 {
-                    unsigned char c = 2.f / buffer.depthBuffer[i];
+                    uint8_t c = 2.f / buffer.depthBuffer[i];
                     depthDebug.colorBuffer[i] = 0x80 - (c > 0x7B ? 0x7B : c);
                 }
             }
@@ -231,7 +231,7 @@ void testRotatingCube()
 }
 
 /* ***** */
-void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, unsigned char color, gfx_Bitmap *texture)
+void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, uint8_t color, gfx_Bitmap *texture)
 {
     q->tris[0].color = color;
     q->tris[0].texture = texture;

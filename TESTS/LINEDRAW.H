@@ -9,7 +9,7 @@ void testBresenham(int ox, int oy, int r)
 {
     float l;
     unsigned long int startTime, numLines = 0;
-    const unsigned short *keysPressed = kbd_getInput();
+    const uint16_t *keysPressed = kbd_getInput();
 
     tmr_start();
     utl_printf(NULL, 1, 1, 15, 0, "Bresenham drawing: please wait...");

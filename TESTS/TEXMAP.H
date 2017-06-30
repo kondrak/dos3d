@@ -32,7 +32,7 @@ void testTextureMapping()
     const int quadW =  25;
     const int quadH =  25;
     unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
+    const uint16_t *keysPressed;
     float t = 0.f;
     TexQuad quad;
     int texMapFlipped = 0;

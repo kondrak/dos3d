@@ -20,7 +20,7 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     gfx_Bitmap bmp;
     long index;
     int x;
-    unsigned short num_colors;
+    uint16_t num_colors;
     FILE *fp = fopen(filename, "rb");
 
     ASSERT(fp, "Error opening file %s.\n", filename);
@@ -34,17 +34,17 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     /* read in the width and height of the image, and the
        number of colors used; ignore the rest */
     fskip(fp, 16);
-    fread(&bmp.width, sizeof(unsigned short), 1, fp);
+    fread(&bmp.width, sizeof(uint16_t), 1, fp);
     fskip(fp, 2);
-    fread(&bmp.height, sizeof(unsigned short), 1, fp);
+    fread(&bmp.height, sizeof(uint16_t), 1, fp);
     fskip(fp, 22);
-    fread(&num_colors, sizeof(unsigned short), 1, fp);
+    fread(&num_colors, sizeof(uint16_t), 1, fp);
     fskip(fp, 6);
 
     // assume we are working with an 8-bit file
     if(!num_colors) num_colors = 256;
 
-    if((bmp.data = (unsigned char *)malloc(sizeof(unsigned char) * bmp.width * bmp.height)) == NULL)
+    if((bmp.data = (uint8_t *)malloc(sizeof(uint8_t) * bmp.width * bmp.height)) == NULL)
     {
         fclose(fp);
         ASSERT(0, "Error allocating memory for file %s.\n", filename);
@@ -62,7 +62,7 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     // read the bitmap
     for(index = (bmp.height-1) * bmp.width; index >= 0; index -= bmp.width)
         for(x = 0; x < bmp.width; ++x)
-            bmp.data[ index + x ] = (unsigned char)fgetc(fp);
+            bmp.data[ index + x ] = (uint8_t)fgetc(fp);
 
     fclose(fp);
     return bmp;
@@ -76,9 +76,9 @@ gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int
     subImage.width  = w;
     subImage.height = h;
     // retain the palette of the atlas
-    memcpy(subImage.palette, atlas->palette, sizeof(unsigned char)*256*3);
+    memcpy(subImage.palette, atlas->palette, sizeof(uint8_t)*256*3);
     
-    subImage.data = (unsigned char *)malloc(sizeof(unsigned char) * w * h);
+    subImage.data = (uint8_t *)malloc(sizeof(uint8_t) * w * h);
     ASSERT(subImage.data, "Error allocating memory for atlas sub image bitmap!\n");
     
     for(p = 0, cy = y; cy < y+h; ++cy)
@@ -101,9 +101,9 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
     gfx_Bitmap resized;
     resized.width  = w;
     resized.height = h;
-    memcpy(resized.palette, bmp->palette, sizeof(unsigned char)*256*3);
+    memcpy(resized.palette, bmp->palette, sizeof(uint8_t)*256*3);
 
-    resized.data = (unsigned char *)malloc(sizeof(unsigned char) * w * h);
+    resized.data = (uint8_t *)malloc(sizeof(uint8_t) * w * h);
     ASSERT(resized.data, "Error allocating memory for resized bitmap!\n");
 
     // rescale bitmap using nearest neighbour algorithm
@@ -135,8 +135,8 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
     int screenOffset = x + offscreenX + (y + offscreenY) * buffer->width;
     int width  = MIN(bmp->width - offscreenX, buffer->width - (x < 0 ? offscreenX : x));
     int height = MIN(bmp->height, buffer->height - y);
-    unsigned char *dstBuff = buffer->colorBuffer;
-    unsigned char *bmpBuff = bmp->data;
+    uint8_t *dstBuff = buffer->colorBuffer;
+    uint8_t *bmpBuff = bmp->data;
 
     // attempting to write offscreen
     if(width < 0 || x > buffer->width) return;
@@ -159,8 +159,8 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
     int texArea = bmp->width * bmp->height;
     int height  = MIN(bmp->height, buffer->height - y);
     int targetWidth = buffer->width - (x < 0 ? offscreenX : x);
-    unsigned char *dstBuff = buffer->colorBuffer;
-    unsigned char *bmpBuff = bmp->data;
+    uint8_t *dstBuff = buffer->colorBuffer;
+    uint8_t *bmpBuff = bmp->data;
 
     // attemtping to write offscreen
     if(targetWidth < 0 || x > buffer->width) return;
@@ -185,7 +185,7 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
 }
 
 /* ***** */
-void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const short colorKey)
+void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const int16_t colorKey)
 {
     int i,j;
     // adjust for offscreen positioning
@@ -194,7 +194,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
     int screenOffset = (y + offscreenY) * buffer->width;
     int width  = MIN(bmp->width - offscreenX, buffer->width - (x < 0 ? offscreenX : x));
     int height = MIN(bmp->height, buffer->height - y);
-    unsigned char data;
+    uint8_t data;
 
     // attemtping to write offscreen
     if(width < 0 || x > buffer->width) return;
@@ -205,7 +205,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
         {
             data = bmp->data[i + offscreenX + (j + offscreenY) * bmp->height];
             // skip a pixel if it's the same color as colorKey
-            if(data != (unsigned char)colorKey)
+            if(data != (uint8_t)colorKey)
                 buffer->colorBuffer[screenOffset + x + i + j * buffer->width] = data;
         }
     }

@@ -8,7 +8,7 @@ void testRenderTargets()
 {
     int i;
     unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
+    const uint16_t *keysPressed;
     gfx_Triangle triangle;
     gfx_Camera cam;
     mth_Matrix4 model;

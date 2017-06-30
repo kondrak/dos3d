@@ -13,10 +13,10 @@ extern "C" {
 
     typedef struct
     {
-        unsigned short width;
-        unsigned short height;
-        unsigned char  palette[256*3];
-        unsigned char *data;
+        uint16_t width;
+        uint16_t height;
+        uint8_t  palette[256*3];
+        uint8_t *data;
     } gfx_Bitmap;
 
     /* *** Interface *** */
@@ -37,7 +37,7 @@ extern "C" {
     void gfx_drawBitmapOffset(const gfx_Bitmap* bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer);
 
     // draw bitmap to buffer with colorKey as the transparent color
-    void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const short colorKey);
+    void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const int16_t colorKey);
 
     // release bitmap image data
     void gfx_freeBitmap(gfx_Bitmap *bmp);

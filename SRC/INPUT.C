@@ -2,12 +2,12 @@
 #include <conio.h>
 #include <memory.h>
 
-static unsigned short keys[0x81];
+static uint16_t keys[0x81];
 
 // faster keyhit detector than kbhit()
-const unsigned short *kbd_getInput()
+const uint16_t *kbd_getInput()
 {
-    unsigned char key = '\0';
+    uint8_t key = '\0';
 
     // get last key 
     _asm {
@@ -32,5 +32,5 @@ const unsigned short *kbd_getInput()
 
 void kbd_flush()
 {
-    memset(keys, 0, sizeof(unsigned short) * 0x81);
+    memset(keys, 0, sizeof(uint16_t) * 0x81);
 }

@@ -36,7 +36,7 @@ void printMenu()
 int main(int argc, char **argv)
 {
     int demoFinished = 0;
-    const unsigned short *keysPressed = kbd_getInput();
+    const uint16_t *keysPressed = kbd_getInput();
 
     printMenu();
   

@@ -7,10 +7,10 @@
 #include <stdlib.h>
 
 // pointer to VGA memory
-static unsigned char *VGA = (unsigned char *)0xA0000;
+static uint8_t *VGA = (uint8_t *)0xA0000;
 
 /* ***** */
-void gfx_setMode(const unsigned char mode)
+void gfx_setMode(const uint8_t mode)
 {
     _asm {
         mov ah, 0x00
@@ -20,7 +20,7 @@ void gfx_setMode(const unsigned char mode)
 }
 
 /* ***** */
-void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buffer)
+void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *buffer)
 {
     int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
     int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
@@ -39,7 +39,7 @@ void gfx_drawPixel(int x, int y, const unsigned char color, gfx_drawBuffer *buff
 }
 
 /* ***** */
-void gfx_drawPixelWithDepth(int x, int y, float invZ, const unsigned char color, gfx_drawBuffer *buffer)
+void gfx_drawPixelWithDepth(int x, int y, float invZ, const uint8_t color, gfx_drawBuffer *buffer)
 {
     int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
     int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
@@ -81,7 +81,7 @@ void gfx_drawPixelWithDepth(int x, int y, float invZ, const unsigned char color,
 }
 
 /* ***** */
-void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned char color, gfx_drawBuffer *buffer)
+void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t color, gfx_drawBuffer *buffer)
 {
     // Bresenham line drawing
     int startX = x0;
@@ -129,7 +129,7 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const unsigned
 }
 
 /* ***** */
-void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const unsigned char color, gfx_drawBuffer *buffer)
+void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const uint8_t color, gfx_drawBuffer *buffer)
 {
     gfx_drawLine(from->x, from->y, from->z, to->x, to->y, to->z, color, buffer);
 }
@@ -147,12 +147,12 @@ void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType)
 }
 
 /* ***** */
-void gfx_clrBufferColor(gfx_drawBuffer *buffer, const unsigned char color)
+void gfx_clrBufferColor(gfx_drawBuffer *buffer, const uint8_t color)
 {
     if(!buffer)
-        memset(VGA, color, sizeof(unsigned char) * SCREEN_WIDTH * SCREEN_HEIGHT);
+        memset(VGA, color, sizeof(uint8_t) * SCREEN_WIDTH * SCREEN_HEIGHT);
     else
-        memset(buffer->colorBuffer, color, sizeof(unsigned char) * buffer->width * buffer->height);
+        memset(buffer->colorBuffer, color, sizeof(uint8_t) * buffer->width * buffer->height);
 }
 
 /* ***** */
@@ -166,8 +166,8 @@ void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *tar
     int targetHeight = target ? target->height : SCREEN_HEIGHT;
     int width  = MIN(src->width - startX, targetWidth - (x < 0 ? startX : x));
     int height = MIN(src->height, targetHeight - y);
-    unsigned char *dstBuff = target != NULL ? target->colorBuffer : VGA;
-    unsigned char *srcBuff = src->colorBuffer;
+    uint8_t *dstBuff = target != NULL ? target->colorBuffer : VGA;
+    uint8_t *srcBuff = src->colorBuffer;
 
     if(width < 0 || x > targetWidth) return;
 
@@ -185,7 +185,7 @@ void gfx_updateScreen(gfx_drawBuffer *buffer)
 }
 
 /* ***** */
-void gfx_setPalette(const unsigned char *palette)
+void gfx_setPalette(const uint8_t *palette)
 {
     int i;
     outp(0x03c8, 0);
@@ -197,7 +197,7 @@ void gfx_setPalette(const unsigned char *palette)
 }
 
 /* ***** */
-void gfx_getPalette(unsigned char *outPalette)
+void gfx_getPalette(uint8_t *outPalette)
 {
     int i;
     outp(0x03c7, 0);

@@ -31,7 +31,7 @@ void freeScene(Scene *s);
 void test3DScene()
 {
     unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
+    const uint16_t *keysPressed;
     Scene scene;
     int texMapFlipped = 0;
     gfx_Camera cam;

@@ -72,8 +72,8 @@ void tmr_start()
     }
 #else
     outp(0x43, 0x36);
-    outp(0x40, (unsigned char)(1103 & 0xff));
-    outp(0x40, (unsigned char)((1103 >> 8) & 0xff));
+    outp(0x40, (uint8_t)(1103 & 0xff));
+    outp(0x40, (uint8_t)((1103 >> 8) & 0xff));
 #endif
     _enable();
 }

@@ -6,7 +6,7 @@
 void testFirstPerson()
 {
     unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
+    const uint16_t *keysPressed;
     mth_Vector4 ts, rs;
     gfx_Camera cam;
     gfx_Triangle triangle;

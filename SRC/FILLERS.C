@@ -154,9 +154,9 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
                 float v = z * LERP(startV, endV, r);
 
                 // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-                unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
+                uint8_t pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
-                if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
+                if(!useColorKey || (useColorKey && pixel != (uint8_t)buffer->drawOpts.colorKey))
                 {
                     // DF_ALWAYS = no depth test
                     if(buffer->drawOpts.depthFunc == DF_ALWAYS)
@@ -268,9 +268,9 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
             for(x = startXPrestep; x <= endXPrestep; ++x)
             {
                 // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
-                unsigned char pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
+                uint8_t pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
 
-                if(!useColorKey || (useColorKey && pixel != (unsigned char)buffer->drawOpts.colorKey))
+                if(!useColorKey || (useColorKey && pixel != (uint8_t)buffer->drawOpts.colorKey))
                 {
                     // DF_ALWAYS = no depth test
                     if(buffer->drawOpts.depthFunc == DF_ALWAYS)
