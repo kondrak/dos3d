@@ -10,7 +10,7 @@ void setupCube(mth_Vector4 *c);
 void testPerspective()
 {
     const uint16_t *keysPressed;
-    unsigned long int now, last = 0;
+    uint32_t now, last = 0;
     float t = 0.f;
     int projectionFlipped = 0;
     int isPerspective = 1;

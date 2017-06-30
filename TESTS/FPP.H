@@ -5,7 +5,7 @@
 // First person WASD camera (warning: a bit faulty with z-clipping until proper clipping is implemented!)
 void testFirstPerson()
 {
-    unsigned long int now, last = 0;
+    uint32_t now, last = 0;
     const uint16_t *keysPressed;
     mth_Vector4 ts, rs;
     gfx_Camera cam;

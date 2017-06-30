@@ -1,15 +1,16 @@
 #include "src/math.h"
 #include <math.h>
+#include <stdint.h>
 
 // internal: quick inverse sqrt()
 double qInvSqrt(double number)
 {
-    long i;
+    int32_t i;
     float x2, y;
 
     x2 = number * 0.5F;
     y = number;
-    i = *(long *)&y;
+    i = *(int32_t *)&y;
     i = 0x5f3759df - (i >> 1);
     y = *(float *)&i;
     y = y * (1.5f - (x2 * y * y));   // 1st iteration

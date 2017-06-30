@@ -8,7 +8,7 @@
 void testBresenham(int ox, int oy, int r)
 {
     float l;
-    unsigned long int startTime, numLines = 0;
+    uint32_t startTime, numLines = 0;
     const uint16_t *keysPressed = kbd_getInput();
 
     tmr_start();

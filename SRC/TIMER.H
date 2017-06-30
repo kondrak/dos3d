@@ -1,6 +1,8 @@
 #ifndef TIMER_H
 #define TIMER_H
 
+#include <stdint.h>
+
 /*
  *   IRQ0 (interrupt 8) timer with 1ms granularity
  */
@@ -16,7 +18,7 @@ extern "C" {
     void tmr_finish();
 
     // fetch current millisecond count
-    unsigned long int tmr_getMs();
+    uint32_t tmr_getMs();
 
 #ifdef __cplusplus
 }

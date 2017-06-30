@@ -7,7 +7,7 @@
 void testRenderTargets()
 {
     int i;
-    unsigned long int now, last = 0;
+    uint32_t now, last = 0;
     const uint16_t *keysPressed;
     gfx_Triangle triangle;
     gfx_Camera cam;

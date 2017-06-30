@@ -18,7 +18,7 @@ static void fskip(FILE *fp, int num_bytes)
 gfx_Bitmap gfx_loadBitmap(const char* filename)
 {
     gfx_Bitmap bmp;
-    long index;
+    int32_t index;
     int x;
     uint16_t num_colors;
     FILE *fp = fopen(filename, "rb");

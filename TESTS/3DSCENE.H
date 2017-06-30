@@ -30,7 +30,7 @@ void freeScene(Scene *s);
 // Render a simple Doom scene
 void test3DScene()
 {
-    unsigned long int now, last = 0;
+    uint32_t now, last = 0;
     const uint16_t *keysPressed;
     Scene scene;
     int texMapFlipped = 0;
