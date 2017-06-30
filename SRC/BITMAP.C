@@ -18,22 +18,17 @@ static void fskip(FILE *fp, int num_bytes)
 gfx_Bitmap gfx_loadBitmap(const char* filename)
 {
     gfx_Bitmap bmp;
-    FILE *fp;
     long index;
     int x;
     unsigned short num_colors;
+    FILE *fp = fopen(filename, "rb");
 
-    if((fp = fopen(filename, "rb")) == NULL)
-    {
-        printf("Error opening file %s.\n",filename);
-        exit(1);
-    }
+    ASSERT(fp, "Error opening file %s.\n", filename);
 
     if(fgetc(fp) != 'B' || fgetc(fp) != 'M')
     {
         fclose(fp);
-        printf("%s is not a bitmap file.\n", filename);
-        exit(1);
+        ASSERT(0, "%s is not a bitmap file.\n", filename);
     }
 
     /* read in the width and height of the image, and the
@@ -52,8 +47,7 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     if((bmp.data = (unsigned char *)malloc(sizeof(unsigned char) * bmp.width * bmp.height)) == NULL)
     {
         fclose(fp);
-        printf("Error allocating memory for file %s.\n",filename);
-        exit(1);
+        ASSERT(0, "Error allocating memory for file %s.\n", filename);
     }
 
     // read the palette information
@@ -84,11 +78,8 @@ gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int
     // retain the palette of the atlas
     memcpy(subImage.palette, atlas->palette, sizeof(unsigned char)*256*3);
     
-    if ((subImage.data = (unsigned char *)malloc(sizeof(unsigned char) * w * h)) == NULL)
-    {
-        printf("Error allocating memory for atlas sub image bitmap!\n");
-        exit(1);
-    }
+    subImage.data = (unsigned char *)malloc(sizeof(unsigned char) * w * h);
+    ASSERT(subImage.data, "Error allocating memory for atlas sub image bitmap!\n");
     
     for(p = 0, cy = y; cy < y+h; ++cy)
     {
@@ -112,11 +103,8 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
     resized.height = h;
     memcpy(resized.palette, bmp->palette, sizeof(unsigned char)*256*3);
 
-    if ((resized.data = (unsigned char *)malloc(sizeof(unsigned char) * w * h)) == NULL)
-    {
-        printf("Error allocating memory for resized bitmap!\n");
-        exit(1);
-    }
+    resized.data = (unsigned char *)malloc(sizeof(unsigned char) * w * h);
+    ASSERT(resized.data, "Error allocating memory for resized bitmap!\n");
 
     // rescale bitmap using nearest neighbour algorithm
     for(cy = 0; cy < h; ++cy)

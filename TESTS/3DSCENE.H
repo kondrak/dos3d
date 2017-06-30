@@ -42,7 +42,7 @@ void test3DScene()
     buffer.drawOpts.colorKey  = COLOR_MAGENTA;
     buffer.drawOpts.depthFunc = DF_LESS;
 
-    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!");
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
 
     tmr_start();
 

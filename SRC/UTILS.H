@@ -10,12 +10,12 @@ extern "C" {
 #endif
 
 #ifndef NDEBUG
-#   define ASSERT(x, msg) if(!(x)) { gfx_setMode(0x03); assert((x) && msg); }
+#   define ASSERT(x, ...) if(!(x)) { gfx_setMode(0x03); fprintf(stderr, __VA_ARGS__); assert(x); }
 #else
-#   define ASSERT(x, msg)
+#   define ASSERT(x, ...)
 #endif
 
-#define DBG(msg, ...) { fprintf(stdout, msg, __VA_ARGS__); fflush(stdout); }
+#define DBG(b, ...) utl_printf(b, 1, 1, 15, 0, __VA_ARGS__)
 #define LERP(start, end, r) ( start * (1.0 - r) + end * r )
 #define MIN(a, b) ( a > b ? b : a )
 #define MAX(a, b) ( a > b ? a : b )

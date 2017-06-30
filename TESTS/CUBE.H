@@ -66,8 +66,8 @@ void testRotatingCube()
     // secondary buffer to render depth buffer values
     ALLOC_DRAWBUFFER(depthDebug, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
-    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!");
-    ASSERT(DRAWBUFFER_VALID(depthDebug, DB_COLOR), "Out of memory!");
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
+    ASSERT(DRAWBUFFER_VALID(depthDebug, DB_COLOR), "Out of memory!\n");
 
     tmr_start();
 
