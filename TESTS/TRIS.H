@@ -1,5 +1,6 @@
 #include "src/camera.h"
 #include "src/triangle.h"
+#include "src/utils.h"
 #include <dos.h>
 
 // Triangle rendering test
@@ -55,9 +56,8 @@ void testTriangles()
         if(!keysPressed[KEY_SPACE])
         {
             gfx_drawTriangle(&triangle, &modelViewProj, &buffer);
+            utl_printf(&buffer, 1, 1, 15, 0, "Triangles rendered: %d", ++numTris);
             gfx_updateScreen(&buffer);
-            fprintf(stdout, "Triangles rendered: %d\r", ++numTris);
-            fflush(stdout);
             delay(50);
         }
 

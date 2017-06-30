@@ -2,6 +2,7 @@
 #include "src/input.h"
 #include "src/math.h"
 #include "src/timer.h"
+#include "src/utils.h"
 
 // Bresenham line drawing test
 void testBresenham(int ox, int oy, int r)
@@ -11,9 +12,7 @@ void testBresenham(int ox, int oy, int r)
     const unsigned short *keysPressed = kbd_getInput();
 
     tmr_start();
-
-    fprintf(stdout, "Bresenham drawing: please wait...\r");
-    fflush(stdout);
+    utl_printf(NULL, 1, 1, 15, 0, "Bresenham drawing: please wait...");
 
     startTime = tmr_getMs();
 
@@ -23,10 +22,8 @@ void testBresenham(int ox, int oy, int r)
         gfx_drawLine(ox, oy, 0.f, ox + r * cos(l), oy + r * sin(l), 0.f, color, NULL);
     }
 
-    fprintf(stdout, "Bresenham drawing: %ums (%u lines)", tmr_getMs() - startTime, numLines);
-    fflush(stdout);
-    
-    while(!keysPressed[KEY_ESC]) keysPressed = kbd_getInput();
+    utl_printf(NULL, 1, 1, 15, 0, "Bresenham drawing: %ums (%u lines)", tmr_getMs() - startTime, numLines);
 
+    while(!keysPressed[KEY_ESC]) keysPressed = kbd_getInput();
     tmr_finish();
 }
