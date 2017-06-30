@@ -120,6 +120,8 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
         // calculate v3.x with Intercept Theorem, y is the same as v2
         v3.position.x = v0.position.x + (v1.position.x - v0.position.x) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
         v3.position.y = v2.position.y;
+        // setting this to avoid undefined behavior when subtracting vectors
+        v3.position.z = 0;
 
         diff  = mth_vecSub(&v1.position, &v0.position);
         diff2 = mth_vecSub(&v3.position, &v0.position);
@@ -143,15 +145,17 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
             else
                 v3.position.z = v0.position.z;
 
-            // this will affect how affine texture map looks on the final polygon if depth test is enabled!
-            // we don't care though, since it's a distorted mapping anyway
-            v3.uv.u = v3.position.z * LERP(v0.uv.u * invV0Z, v1.uv.u * invV1Z, ratioU);
-            v3.uv.v = v3.position.z * LERP(v0.uv.v * invV0Z, v1.uv.v * invV1Z, ratioV);
+            // skip this step for affine texture mapping - distortion will be too high if UVs are lerped with 1/Z
+            if(buffer->drawOpts.drawMode == DM_PERSPECTIVE)
+            {
+                v3.uv.u = v3.position.z * LERP(v0.uv.u * invV0Z, v1.uv.u * invV1Z, ratioU);
+                v3.uv.v = v3.position.z * LERP(v0.uv.v * invV0Z, v1.uv.v * invV1Z, ratioV);
+            }
         }
-        else
+
+        // for affine texture mapping, approximating v3.uv without taking Z into account gives better results
+        if(buffer->drawOpts.drawMode == DM_AFFINE)
         {
-            // for affine texture mapping and no depth test it's enough to approximate v3.z with Intercept Theorem
-            v3.position.z = v0.position.z + (v1.position.z - v0.position.z) * (v2.position.y - v0.position.y) / (v1.position.y - v0.position.y);
             v3.uv.u = LERP(v0.uv.u, v1.uv.u, ratioU);
             v3.uv.v = LERP(v0.uv.v, v1.uv.v, ratioV);
         }

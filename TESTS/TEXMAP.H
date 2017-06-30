@@ -35,17 +35,16 @@ void testTextureMapping()
     const unsigned short *keysPressed;
     float t = 0.f;
     TexQuad quad;
-    int texMapFlipped = 0, depthFuncFlipped = 0;
+    int texMapFlipped = 0;
     int manualMode = 0, modeFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/quake.bmp");
     gfx_drawBuffer buffer;
 
-    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
-    buffer.drawOpts.depthFunc = DF_ALWAYS;
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
+    if(!DRAWBUFFER_VALID(buffer, DB_COLOR))
     {
         printf("Out of memory!");
         exit(1);
@@ -115,19 +114,11 @@ void testTextureMapping()
         }
         else if(!keysPressed[KEY_SPACE]) modeFlipped = 0;
 
-        if(keysPressed[KEY_D] && !depthFuncFlipped)
-        {
-            buffer.drawOpts.depthFunc = buffer.drawOpts.depthFunc == DF_ALWAYS ? DF_LESS : DF_ALWAYS;
-            depthFuncFlipped = 1;
-        }
-        else if(!keysPressed[KEY_D]) depthFuncFlipped = 0;
-
         // clear buffers and draw the quad!
-        gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
+        gfx_clrBuffer(&buffer, DB_COLOR);
         drawTexQuad(&quad, &modelViewProj, &buffer);
 
         utl_printf(&buffer, 0,  1, 253, 0, "[T]exmapping: %s", buffer.drawOpts.drawMode  == DM_AFFINE ? "Affine" : "Perspective");
-        utl_printf(&buffer, 0, 10, 253, 0, "[D]epth test: %s", buffer.drawOpts.depthFunc == DF_ALWAYS ? "OFF" : "ON");
         gfx_updateScreen(&buffer);
         gfx_vSync();
 
