@@ -28,11 +28,7 @@ void testFirstPerson()
     VEC4(triangle.vertices[1].position,  10,  0, 0);
     VEC4(triangle.vertices[2].position, -10,  0, 0);
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
-    {
-        printf("Out of memory!");
-        exit(1);
-    }
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!");
 
     tmr_start();
 

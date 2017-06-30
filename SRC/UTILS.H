@@ -9,7 +9,12 @@
 extern "C" {
 #endif
 
-#define ASSERT(x) assert(x)
+#ifndef NDEBUG
+#   define ASSERT(x, msg) if(!(x)) { gfx_setMode(0x03); assert((x) && msg); }
+#else
+#   define ASSERT(x, msg)
+#endif
+
 #define DBG(msg, ...) { fprintf(stdout, msg, __VA_ARGS__); fflush(stdout); }
 #define LERP(start, end, r) ( start * (1.0 - r) + end * r )
 #define MIN(a, b) ( a > b ? b : a )

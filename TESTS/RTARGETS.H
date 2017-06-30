@@ -21,11 +21,7 @@ void testRenderTargets()
 
     for(i = 0; i < 4; ++i)
     {
-        if(!DRAWBUFFER_VALID(renderTargets[i], DB_COLOR))
-        {
-            printf("Out of memory!");
-            exit(1);
-        }
+        ASSERT(DRAWBUFFER_VALID(renderTargets[i], DB_COLOR), "Out of memory!");
     }
 
     tmr_start();

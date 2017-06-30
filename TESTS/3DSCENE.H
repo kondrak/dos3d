@@ -3,6 +3,7 @@
 #include "src/math.h"
 #include "src/timer.h"
 #include "src/triangle.h"
+#include "src/utils.h"
 
 #define COLOR_MAGENTA 212
 #define NUM_WALLS 7
@@ -41,11 +42,7 @@ void test3DScene()
     buffer.drawOpts.colorKey  = COLOR_MAGENTA;
     buffer.drawOpts.depthFunc = DF_LESS;
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
-    {
-        printf("Out of memory!");
-        exit(1);
-    }
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!");
 
     tmr_start();
 
