@@ -56,7 +56,9 @@ void testRenderTargets()
 
         for(i = 0; i < 3; ++i)
         {
-            mth_rotateVecAxisAngle(&triangle.vertices[i].position, 0.002f*dt, 1.f, 1.f, 1.f);
+            mth_rotateVecAxisAngle(&triangle.vertices[i].position, 0.002f*dt, 1.f, 0.f, 0.f);
+            mth_rotateVecAxisAngle(&triangle.vertices[i].position, 0.002f*dt, 0.f, 1.f, 0.f);
+            mth_rotateVecAxisAngle(&triangle.vertices[i].position, 0.002f*dt, 0.f, 0.f, 1.f);
         }
 
         // blit triangle to 4 separate render targets
