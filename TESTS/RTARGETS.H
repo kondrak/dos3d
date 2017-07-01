@@ -17,10 +17,8 @@ void testRenderTargets()
 
     // create 4 draw buffers
     for(i = 0; i < 4; ++i)
-        ALLOC_DRAWBUFFER(renderTargets[i], SCREEN_WIDTH >> 1, SCREEN_HEIGHT >> 1, DB_COLOR);
-
-    for(i = 0; i < 4; ++i)
     {
+        ALLOC_DRAWBUFFER(renderTargets[i], SCREEN_WIDTH >> 1, SCREEN_HEIGHT >> 1, DB_COLOR);
         ASSERT(DRAWBUFFER_VALID(renderTargets[i], DB_COLOR), "Out of memory!\n");
     }
 
@@ -42,7 +40,7 @@ void testRenderTargets()
     VEC4(triangle.vertices[2].position,  20,  20, 0);
 
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, 
-                       (float)renderTargets[0].width / (float)renderTargets[0].height, 0.1f, 500.f);
+                       (float)renderTargets[0].width / renderTargets[0].height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
     modelViewProj = mth_matMul(&model, &modelViewProj);
