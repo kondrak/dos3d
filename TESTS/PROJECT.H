@@ -1,6 +1,7 @@
 #include "src/camera.h"
 #include "src/graphics.h"
 #include "src/timer.h"
+#include "src/utils.h"
 
 // helper function
 void setupCube(mth_Vector4 *c);
@@ -8,9 +9,11 @@ void setupCube(mth_Vector4 *c);
 // Perspective projection test: render a rotating wireframe cube
 void testPerspective()
 {
-    const unsigned short *keysPressed;
-    unsigned long int now, last = 0;
+    const uint16_t *keysPressed;
+    uint32_t now, last = 0;
     float t = 0.f;
+    int projectionFlipped = 0;
+    int isPerspective = 1;
     mth_Vector4 cube[16];
     gfx_Camera cam;
     mth_Matrix4 model;
@@ -19,11 +22,7 @@ void testPerspective()
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR))
-    {
-        printf("Out of memory!");
-        exit(1);
-    }
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR), "Out of memory!\n");
 
     tmr_start();
 
@@ -38,14 +37,8 @@ void testPerspective()
 
     // setup world coordinates for pseudo-cube
     setupCube(&cube);
-    // translate entire cube a bit
-    model.m[12] = -20.f;
-    model.m[13] = -20.f;
 
-    keysPressed = kbd_getInput();
-    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
-
-    while(!keysPressed[KEY_ESC])
+    do
     {
         int i;
         float dt;
@@ -53,6 +46,20 @@ void testPerspective()
         mth_Vector4 screenCube[16];
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
+
+        if(keysPressed[KEY_P] && !projectionFlipped)
+        {
+            isPerspective = !isPerspective;
+            projectionFlipped = 1;
+        }
+        else if(!keysPressed[KEY_P]) projectionFlipped = 0;
+
+        if(isPerspective)
+            mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
+        else
+            mth_matOrtho(&cam.projection, -160, 160, 100, -100, 0.1f, 500.f);
+
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&model, &modelViewProj);
@@ -60,8 +67,8 @@ void testPerspective()
         t += 0.0015f*dt;
         for(i = 0; i < 16; ++i)
         {
-            // rotate cube on all axes, just for fun effect and zoom in/out for better perspective test
-            mth_rotateVecAxisAngle(&cube[i], 0.0015f*dt, 1.f, 1.f, 1.f);
+            // rotate cube on x axis and zoom in/out for better perspective test
+            mth_rotateVecAxisAngle(&cube[i], 0.0015f*dt, 1.f, 0.f, 0.f);
             model.m[14] = sin(t) * 80.f;
             
             // calculate screen coordinates for transformed square vertices
@@ -83,11 +90,12 @@ void testPerspective()
             gfx_drawLineVec(&screenCube[4*i + 2], &screenCube[4*i + 3], 3+i, &buffer);
         }
 
+        utl_printf(&buffer, 0, 1, 15, 0, "[P]rojection: %s", isPerspective ? "Perspective" : "Orthographic");
         gfx_updateScreen(&buffer);
+        gfx_vSync();
 
-        keysPressed = kbd_getInput();
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);
@@ -99,33 +107,33 @@ void setupCube(mth_Vector4 *c)
     int i;
     for(i = 0; i < 4; ++i)
     {
-        c[i].x = 40*(i%2);
-        c[i].y = 40*(i > 1 ? 1 : 0);
-        c[i].z = 0.f;
+        c[i].x = 20*(i%2 ? 1 : -1);
+        c[i].y = 20*(i > 1 ? 1 : -1);
+        c[i].z = -20.f;
         c[i].w = 1.f;
     }
     
     for(i = 4; i < 8; ++i)
     {
-        c[i].x = 40;
-        c[i].y = 40*(i > 5 ? 1 : 0);
-        c[i].z = 40*(i%2);
+        c[i].x = 20;
+        c[i].y = 20*(i > 5 ? 1 : -1);
+        c[i].z = 20*(i%2 ? 1 : -1);
         c[i].w = 1.f;
     }
     
     for(i = 8; i < 12; ++i)
     {
-        c[i].x = 40*(i%2);
-        c[i].y = 40*(i > 9 ? 1 : 0);
-        c[i].z = 40;
+        c[i].x = 20*(i%2 ? 1 : -1);
+        c[i].y = 20*(i > 9 ? 1 : -1);
+        c[i].z = 20;
         c[i].w = 1.f;
     }
     
     for(i = 12; i < 16; ++i)
     {
-        c[i].x = 0;
-        c[i].y = 40*(i > 13 ? 1 : 0);
-        c[i].z = 40*(i%2);
+        c[i].x = -20;
+        c[i].y = 20*(i > 13 ? 1 : -1);
+        c[i].z = 20*(i%2 ? 1 : -1);
         c[i].w = 1.f;
     }
 }

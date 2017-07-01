@@ -3,7 +3,7 @@
 #include "src/math.h"
 #include "src/timer.h"
 #include "src/triangle.h"
-#include <stdio.h>
+#include "src/utils.h"
 
 typedef struct
 {
@@ -24,7 +24,7 @@ enum DrawModeType
 };
 
 // helper functions
-void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, unsigned char color, gfx_Bitmap *texture);
+void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, uint8_t color, gfx_Bitmap *texture);
 void setupTexCube(TexCube *c, gfx_Bitmap *texture);
 void drawCubeTexQuad(const CubeTexQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
 void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffer);
@@ -45,11 +45,12 @@ void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
 // Rotating cube test
 void testRotatingCube()
 {
-    unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
-    unsigned char defaultPalette[256*3], grayScalePalette[256*3];
+    uint32_t now, last = 0;
+    const uint16_t *keysPressed;
+    uint8_t defaultPalette[256*3], grayScalePalette[256*3];
     TexCube cube;
-    int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0, drawModeFlipped = 0, rotFlipped = 0;
+    int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0;
+    int wireFrameFlipped = 0, drawModeFlipped = 0, rotFlipped = 0;
     int drawMode = TEX_CUBE;
     int rotating = 1;
     gfx_Camera cam;
@@ -65,11 +66,8 @@ void testRotatingCube()
     // secondary buffer to render depth buffer values
     ALLOC_DRAWBUFFER(depthDebug, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH) || !DRAWBUFFER_VALID(depthDebug, DB_COLOR))
-    {
-        printf("Out of memory!");
-        exit(1);
-    }
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
+    ASSERT(DRAWBUFFER_VALID(depthDebug, DB_COLOR), "Out of memory!\n");
 
     tmr_start();
 
@@ -88,23 +86,23 @@ void testRotatingCube()
     gfx_getPalette(defaultPalette);
     for(i = 0; i < 768; i += 3)
     {
-        grayScalePalette[i] = 3*255*i/768;
-        grayScalePalette[i+1] = 3*255*i/768;
-        grayScalePalette[i+2] = 3*255*i/768;
+        grayScalePalette[i] = i/3;
+        grayScalePalette[i+1] = i/3;
+        grayScalePalette[i+2] = i/3;
     }
     gfx_setPalette(bmp.palette);
 
-    keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         int j, k;
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
 
         if(keysPressed[KEY_RIGHT])
             ROTATE_CUBE(0.002f, 0.f, 1.f, 0.f);
@@ -120,11 +118,19 @@ void testRotatingCube()
 
         if(keysPressed[KEY_T] && !texMapFlipped)
         {
-            buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
+            buffer.drawOpts.drawMode ^= ( DM_PERSPECTIVE | DM_AFFINE);
             texMapFlipped = 1;
             
         }
         else if(!keysPressed[KEY_T]) texMapFlipped = 0;
+
+        if(keysPressed[KEY_W] && !wireFrameFlipped)
+        {
+            buffer.drawOpts.drawMode ^= DM_WIREFRAME;
+            wireFrameFlipped = 1;
+            
+        }
+        else if(!keysPressed[KEY_W]) wireFrameFlipped = 0;
 
         if(keysPressed[KEY_C] && !cullModeFlipped)
         {
@@ -164,7 +170,7 @@ void testRotatingCube()
             if(drawMode == TEX_CUBE)
             {
                 gfx_setPalette(bmp.palette);
-                buffer.drawOpts.texMapMode = TM_PERSPECTIVE;
+                buffer.drawOpts.drawMode &= ~DM_FLAT;
             }
 
             // viewing depth values requires depth testing to be enabled
@@ -175,7 +181,7 @@ void testRotatingCube()
             if(drawMode == FLAT_COLOR)
             {
                 gfx_setPalette(defaultPalette);
-                buffer.drawOpts.texMapMode = TM_NONE;
+                buffer.drawOpts.drawMode |= DM_FLAT;
             }
 
             drawModeFlipped = 1;
@@ -190,31 +196,33 @@ void testRotatingCube()
         {
             gfx_setPalette(grayScalePalette);
 
-            // have to manually copy depth buffer since it's 1/z floats, so need to "scale up" to get actual color
+            // fill color buffer with depth buffer values and render it in grayscale
+            gfx_clrBufferColor(&depthDebug, 0x80);
             for(i = 0; i < buffer.width * buffer.height; ++i)
             {
-                depthDebug.colorBuffer[i] = (unsigned char)((int)(buffer.depthBuffer[i] * 256 * 2.6) % 256);
+                if(buffer.depthBuffer[i])
+                {
+                    uint8_t c = 2.f / buffer.depthBuffer[i];
+                    depthDebug.colorBuffer[i] = 0x80 - (c > 0x7B ? 0x7B : c);
+                }
             }
-            
+
+            utl_printf(&depthDebug, 0, 1, 48, 0, "1/Z depth values");
             gfx_updateScreen(&depthDebug);
-            fprintf(stdout, "1/Z depth values\r");
         }
         else
         {
+            utl_printf(&buffer, 0,  1, 15, 0, "[T]exmapping: %s", buffer.drawOpts.drawMode & DM_AFFINE ? "Affine" : "Perspective");
+            utl_printf(&buffer, 0, 10, 15, 0, "[C]ulling BF: %s", buffer.drawOpts.cullMode  == FC_NONE ? "OFF" : "ON");
+            utl_printf(&buffer, 0, 19, 15, 0, "[D]epth test: %s", buffer.drawOpts.depthFunc == DF_ALWAYS ? "OFF" : "ON");
+            utl_printf(&buffer, 0, 28, 15, 0, "[W]ireframe : %s", buffer.drawOpts.drawMode & DM_WIREFRAME ? "ON"  : "OFF");
             gfx_updateScreen(&buffer);
-            fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
-            fprintf(stdout, buffer.drawOpts.cullMode  == FC_NONE    ? "[C]ulling BF: OFF\r\n" : "[C]ulling BF: ON\r\n");
-            fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
-            // reset carriage to top left corner of the screen
-            fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);
         }
 
-        fflush(stdout);
         gfx_vSync();
 
-        keysPressed = kbd_getInput();
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);
@@ -223,7 +231,7 @@ void testRotatingCube()
 }
 
 /* ***** */
-void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, unsigned char color, gfx_Bitmap *texture)
+void setupCubeTexQuad(CubeTexQuad *q, int qx, int qy, int qw, int qh, uint8_t color, gfx_Bitmap *texture)
 {
     q->tris[0].color = color;
     q->tris[0].texture = texture;

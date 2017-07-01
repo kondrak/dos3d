@@ -6,14 +6,14 @@
 
 typedef void (__interrupt __far *intFuncPtr)();
 
-intFuncPtr oldTimerInterrupt; // Original interrupt handler
+static intFuncPtr oldTimerInterrupt; // Original interrupt handler
 
-volatile unsigned long int milliseconds = 0; // Elapsed time in milliseconds
+volatile uint32_t milliseconds = 0; // Elapsed time in milliseconds
 
 // internal: 1ms timer interrupt handler function
 void __interrupt __far timerHandler()
 {
-    static unsigned long count = 0; // To keep track of original timer ticks
+    static uint32_t count = 0; // To keep track of original timer ticks
     
     ++milliseconds;
     count += 1103;
@@ -72,8 +72,8 @@ void tmr_start()
     }
 #else
     outp(0x43, 0x36);
-    outp(0x40, (unsigned char)(1103 & 0xff));
-    outp(0x40, (unsigned char)((1103 >> 8) & 0xff));
+    outp(0x40, (uint8_t)(1103 & 0xff));
+    outp(0x40, (uint8_t)((1103 >> 8) & 0xff));
 #endif
     _enable();
 }
@@ -113,7 +113,7 @@ void tmr_finish()
 }
 
 /* ***** */
-unsigned long int tmr_getMs()
+uint32_t tmr_getMs()
 {
     return milliseconds;
 }

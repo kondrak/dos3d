@@ -3,6 +3,7 @@
 #include "src/math.h"
 #include "src/timer.h"
 #include "src/triangle.h"
+#include "src/utils.h"
 
 #define COLOR_MAGENTA 212
 #define NUM_WALLS 7
@@ -29,8 +30,8 @@ void freeScene(Scene *s);
 // Render a simple Doom scene
 void test3DScene()
 {
-    unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
+    uint32_t now, last = 0;
+    const uint16_t *keysPressed;
     Scene scene;
     int texMapFlipped = 0;
     gfx_Camera cam;
@@ -41,11 +42,7 @@ void test3DScene()
     buffer.drawOpts.colorKey  = COLOR_MAGENTA;
     buffer.drawOpts.depthFunc = DF_LESS;
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
-    {
-        printf("Out of memory!");
-        exit(1);
-    }
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
 
     tmr_start();
 
@@ -59,20 +56,20 @@ void test3DScene()
     VEC4(cam.right, 1, 0, 0);
     VEC4(cam.target, 0, 0, -1);
 
-    keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
 
         if(keysPressed[KEY_T] && !texMapFlipped)
         {
-            buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
+            buffer.drawOpts.drawMode = buffer.drawOpts.drawMode == DM_AFFINE ? DM_PERSPECTIVE : DM_AFFINE;
             texMapFlipped = 1;
         }
         else if(!keysPressed[KEY_T]) texMapFlipped = 0;
@@ -85,7 +82,7 @@ void test3DScene()
 
         keysPressed = kbd_getInput();
         last = now;
-    }
+    }  while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

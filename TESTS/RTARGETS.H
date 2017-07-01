@@ -7,8 +7,8 @@
 void testRenderTargets()
 {
     int i;
-    unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
+    uint32_t now, last = 0;
+    const uint16_t *keysPressed;
     gfx_Triangle triangle;
     gfx_Camera cam;
     mth_Matrix4 model;
@@ -21,11 +21,7 @@ void testRenderTargets()
 
     for(i = 0; i < 4; ++i)
     {
-        if(!DRAWBUFFER_VALID(renderTargets[i], DB_COLOR))
-        {
-            printf("Out of memory!");
-            exit(1);
-        }
+        ASSERT(DRAWBUFFER_VALID(renderTargets[i], DB_COLOR), "Out of memory!\n");
     }
 
     tmr_start();
@@ -45,22 +41,24 @@ void testRenderTargets()
     VEC4(triangle.vertices[1].position,   0, -20, 0);
     VEC4(triangle.vertices[2].position,  20,  20, 0);
 
-    keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, 
                        (float)renderTargets[0].width / (float)renderTargets[0].height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
     modelViewProj = mth_matMul(&model, &modelViewProj);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
 
         for(i = 0; i < 3; ++i)
         {
-            mth_rotateVecAxisAngle(&triangle.vertices[i].position, 0.002f*dt, 1.f, 1.f, 1.f);
+            mth_rotateVecAxisAngle(&triangle.vertices[i].position, 0.002f*dt, 1.f, 0.f, 0.f);
+            mth_rotateVecAxisAngle(&triangle.vertices[i].position, 0.002f*dt, 0.f, 1.f, 0.f);
+            mth_rotateVecAxisAngle(&triangle.vertices[i].position, 0.002f*dt, 0.f, 0.f, 1.f);
         }
 
         // blit triangle to 4 separate render targets
@@ -78,7 +76,7 @@ void testRenderTargets()
 
         keysPressed = kbd_getInput();
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
 

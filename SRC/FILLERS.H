@@ -13,6 +13,9 @@
 extern "C" {
 #endif
 
+    // wireframe
+    void gfx_wireFrame(const gfx_Triangle *t, gfx_drawBuffer *buffer);
+
     // flat color fill
     void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
 

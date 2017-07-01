@@ -36,12 +36,14 @@ void printMenu()
 int main(int argc, char **argv)
 {
     int demoFinished = 0;
-    const unsigned short *keysPressed = kbd_getInput();
+    const uint16_t *keysPressed = kbd_getInput();
 
     printMenu();
   
     while(1)
     {
+        keysPressed = kbd_getInput();
+
         if (!demoFinished)
         {
             if(keysPressed[KEY_1])
@@ -97,8 +99,8 @@ int main(int argc, char **argv)
                 gfx_setMode(0x03);
                 break;
             }
-            
-            keysPressed = kbd_getInput();
+
+            kbd_flush();
         }
         else
         {

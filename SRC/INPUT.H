@@ -1,6 +1,8 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include <stdint.h>
+
 /*
  *  Simple key input processing.
  */
@@ -25,6 +27,7 @@ extern "C" {
         KEY_W = 17,
         KEY_R = 19,
         KEY_T = 20,
+        KEY_P = 25,
         KEY_A = 30,
         KEY_S = 31,
         KEY_D = 32,
@@ -42,7 +45,10 @@ extern "C" {
     };
 
         // returns an integer array with each bit representing a keypress, mapped to KeyCode enum
-        const unsigned short *kbd_getInput();
+        const uint16_t *kbd_getInput();
+
+        // clear pressed key states
+        void kbd_flush();
 
 #ifdef __cplusplus
 }

@@ -1,11 +1,12 @@
 #include "src/camera.h"
 #include "src/triangle.h"
+#include "src/utils.h"
 #include <dos.h>
 
 // Triangle rendering test
 void testTriangles()
 {
-    const unsigned short *keysPressed;
+    const uint16_t *keysPressed;
     gfx_Camera cam;
     int numTris = 0;
     gfx_Triangle triangle;
@@ -15,11 +16,7 @@ void testTriangles()
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR))
-    {
-        printf("Out of memory!");
-        exit(1);
-    }
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR), "Out of memory!\n");
 
     mth_matIdentity(&model);
     mth_matIdentity(&modelViewProj);
@@ -34,7 +31,6 @@ void testTriangles()
     model.m[12] = -160.f;
     model.m[13] = -100.f;
 
-    keysPressed = kbd_getInput();
     gfx_clrBufferColor(&buffer, 105);
 
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
@@ -43,8 +39,9 @@ void testTriangles()
     modelViewProj = mth_matMul(&model, &modelViewProj);
     triangle.texture = NULL;
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
+        keysPressed = kbd_getInput();
         // render randomly scattered triangles of arbitrary size
         triangle.color = rand() % 103 + 1;
         VEC4(triangle.vertices[0].position, rand() % 320, rand() % 200, 0);
@@ -55,14 +52,13 @@ void testTriangles()
         if(!keysPressed[KEY_SPACE])
         {
             gfx_drawTriangle(&triangle, &modelViewProj, &buffer);
+            utl_printf(&buffer, 1, 1, 15, 0, "Triangles rendered: %d", ++numTris);
             gfx_updateScreen(&buffer);
-            fprintf(stdout, "Triangles rendered: %d\r", ++numTris);
-            fflush(stdout);
             delay(50);
         }
 
         keysPressed = kbd_getInput();
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     FREE_DRAWBUFFER(buffer);
 }

@@ -3,7 +3,7 @@
 #include "src/math.h"
 #include "src/timer.h"
 #include "src/triangle.h"
-#include <stdio.h>
+#include "src/utils.h"
 
 typedef struct
 {
@@ -27,23 +27,24 @@ void drawTexQuad(const TexQuad *q, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
 // Texture mapping test
 void testTextureMapping()
 {
-    unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
+    const int quadX = -25;
+    const int quadY = -25;
+    const int quadW =  25;
+    const int quadH =  25;
+    uint32_t now, last = 0;
+    const uint16_t *keysPressed;
+    float t = 0.f;
     TexQuad quad;
-    int texMapFlipped = 0, depthFuncFlipped = 0;
+    int texMapFlipped = 0;
+    int manualMode = 0, modeFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
-    gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
+    gfx_Bitmap bmp = gfx_loadBitmap("images/quake.bmp");
     gfx_drawBuffer buffer;
 
-    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
-    buffer.drawOpts.depthFunc = DF_LESS;
+    ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
-    {
-        printf("Out of memory!");
-        exit(1);
-    }
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR), "Out of memory!\n");
 
     gfx_setPalette(bmp.palette);
 
@@ -58,63 +59,68 @@ void testTextureMapping()
     VEC4(cam.target, 0, 0, -1);
 
     // setup textured quad
-    setupTexQuad(&quad, -20, -20, 20, 20, &bmp);
+    setupTexQuad(&quad, quadX, quadY, quadW, quadH, &bmp);
 
-    keysPressed = kbd_getInput();
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         int i, k;
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
+        t += 0.003f * dt;
+        keysPressed = kbd_getInput();
 
-        if(keysPressed[KEY_RIGHT])
-            ROTATE_QUAD(0.002f, 0.f, 1.f, 0.f);
+        if(manualMode)
+        {
+            if(keysPressed[KEY_RIGHT])
+                ROTATE_QUAD(0.002f, 0.f, 1.f, 0.f);
 
-        if(keysPressed[KEY_LEFT])
-            ROTATE_QUAD(-0.002f, 0.f, 1.f, 0.f);
+            if(keysPressed[KEY_LEFT])
+                ROTATE_QUAD(-0.002f, 0.f, 1.f, 0.f);
 
-        if(keysPressed[KEY_UP])
-            ROTATE_QUAD(0.002f, 1.f, 0.f, 0.f);
+            if(keysPressed[KEY_UP])
+                ROTATE_QUAD(0.002f, 1.f, 0.f, 0.f);
 
-        if(keysPressed[KEY_DOWN])
-            ROTATE_QUAD(-0.002f, 1.f, 0.f, 0.f);
+            if(keysPressed[KEY_DOWN])
+                ROTATE_QUAD(-0.002f, 1.f, 0.f, 0.f);
+        }
+        else
+        {
+            ROTATE_QUAD(0.002f * cos(t), 0.f, 1.f, 0.f);
+        }
 
         if(keysPressed[KEY_T] && !texMapFlipped)
         {
-            buffer.drawOpts.texMapMode = buffer.drawOpts.texMapMode == TM_AFFINE ? TM_PERSPECTIVE : TM_AFFINE;
+            buffer.drawOpts.drawMode = buffer.drawOpts.drawMode == DM_AFFINE ? DM_PERSPECTIVE : DM_AFFINE;
             texMapFlipped = 1;
             
         }
         else if(!keysPressed[KEY_T]) texMapFlipped = 0;
 
-        if(keysPressed[KEY_D] && !depthFuncFlipped)
+        if(keysPressed[KEY_SPACE] && !modeFlipped)
         {
-            buffer.drawOpts.depthFunc = buffer.drawOpts.depthFunc == DF_ALWAYS ? DF_LESS : DF_ALWAYS;
-            depthFuncFlipped = 1;
-            
+            setupTexQuad(&quad, quadX, quadY, quadW, quadH, &bmp);
+            manualMode = ~manualMode;
+            modeFlipped = 1;
+            t = 0;
         }
-        else if(!keysPressed[KEY_D]) depthFuncFlipped = 0;
+        else if(!keysPressed[KEY_SPACE]) modeFlipped = 0;
 
         // clear buffers and draw the quad!
-        gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
+        gfx_clrBuffer(&buffer, DB_COLOR);
         drawTexQuad(&quad, &modelViewProj, &buffer);
-        gfx_updateScreen(&buffer);
 
-        fprintf(stdout, buffer.drawOpts.texMapMode == TM_AFFINE ? "[T]exmapping: Affine\r\n" : "[T]exmapping: Perspective\r\n");
-        fprintf(stdout, buffer.drawOpts.depthFunc == DF_ALWAYS  ? "[D]epth test: OFF\r" : "[D]epth test: ON\r");
-        // reset carriage to top left corner of the screen
-        fprintf(stdout, "%c[%d;%df", 0x1B, 0, 0);        
+        utl_printf(&buffer, 0,  1, 253, 0, "[T]exmapping: %s", buffer.drawOpts.drawMode  == DM_AFFINE ? "Affine" : "Perspective");
+        gfx_updateScreen(&buffer);
         gfx_vSync();
 
         keysPressed = kbd_getInput();
-        fflush(stdout);
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

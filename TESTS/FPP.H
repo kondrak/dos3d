@@ -5,8 +5,8 @@
 // First person WASD camera (warning: a bit faulty with z-clipping until proper clipping is implemented!)
 void testFirstPerson()
 {
-    unsigned long int now, last = 0;
-    const unsigned short *keysPressed;
+    uint32_t now, last = 0;
+    const uint16_t *keysPressed;
     mth_Vector4 ts, rs;
     gfx_Camera cam;
     gfx_Triangle triangle;
@@ -28,21 +28,19 @@ void testFirstPerson()
     VEC4(triangle.vertices[1].position,  10,  0, 0);
     VEC4(triangle.vertices[2].position, -10,  0, 0);
 
-    if(!DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH))
-    {
-        printf("Out of memory!");
-        exit(1);
-    }
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
 
     tmr_start();
-    keysPressed = kbd_getInput();
+
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 1.0f, 500.f);
 
-    while(!keysPressed[KEY_ESC])
+    do
     {
         float dt;
         now = tmr_getMs();
         dt = (float)(now - last);
+        keysPressed = kbd_getInput();
+
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         viewProj = mth_matMul(&cam.view, &cam.projection);
 
@@ -91,7 +89,7 @@ void testFirstPerson()
             cam.up = mth_crossProduct(&cam.right, &cam.target);
         }
         last = now;
-    }
+    } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

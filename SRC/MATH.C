@@ -1,15 +1,16 @@
 #include "src/math.h"
 #include <math.h>
+#include <stdint.h>
 
 // internal: quick inverse sqrt()
 double qInvSqrt(double number)
 {
-    long i;
+    int32_t i;
     float x2, y;
 
     x2 = number * 0.5F;
     y = number;
-    i = *(long *)&y;
+    i = *(int32_t *)&y;
     i = 0x5f3759df - (i >> 1);
     y = *(float *)&i;
     y = y * (1.5f - (x2 * y * y));   // 1st iteration
@@ -172,6 +173,19 @@ void mth_matPerspective(mth_Matrix4 *m, const float fov, const float scrRatio, c
     m->m[10] = -(farPlane + nearPlane) / (farPlane - nearPlane);
     m->m[11] = -1.f;
     m->m[14] = -2.f * farPlane * nearPlane / (farPlane - nearPlane);
+}
+
+/* ***** */
+void mth_matOrtho(mth_Matrix4 *m, const float left, const float right, const float bottom, const float top, const float nearPlane, const float farPlane)
+{
+    mth_matIdentity(m);
+
+    m->m[0]  = 2.f / (right - left);
+    m->m[5]  = 2.f / (top - bottom);
+    m->m[10] = -2.f / (farPlane - nearPlane);
+    m->m[12] = -(right + left) / (right - left);
+    m->m[13] = -(top + bottom) / (top - bottom);
+    m->m[14] = -(farPlane + nearPlane) / (farPlane - nearPlane);
 }
 
 /* ***** */
