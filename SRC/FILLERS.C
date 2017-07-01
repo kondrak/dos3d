@@ -134,6 +134,8 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
         startInvZ = LERP(invZ0, invZ2, r1);
         endInvZ   = LERP(invZ0, invZ1, r1);
 
+        // assure that UV map is interpolated with a clamped ratio, otherwise it might glitch out
+        r1 = MIN(MAX(0, r1), 1);
         startU *= LERP(v0->uv.u * invZ0, v2->uv.u * invZ2, r1);
         startV *= LERP(v0->uv.v * invZ0, v2->uv.v * invZ2, r1);
         endU   *= LERP(v0->uv.u * invZ0, v1->uv.u * invZ1, r1);
@@ -150,8 +152,8 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
                 float r = (x - startX) * invLineLength;
                 float lerpInvZ = LERP(startInvZ, endInvZ, r);
                 float z = 1.f/lerpInvZ;
-                float u = z * LERP(startU, endU, r);
-                float v = z * LERP(startV, endV, r);
+                float u = z * LERP(startU, endU, MIN(MAX(0, r), 1));
+                float v = z * LERP(startV, endV, MIN(MAX(0, r), 1));
 
                 // fetch texture data with a texArea modulus for proper effect in case u or v are > 1
                 uint8_t pixel = t->texture->data[((int)u + ((int)v * t->texture->height)) % texArea];
