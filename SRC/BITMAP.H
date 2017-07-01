@@ -22,7 +22,7 @@ extern "C" {
     /* *** Interface *** */
 
     // load bitmap from file
-    gfx_Bitmap gfx_loadBitmap(const char* filename);
+    gfx_Bitmap gfx_loadBitmap(const char *filename);
 
     // create a bitmap from a larger *atlas at image position x,y and of size w,h
     gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int h);
@@ -31,10 +31,10 @@ extern "C" {
     gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h);
 
     // draw bitmap to buffer (no color keying)
-    void gfx_drawBitmap(const gfx_Bitmap* bmp, int x, int y, gfx_drawBuffer *buffer);
+    void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer);
 
     // draw bitmap to buffer with offsets (no color keying)
-    void gfx_drawBitmapOffset(const gfx_Bitmap* bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer);
+    void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer);
 
     // draw bitmap to buffer with colorKey as the transparent color
     void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const int16_t colorKey);

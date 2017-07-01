@@ -15,7 +15,7 @@ static void fskip(FILE *fp, int num_bytes)
 }
 
 /* ***** */
-gfx_Bitmap gfx_loadBitmap(const char* filename)
+gfx_Bitmap gfx_loadBitmap(const char *filename)
 {
     gfx_Bitmap bmp;
     int32_t index;
@@ -53,16 +53,16 @@ gfx_Bitmap gfx_loadBitmap(const char* filename)
     // read the palette information
     for(index = 0; index < num_colors; ++index)
     {
-        bmp.palette[(int)(index*3 + 2)] = fgetc(fp) >> 2;
-        bmp.palette[(int)(index*3 + 1)] = fgetc(fp) >> 2;
-        bmp.palette[(int)(index*3 + 0)] = fgetc(fp) >> 2;
+        bmp.palette[index*3 + 2] = fgetc(fp) >> 2;
+        bmp.palette[index*3 + 1] = fgetc(fp) >> 2;
+        bmp.palette[index*3 + 0] = fgetc(fp) >> 2;
         x = fgetc(fp);
     }
 
     // read the bitmap
-    for(index = (bmp.height-1) * bmp.width; index >= 0; index -= bmp.width)
+    for(index = (bmp.height - 1) * bmp.width; index >= 0; index -= bmp.width)
         for(x = 0; x < bmp.width; ++x)
-            bmp.data[ index + x ] = (uint8_t)fgetc(fp);
+            bmp.data[index + x] = (uint8_t)fgetc(fp);
 
     fclose(fp);
     return bmp;
@@ -194,7 +194,6 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
     int screenOffset = (y + offscreenY) * buffer->width;
     int width  = MIN(bmp->width - offscreenX, buffer->width - (x < 0 ? offscreenX : x));
     int height = MIN(bmp->height, buffer->height - y);
-    uint8_t data;
 
     // attemtping to write offscreen
     if(width < 0 || x > buffer->width) return;
@@ -203,7 +202,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
     {
         for(i = 0; i < width; ++i)
         {
-            data = bmp->data[i + offscreenX + (j + offscreenY) * bmp->height];
+            uint8_t data = bmp->data[i + offscreenX + (j + offscreenY) * bmp->height];
             // skip a pixel if it's the same color as colorKey
             if(data != (uint8_t)colorKey)
                 buffer->colorBuffer[screenOffset + x + i + j * buffer->width] = data;

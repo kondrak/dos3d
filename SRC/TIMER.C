@@ -6,7 +6,7 @@
 
 typedef void (__interrupt __far *intFuncPtr)();
 
-intFuncPtr oldTimerInterrupt; // Original interrupt handler
+static intFuncPtr oldTimerInterrupt; // Original interrupt handler
 
 volatile uint32_t milliseconds = 0; // Elapsed time in milliseconds
 
