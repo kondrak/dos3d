@@ -9,7 +9,7 @@ const uint16_t *kbd_getInput()
 {
     uint8_t key = '\0';
 
-    // get last key 
+    // get last key and flush keyboard buffer
     _asm {
         in al, 60h
         mov key, al
@@ -21,6 +21,9 @@ const uint16_t *kbd_getInput()
         out 61h, al
         mov al, 20h
         out 20h, al
+        mov ah, 0Ch
+        mov al, 0h
+        int 21h
     }
 
     if (key >= 0x80) keys[key - 0x80] = 0;
