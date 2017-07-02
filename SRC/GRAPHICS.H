@@ -64,7 +64,7 @@ extern "C" {
         enum DrawMode drawMode;
         enum FaceCullingMode cullMode;
         enum DepthFunc depthFunc;
-        int16_t colorKey;
+        int16_t colorKey; // 16 bits - negatives disable keying and int8 is not enough for 0-255 range
     } gfx_drawOptions;
 
     // draw buffer/render target

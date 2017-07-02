@@ -87,7 +87,7 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
     const gfx_Vertex *v2 = &t->vertices[2];
     double x, y, invDy, dxLeft, dxRight, prestep, yDir = 1;
     double startX, endX, startXPrestep, endXPrestep, lineLength;
-    int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
+    int   useColorKey = buffer->drawOpts.colorKey >= 0 ? 1 : 0;
     int   texW = t->texture->width - 1;
     int   texH = t->texture->height - 1;
     int   texArea = texW * texH;
@@ -190,7 +190,7 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
     float duLeft, dvLeft, duRight, dvRight;
     float texW = t->texture->width - 1;
     float texH = t->texture->height - 1;
-    int   useColorKey = buffer->drawOpts.colorKey != -1 ? 1 : 0;
+    int   useColorKey = buffer->drawOpts.colorKey >= 0 ? 1 : 0;
     int   texArea = texW * texH;
     int   currLine, numScanlines;
     // variables used only if depth test is enabled
