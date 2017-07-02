@@ -30,7 +30,7 @@ void freeScene(Scene *s);
 // Render a simple Doom scene
 void test3DScene()
 {
-    uint32_t now, last = 0;
+    uint32_t dt, now, last = 0;
     const uint16_t *keysPressed;
     Scene scene;
     int texMapFlipped = 0;
@@ -39,16 +39,15 @@ void test3DScene()
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
-    buffer.drawOpts.colorKey  = COLOR_MAGENTA;
-    buffer.drawOpts.depthFunc = DF_LESS;
-
     ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
+    buffer.drawOpts.colorKey  = COLOR_MAGENTA;
+    buffer.drawOpts.depthFunc = DF_LESS;   
 
+    // setup 1ms timer interrupt
     tmr_start();
 
     // setup entire scene
     setupScene(&scene);
-    mth_matIdentity(&modelViewProj);
 
     // setup camera
     VEC4(cam.position, 0, -20, 40);
@@ -62,9 +61,8 @@ void test3DScene()
 
     do
     {
-        float dt;
         now = tmr_getMs();
-        dt = (float)(now - last);
+        dt  = now - last;
         keysPressed = kbd_getInput();
 
         if(keysPressed[KEY_T] && !texMapFlipped)

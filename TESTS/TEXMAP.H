@@ -31,7 +31,7 @@ void testTextureMapping()
     const int quadY = -25;
     const int quadW =  25;
     const int quadH =  25;
-    uint32_t now, last = 0;
+    uint32_t dt, now, last = 0;
     const uint16_t *keysPressed;
     float t = 0.f;
     TexQuad quad;
@@ -44,12 +44,11 @@ void testTextureMapping()
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
     ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR), "Out of memory!\n");
-
+    // use proper palette
     gfx_setPalette(bmp.palette);
 
+    // setup 1ms timer interrupt
     tmr_start();
-
-    mth_matIdentity(&modelViewProj);
 
     // setup camera
     VEC4(cam.position, 0, 0, 60);
@@ -67,10 +66,9 @@ void testTextureMapping()
     do
     {
         int i, k;
-        float dt;
         now = tmr_getMs();
-        dt = (float)(now - last);
-        t += 0.003f * dt;
+        dt  = now - last;
+        t  += 0.003f * dt;
         keysPressed = kbd_getInput();
 
         if(manualMode)

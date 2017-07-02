@@ -15,11 +15,7 @@ void testTriangles()
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
-
     ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR), "Out of memory!\n");
-
-    mth_matIdentity(&model);
-    mth_matIdentity(&modelViewProj);
 
     // setup camera
     VEC4(cam.position, 0, 0, 150);
@@ -28,6 +24,7 @@ void testTriangles()
     VEC4(cam.target, 0, 0, -1);
 
     // translate view to screen center
+    mth_matIdentity(&model);    
     model.m[12] = -160.f;
     model.m[13] = -100.f;
 

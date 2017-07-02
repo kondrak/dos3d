@@ -10,7 +10,7 @@ void setupCube(mth_Vector4 *c);
 void testPerspective()
 {
     const uint16_t *keysPressed;
-    uint32_t now, last = 0;
+    uint32_t dt, now, last = 0;
     float t = 0.f;
     int projectionFlipped = 0;
     int isPerspective = 1;
@@ -21,13 +21,10 @@ void testPerspective()
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
-
     ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR), "Out of memory!\n");
 
+    // setup 1ms timer interrupt
     tmr_start();
-
-    mth_matIdentity(&model);
-    mth_matIdentity(&modelViewProj);
 
     // setup camera
     VEC4(cam.position, 0, 0, 150);
@@ -37,15 +34,14 @@ void testPerspective()
 
     // setup world coordinates for pseudo-cube
     setupCube(&cube);
+    mth_matIdentity(&model);
 
     do
     {
         int i;
-        float dt;
-        // screen coordinates for the cube we will calculate here
         mth_Vector4 screenCube[16];
         now = tmr_getMs();
-        dt = (float)(now - last);
+        dt  = now - last;
         keysPressed = kbd_getInput();
 
         if(keysPressed[KEY_P] && !projectionFlipped)
@@ -56,7 +52,7 @@ void testPerspective()
         else if(!keysPressed[KEY_P]) projectionFlipped = 0;
 
         if(isPerspective)
-            mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
+            mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / buffer.height, 0.1f, 500.f);
         else
             mth_matOrtho(&cam.projection, -160, 160, 100, -100, 0.1f, 500.f);
 
@@ -75,8 +71,8 @@ void testPerspective()
             screenCube[i] = mth_matMulVec(&modelViewProj, &cube[i]);
 
             // translate position to screen pixels
-            screenCube[i].x = (screenCube[i].x * (float)buffer.width)  / (2.0f * screenCube[i].w) + (buffer.width >> 1);
-            screenCube[i].y = (screenCube[i].y * (float)buffer.height) / (2.0f * screenCube[i].w) + (buffer.height >> 1);
+            screenCube[i].x = (screenCube[i].x * buffer.width)  / (2.0f * screenCube[i].w) + (buffer.width  >> 1);
+            screenCube[i].y = (screenCube[i].y * buffer.height) / (2.0f * screenCube[i].w) + (buffer.height >> 1);
         }
 
         gfx_clrBuffer(&buffer, DB_COLOR);

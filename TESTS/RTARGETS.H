@@ -7,7 +7,7 @@
 void testRenderTargets()
 {
     int i;
-    uint32_t now, last = 0;
+    uint32_t dt, now, last = 0;
     const uint16_t *keysPressed;
     gfx_Triangle triangle;
     gfx_Camera cam;
@@ -22,10 +22,8 @@ void testRenderTargets()
         ASSERT(DRAWBUFFER_VALID(renderTargets[i], DB_COLOR), "Out of memory!\n");
     }
 
+    // setup 1ms timer interrupt
     tmr_start();
-
-    mth_matIdentity(&model);
-    mth_matIdentity(&modelViewProj);
 
     // setup camera
     VEC4(cam.position, 0, 0, 60);
@@ -42,14 +40,14 @@ void testRenderTargets()
     mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, 
                        (float)renderTargets[0].width / renderTargets[0].height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+    mth_matIdentity(&model);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
     modelViewProj = mth_matMul(&model, &modelViewProj);
 
     do
     {
-        float dt;
         now = tmr_getMs();
-        dt = (float)(now - last);
+        dt  =  now - last;
         keysPressed = kbd_getInput();
 
         for(i = 0; i < 3; ++i)
@@ -71,6 +69,7 @@ void testRenderTargets()
         gfx_blitBuffer(SCREEN_WIDTH >> 1,  0, &renderTargets[1], NULL);
         gfx_blitBuffer(0, SCREEN_HEIGHT >> 1, &renderTargets[2], NULL);
         gfx_blitBuffer(SCREEN_WIDTH >> 1, SCREEN_HEIGHT >> 1, &renderTargets[3], NULL);
+        gfx_vSync();
 
         last = now;
     } while(!keysPressed[KEY_ESC]);

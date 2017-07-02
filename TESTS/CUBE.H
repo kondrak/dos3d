@@ -45,7 +45,7 @@ void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
 // Rotating cube test
 void testRotatingCube()
 {
-    uint32_t now, last = 0;
+    uint32_t dt, now, last = 0;
     const uint16_t *keysPressed;
     uint8_t defaultPalette[256*3], grayScalePalette[256*3];
     TexCube cube;
@@ -60,18 +60,16 @@ void testRotatingCube()
 
     // main draw buffer where the cube is rendered
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR | DB_DEPTH);
+    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
     buffer.drawOpts.cullMode  = FC_BACK;
     buffer.drawOpts.depthFunc = DF_LESS;
 
     // secondary buffer to render depth buffer values
     ALLOC_DRAWBUFFER(depthDebug, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
-
-    ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
     ASSERT(DRAWBUFFER_VALID(depthDebug, DB_COLOR), "Out of memory!\n");
 
+    // setup 1ms timer interrupt
     tmr_start();
-
-    mth_matIdentity(&modelViewProj);
 
     // setup camera
     VEC4(cam.position, 0, 0, 60);
@@ -99,9 +97,8 @@ void testRotatingCube()
     do
     {
         int j, k;
-        float dt;
         now = tmr_getMs();
-        dt = (float)(now - last);
+        dt  = now - last;
         keysPressed = kbd_getInput();
 
         if(keysPressed[KEY_RIGHT])
