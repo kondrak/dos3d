@@ -22,7 +22,7 @@ extern "C" {
 #define ROUND(a)  ( (a) < 0 ? (int)((a) - 0.5) : (int)((a) + 0.5) )
 
     // debug text printing to buffer using standard mode 13h font glyphs
-    void utl_printf(gfx_drawBuffer *buffer, const int x, const int y, const uint8_t fgCol, const uint8_t bgCol, const uint8_t *format, ...);
+    void utl_printf(gfx_drawBuffer *buffer, const int x, const int y, const uint8_t fgCol, const uint8_t bgCol, const char *format, ...);
 
     // draw numbered palette grid to buffer
     void utl_drawPalette(gfx_drawBuffer *buffer);

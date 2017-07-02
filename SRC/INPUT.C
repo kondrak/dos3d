@@ -14,15 +14,14 @@ const uint16_t *kbd_getInput()
         in al, 60h
         mov key, al
         in al, 61h
-        or al, 128
+        mov ah, al
+        or al, 80h
         out 61h, al
-        xor al, 128
+        xchg ah, al
         out 61h, al
+        mov al, 20h
+        out 20h, al
     }
-
-    // clear keyboard buffer
-    outpd(0x20, 0x20);
-    outpd(0x20, 0x20);
 
     if (key >= 0x80) keys[key - 0x80] = 0;
     if (key < 0x80)  keys[key] = 1;

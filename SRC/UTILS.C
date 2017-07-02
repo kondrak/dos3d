@@ -7,13 +7,13 @@
 #define PRINTF_LEN 128
 
 // internal: render a single character
-static void drawChar(const int x, const int y, uint8_t c, const uint8_t fgCol, const uint8_t bgCol, gfx_drawBuffer *buffer);
+static void drawChar(const int x, const int y, char c, const uint8_t fgCol, const uint8_t bgCol, gfx_drawBuffer *buffer);
 
 /* ***** */
-void utl_printf(gfx_drawBuffer *buffer, const int x, const int y, const uint8_t fgCol, const uint8_t bgCol, const uint8_t *format, ...)
+void utl_printf(gfx_drawBuffer *buffer, const int x, const int y, const uint8_t fgCol, const uint8_t bgCol, const char *format, ...)
 {
     int i=-1;
-    uint8_t strBuffer[PRINTF_LEN];
+    char strBuffer[PRINTF_LEN];
     va_list args;
     va_start(args, format);
     vsnprintf(strBuffer, PRINTF_LEN, format, args);
@@ -49,7 +49,7 @@ void utl_drawPalette(gfx_drawBuffer *buffer)
 }
 
 /* ***** */
-static void drawChar(const int x, const int y, uint8_t c, const uint8_t fgCol, const uint8_t bgCol, gfx_drawBuffer *buffer)
+static void drawChar(const int x, const int y, char c, const uint8_t fgCol, const uint8_t bgCol, gfx_drawBuffer *buffer)
 {
     // start address of ROM character set storage
     static uint8_t *romCharSet = (uint8_t *)0xFFA6E;
