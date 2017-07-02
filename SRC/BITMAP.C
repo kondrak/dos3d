@@ -185,7 +185,7 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
 }
 
 /* ***** */
-void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const int16_t colorKey)
+void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const uint8_t colorKey)
 {
     int i,j;
     // adjust for offscreen positioning
@@ -204,7 +204,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
         {
             uint8_t data = bmp->data[i + offscreenX + (j + offscreenY) * bmp->height];
             // skip a pixel if it's the same color as colorKey
-            if(data != (uint8_t)colorKey)
+            if(data != colorKey)
                 buffer->colorBuffer[screenOffset + x + i + j * buffer->width] = data;
         }
     }
