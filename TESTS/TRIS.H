@@ -57,7 +57,6 @@ void testTriangles()
             delay(50);
         }
 
-        keysPressed = kbd_getInput();
     } while(!keysPressed[KEY_ESC]);
 
     FREE_DRAWBUFFER(buffer);

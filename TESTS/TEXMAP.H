@@ -118,7 +118,6 @@ void testTextureMapping()
         gfx_updateScreen(&buffer);
         gfx_vSync();
 
-        keysPressed = kbd_getInput();
         last = now;
     } while(!keysPressed[KEY_ESC]);
 

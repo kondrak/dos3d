@@ -80,7 +80,6 @@ void test3DScene()
         // render!
         drawScene(&scene, &modelViewProj, &buffer);
 
-        keysPressed = kbd_getInput();
         last = now;
     }  while(!keysPressed[KEY_ESC]);
 

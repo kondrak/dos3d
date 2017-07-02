@@ -7,7 +7,7 @@ static uint16_t keys[0x81];
 // faster keyhit detector than kbhit()
 const uint16_t *kbd_getInput()
 {
-    uint8_t key = '\0';
+    uint8_t key = 0;
 
     // get last key and flush keyboard buffer
     _asm {

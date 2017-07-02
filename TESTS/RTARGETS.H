@@ -72,7 +72,6 @@ void testRenderTargets()
         gfx_blitBuffer(0, SCREEN_HEIGHT >> 1, &renderTargets[2], NULL);
         gfx_blitBuffer(SCREEN_WIDTH >> 1, SCREEN_HEIGHT >> 1, &renderTargets[3], NULL);
 
-        keysPressed = kbd_getInput();
         last = now;
     } while(!keysPressed[KEY_ESC]);
 
