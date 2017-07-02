@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // internal: quick inverse sqrt()
-double qInvSqrt(double number)
+static double qInvSqrt(double number)
 {
     int32_t i;
     float x2, y;

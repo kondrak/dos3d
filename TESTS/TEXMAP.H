@@ -43,7 +43,6 @@ void testTextureMapping()
     gfx_drawBuffer buffer;
 
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
-
     ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR), "Out of memory!\n");
 
     gfx_setPalette(bmp.palette);

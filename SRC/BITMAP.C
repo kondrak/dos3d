@@ -112,7 +112,7 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
         for(cx = 0; cx < w; ++cx)
         {
             int p = cy * w + cx;
-            int nn = (((int)(cy * scaleY) * bmp->width) + ((int)(cx * scaleX)));
+            int nn = (int)(cy * scaleY * bmp->width + cx * scaleX);
 
             resized.data[p]   = bmp->data[nn];
             resized.data[p+1] = bmp->data[nn+1];

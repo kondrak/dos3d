@@ -140,7 +140,7 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
             float invV1Z = 1.f/v1.position.z;
 
             // get v3.z value by interpolating 1/z (it's lerp-able)
-            if((v0.position.x - v1.position.x) != 0.0)
+            if(v0.position.x - v1.position.x)
                 v3.position.z = 1.0 / LERP(invV1Z, invV0Z, (v3.position.x - v1.position.x) / (v0.position.x - v1.position.x));
             else
                 v3.position.z = v0.position.z;

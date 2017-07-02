@@ -46,7 +46,7 @@ void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleTy
     xLeft   = v0->position.x + dxLeft * prestep;
     xRight  = v0->position.x + dxRight * prestep;
 
-    // skip the unnecessary divisions if there's no depth testing
+    // skip unnecessary divisions if there's no depth testing
     if(buffer->drawOpts.depthFunc != DF_ALWAYS)
     {
         invZ0  = 1.f / v0->position.z;
@@ -140,7 +140,7 @@ void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, en
         endV   *= LERP(v0->uv.v * invZ0, v1->uv.v * invZ1, r1);
 
         // skip zero-length lines
-        if(lineLength)
+        if(lineLength > 0)
         {
             invLineLength = 1.f / lineLength;
 
@@ -224,7 +224,7 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
 
     startU = texW * v0->uv.u + duLeft * prestep;
     startV = texH * v0->uv.v + dvLeft * prestep;
-    // With triangles the texture gradients (u,v slopes over the triangle surface)
+    // With triangles, the texture gradients (u,v slopes over the triangle surface)
     // are guaranteed to be constant, so we need to calculate du and dv only once.
     invDx = 1.f / (dxRight - dxLeft);
     du = (duRight - duLeft) * invDx;
@@ -234,7 +234,7 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
     startXPrestep = v0->position.x + dxLeft * prestep;
     endXPrestep   = v0->position.x + dxRight * prestep;
 
-    // skip the unnecessary divisions if there's no depth testing
+    // skip unnecessary divisions if there's no depth testing
     if(buffer->drawOpts.depthFunc != DF_ALWAYS)
     {
         invZ0  = 1.f / v0->position.z;
@@ -263,7 +263,7 @@ void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum Tr
         }
 
         // skip zero-length lines
-        if(lineLength)
+        if(lineLength > 0)
         {
             for(x = startXPrestep; x <= endXPrestep; ++x)
             {
