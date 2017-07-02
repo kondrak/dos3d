@@ -101,6 +101,13 @@ void testRotatingCube()
         dt  = now - last;
         keysPressed = kbd_getInput();
 
+        // auto-rotation of the cube
+        if(rotating)
+        {
+            ROTATE_CUBE(-0.001f, 1.f, 0.f, 0.f);
+            ROTATE_CUBE(-0.001f, 0.f, 1.f, 0.f);
+        }
+
         if(keysPressed[KEY_RIGHT])
             ROTATE_CUBE(0.002f, 0.f, 1.f, 0.f);
 
@@ -115,7 +122,7 @@ void testRotatingCube()
 
         if(keysPressed[KEY_T] && !texMapFlipped)
         {
-            buffer.drawOpts.drawMode ^= ( DM_PERSPECTIVE | DM_AFFINE);
+            buffer.drawOpts.drawMode ^= (DM_PERSPECTIVE | DM_AFFINE);
             texMapFlipped = 1;
             
         }
@@ -151,12 +158,6 @@ void testRotatingCube()
         }
         else if(!keysPressed[KEY_R]) rotFlipped = 0;
 
-        if(rotating)
-        {
-            ROTATE_CUBE(-0.001f, 1.f, 0.f, 0.f);
-            ROTATE_CUBE(-0.001f, 0.f, 1.f, 0.f);
-        }
-        
         if(keysPressed[KEY_SPACE] && !drawModeFlipped)
         {
             drawMode++;
