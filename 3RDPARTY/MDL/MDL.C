@@ -183,7 +183,7 @@ void FreeModel(mdl_model_t *mdl)
 void RenderFrame(int n, const mdl_model_t *mdl)
 {
     int i, j;
-    GLfloat s, t;
+    float s, t;
     vec3_t v;
     mdl_vertex_t *pvert;
 
@@ -204,8 +204,8 @@ void RenderFrame(int n, const mdl_model_t *mdl)
             pvert = &mdl->frames[n].frame.verts[mdl->triangles[i].vertex[j]];
 
             /* Compute texture coordinates */
-            s = (GLfloat)mdl->texcoords[mdl->triangles[i].vertex[j]].s;
-            t = (GLfloat)mdl->texcoords[mdl->triangles[i].vertex[j]].t;
+            s = (float)mdl->texcoords[mdl->triangles[i].vertex[j]].s;
+            t = (float)mdl->texcoords[mdl->triangles[i].vertex[j]].t;
 
             if(!mdl->triangles[i].facesfront &&
             mdl->texcoords[mdl->triangles[i].vertex[j]].onseam)
@@ -240,9 +240,9 @@ void RenderFrame(int n, const mdl_model_t *mdl)
 void RenderFrameItp(int n, float interp, const mdl_model_t *mdl)
 {
     int i, j;
-    GLfloat s, t;
+    float s, t;
     vec3_t norm, v;
-    GLfloat *n_curr, *n_next;
+    float *n_curr, *n_next;
     mdl_vertex_t *pvert1, *pvert2;
 
     /* Check if n is in a valid range */
@@ -262,8 +262,8 @@ void RenderFrameItp(int n, float interp, const mdl_model_t *mdl)
             pvert2 = &mdl->frames[n + 1].frame.verts[mdl->triangles[i].vertex[j]];
 
             /* Compute texture coordinates */
-            s = (GLfloat)mdl->texcoords[mdl->triangles[i].vertex[j]].s;
-            t = (GLfloat)mdl->texcoords[mdl->triangles[i].vertex[j]].t;
+            s = (float)mdl->texcoords[mdl->triangles[i].vertex[j]].s;
+            t = (float)mdl->texcoords[mdl->triangles[i].vertex[j]].t;
 
             if(!mdl->triangles[i].facesfront &&
             mdl->texcoords[mdl->triangles[i].vertex[j]].onseam)

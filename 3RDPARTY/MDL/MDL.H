@@ -38,7 +38,6 @@ extern "C" {
     /* Vector */
     typedef float vec3_t[3];
     typedef int GLuint;
-    typedef float GLfloat;
 
     /* MDL header */
     typedef struct 
