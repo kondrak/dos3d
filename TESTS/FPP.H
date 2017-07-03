@@ -32,7 +32,7 @@ void testFirstPerson()
     VEC4(triangle.vertices[1].position,  10,  0, 0);
     VEC4(triangle.vertices[2].position, -10,  0, 0);
 
-    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 1.0f, 500.f);
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / buffer.height, 1.0f, 500.f);
 
     do
     {
