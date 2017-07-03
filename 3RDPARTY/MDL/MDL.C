@@ -49,7 +49,7 @@ GLuint MakeTextureFromSkin(int n, const mdl_model_t *mdl)
     int i;
   //GLuint id;
 
-    GLubyte *pixels = (GLubyte *)malloc(mdl->header.skinwidth * mdl->header.skinheight * 3);
+    uint8_t *pixels = (uint8_t *)malloc(mdl->header.skinwidth * mdl->header.skinheight * 3);
 
     /* Convert indexed 8 bits texture to RGB 24 bits */
     for(i = 0; i < mdl->header.skinwidth * mdl->header.skinheight; ++i)
@@ -81,7 +81,7 @@ int ReadMDLModel(const char *filename, mdl_model_t *mdl)
     ASSERT(fp, "error: couldn't open \"%s\"!\n", filename);
 
     /* Read header */
-    fread(&mdl->header, 1, sizeof (mdl_header_t), fp);
+    fread(&mdl->header, 1, sizeof(mdl_header_t), fp);
 
     if((mdl->header.ident != 1330660425) || (mdl->header.version != 6))
     {
@@ -101,10 +101,10 @@ int ReadMDLModel(const char *filename, mdl_model_t *mdl)
     /* Read texture data */
     for(i = 0; i < mdl->header.num_skins; ++i)
     {
-        mdl->skins[i].data = (GLubyte *)malloc(sizeof(GLubyte) * mdl->header.skinwidth * mdl->header.skinheight);
+        mdl->skins[i].data = (uint8_t *)malloc(sizeof(uint8_t) * mdl->header.skinwidth * mdl->header.skinheight);
 
-        fread(&mdl->skins[i].group, sizeof (int), 1, fp);
-        fread(mdl->skins[i].data, sizeof(GLubyte), mdl->header.skinwidth * mdl->header.skinheight, fp);
+        fread(&mdl->skins[i].group, sizeof(int), 1, fp);
+        fread(mdl->skins[i].data, sizeof(uint8_t), mdl->header.skinwidth * mdl->header.skinheight, fp);
 
         mdl->tex_id[i] = MakeTextureFromSkin(i, mdl);
 
@@ -122,7 +122,7 @@ int ReadMDLModel(const char *filename, mdl_model_t *mdl)
         mdl->frames[i].frame.verts = (mdl_vertex_t *)malloc(sizeof(mdl_vertex_t) * mdl->header.num_verts);
 
         /* Read frame data */
-        fread(&mdl->frames[i].type, sizeof (int), 1, fp);
+        fread(&mdl->frames[i].type, sizeof(int), 1, fp);
         fread(&mdl->frames[i].frame.bboxmin, sizeof(mdl_vertex_t), 1, fp);
         fread(&mdl->frames[i].frame.bboxmax, sizeof(mdl_vertex_t), 1, fp);
         fread(mdl->frames[i].frame.name, sizeof(char), 16, fp);

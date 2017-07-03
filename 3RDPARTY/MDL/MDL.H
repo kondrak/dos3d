@@ -29,6 +29,8 @@
  *
  */
 
+#include <stdint.h>
+ 
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,7 +39,6 @@ extern "C" {
     typedef float vec3_t[3];
     typedef int GLuint;
     typedef float GLfloat;
-    typedef unsigned char GLubyte;
 
     /* MDL header */
     typedef struct 
@@ -67,7 +68,7 @@ extern "C" {
     typedef struct
     {
         int group;      /* 0 = single, 1 = group */
-        GLubyte *data;  /* texture data */
+        uint8_t *data;  /* texture data */
     } mdl_skin_t;
 
     /* Texture coords */
