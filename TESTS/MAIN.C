@@ -11,6 +11,7 @@
 #include "tests/cube.h"
 #include "tests/fpp.h"
 #include "tests/linedraw.h"
+#include "tests/mdltest.h"
 #include "tests/project.h"
 #include "tests/rtargets.h"
 #include "tests/texmap.h"
@@ -26,8 +27,9 @@ void printMenu()
     printf("4. Render targets\n");
     printf("5. Texture mapping\n");
     printf("6. Rotating cube\n");
-    printf("7. First person WASD camera\n");
-    printf("8. Test 3D scene\n");
+    printf("7. Test 3D scene\n");
+    printf("8. MDL rendering\n");
+    printf("9. First person WASD camera\n");
     printf("\nq. Exit!\n");
     printf("\nInput:\n");
 }
@@ -85,13 +87,19 @@ int main(int argc, char **argv)
             if(keysPressed[KEY_7])
             {
                 gfx_setMode(0x13);
-                testFirstPerson();
+                test3DScene();
                 demoFinished = 1;
             }
             if(keysPressed[KEY_8])
             {
                 gfx_setMode(0x13);
-                test3DScene();
+                testMdl();
+                demoFinished = 1;
+            }
+            if(keysPressed[KEY_9])
+            {
+                gfx_setMode(0x13);
+                testFirstPerson();
                 demoFinished = 1;
             }
             if(keysPressed[KEY_Q])
