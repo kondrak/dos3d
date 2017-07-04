@@ -28,6 +28,7 @@
  */
 
 #include "mdl.h"
+#include "src/triangle.h"
 #include "src/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,17 +39,12 @@
 /* Palette */
 #include "colormap.h"
 
-/*** An MDL model ***/
-mdl_model_t mdlfile;
-
 /**
  * Make a texture given a skin index 'n'.
  */
-GLuint MakeTextureFromSkin(int n, const mdl_model_t *mdl)
+uint8_t *MakeTextureFromSkin(int n, const mdl_model_t *mdl)
 {
     int i;
-  //GLuint id;
-
     uint8_t *pixels = (uint8_t *)malloc(mdl->header.skinwidth * mdl->header.skinheight * 3);
 
     /* Convert indexed 8 bits texture to RGB 24 bits */
@@ -59,11 +55,7 @@ GLuint MakeTextureFromSkin(int n, const mdl_model_t *mdl)
         pixels[(i * 3) + 2] = colormap[mdl->skins[n].data[i]][2];
     }
 
-    /* Generate OpenGL texture */
-
-    /* OpenGL has its own copy of image data */
-    free(pixels);
-    return 0; //return id;
+    return pixels;
 }
 
 /**
@@ -95,7 +87,7 @@ int ReadMDLModel(const char *filename, mdl_model_t *mdl)
     mdl->texcoords = (mdl_texcoord_t *)malloc(sizeof(mdl_texcoord_t) * mdl->header.num_verts);
     mdl->triangles = (mdl_triangle_t *)malloc(sizeof(mdl_triangle_t) * mdl->header.num_tris);
     mdl->frames = (mdl_frame_t *)malloc(sizeof(mdl_frame_t) * mdl->header.num_frames);
-    mdl->tex_id = (GLuint *)malloc(sizeof(GLuint) * mdl->header.num_skins);
+    mdl->skinTextures = (uint8_t **)malloc(sizeof(uint8_t *) * mdl->header.num_skins);
     mdl->iskin = 0;
 
     /* Read texture data */
@@ -106,7 +98,7 @@ int ReadMDLModel(const char *filename, mdl_model_t *mdl)
         fread(&mdl->skins[i].group, sizeof(int), 1, fp);
         fread(mdl->skins[i].data, sizeof(uint8_t), mdl->header.skinwidth * mdl->header.skinheight, fp);
 
-        mdl->tex_id[i] = MakeTextureFromSkin(i, mdl);
+        mdl->skinTextures[i] = MakeTextureFromSkin(i, mdl);
 
         free(mdl->skins[i].data);
         mdl->skins[i].data = NULL;
@@ -158,10 +150,16 @@ void FreeModel(mdl_model_t *mdl)
         mdl->triangles = NULL;
     }
 
-    if(mdl->tex_id)
+    if(mdl->skinTextures)
     {
-        free(mdl->tex_id);
-        mdl->tex_id = NULL;
+        int i = 0;
+        for(i = 0; i < mdl->header.num_skins; ++i)
+        {
+            free(mdl->skinTextures[i]);
+            mdl->skinTextures[i] = NULL;
+        }
+        free(mdl->skinTextures);
+        mdl->skinTextures = NULL;
     }
 
     if(mdl->frames)
@@ -180,24 +178,22 @@ void FreeModel(mdl_model_t *mdl)
 /**
  * Render the model at frame n.
  */
-void RenderFrame(int n, const mdl_model_t *mdl)
+void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
 {
     int i, j;
     float s, t;
-    vec3_t v;
     mdl_vertex_t *pvert;
 
     /* Check if n is in a valid range */
     if((n < 0) || (n > mdl->header.num_frames - 1))
         return;
 
-  /* Enable model's texture */
-  //glBindTexture (GL_TEXTURE_2D, mdl->tex_id[mdl->iskin]);
-
-    /* Draw the model */
-    /* Draw each triangle */
+    /* Draw each model triangle */
     for(i = 0; i < mdl->header.num_tris; ++i)
     {
+        gfx_Triangle mdlTriangle;
+        mdlTriangle.color = 3;
+        mdlTriangle.texture = NULL;
         /* Draw each vertex */
         for(j = 0; j < 3; ++j)
         {
@@ -214,22 +210,20 @@ void RenderFrame(int n, const mdl_model_t *mdl)
             }
 
             /* Scale s and t to range from 0.0 to 1.0 */
-            s = (s + 0.5) / mdl->header.skinwidth;
-            t = (t + 0.5) / mdl->header.skinheight;
+            mdlTriangle.vertices[j].uv.u = (s + 0.5) / mdl->header.skinwidth;
+            mdlTriangle.vertices[j].uv.v = (t + 0.5) / mdl->header.skinheight;
 
-        /* Pass texture coordinates to OpenGL */
-        //glTexCoord2f (s, t);
-
-        /* Normal vector */
-        //glNormal3fv (anorms_table[pvert->normalIndex]);
+            /* Normal vector */
+            //glNormal3fv (anorms_table[pvert->normalIndex]);
 
             /* Calculate real vertex position */
-            v[0] = (mdl->header.scale[0] * pvert->v[0]) + mdl->header.translate[0];
-            v[1] = (mdl->header.scale[1] * pvert->v[1]) + mdl->header.translate[1];
-            v[2] = (mdl->header.scale[2] * pvert->v[2]) + mdl->header.translate[2];
-
-        //glVertex3fv (v);
+            mdlTriangle.vertices[j].position.x = (mdl->header.scale[0] * pvert->v[0]) + mdl->header.translate[0];
+            mdlTriangle.vertices[j].position.y = (mdl->header.scale[1] * pvert->v[1]) + mdl->header.translate[1];
+            mdlTriangle.vertices[j].position.z = (mdl->header.scale[2] * pvert->v[2]) + mdl->header.translate[2];
+            mdlTriangle.vertices[j].position.w = 1.0;
         }
+
+        gfx_drawTriangle(&mdlTriangle, matrix, buffer);
     }
 }
 
@@ -320,16 +314,4 @@ void Animate(int start, int end, int *frame, float *interp)
         if(*frame >= end)
             *frame = start;
     }
-}
-
-void init(const char *filename)
-{
-    /* Load MDL model file */
-    if(!ReadMDLModel (filename, &mdlfile))
-        exit(EXIT_FAILURE);
-}
-
-void cleanup()
-{
-    FreeModel(&mdlfile);
 }

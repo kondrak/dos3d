@@ -29,6 +29,7 @@
  *
  */
 
+#include "src/graphics.h"
 #include <stdint.h>
  
 #ifdef __cplusplus
@@ -37,7 +38,6 @@ extern "C" {
 
     /* Vector */
     typedef float vec3_t[3];
-    typedef int GLuint;
 
     /* MDL header */
     typedef struct 
@@ -119,16 +119,15 @@ extern "C" {
         mdl_triangle_t *triangles;
         mdl_frame_t    *frames;
 
-        GLuint *tex_id;
+        uint8_t **skinTextures;
         int iskin;
     } mdl_model_t;
 
-    // Make a texture given a skin index 'n'.
-    GLuint MakeTextureFromSkin(int n, const mdl_model_t *mdl);
+
     int ReadMDLModel(const char *filename, mdl_model_t *mdl);
     void FreeModel (mdl_model_t *mdl);
     // Render the model at frame n.
-    void RenderFrame(int n, const mdl_model_t *mdl);
+    void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
 
     /**
     * Render the model with interpolation between frame n and n+1.
@@ -142,9 +141,6 @@ extern "C" {
     * interp will be reseted to 0.0 if the next frame is reached.
     */
     void Animate(int start, int end, int *frame, float *interp);
-
-    void init(const char *filename);
-    void cleanup();
     void reshape(int w, int h);
     void display();
 
