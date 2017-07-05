@@ -44,21 +44,13 @@
  */
 gfx_Bitmap MakeTextureFromSkin(int n, const mdl_model_t *mdl)
 {
-    int i;
     gfx_Bitmap texture;
-    texture.data = (uint8_t *)malloc(mdl->header.skinwidth * mdl->header.skinheight * 3);
-
-    /* Convert indexed 8 bits texture to RGB 24 bits */
-    for(i = 0; i < mdl->header.skinwidth * mdl->header.skinheight; ++i)
-    {
-        texture.data[(i * 3) + 0] = colormap[mdl->skins[n].data[i]][0];
-        texture.data[(i * 3) + 1] = colormap[mdl->skins[n].data[i]][1];
-        texture.data[(i * 3) + 2] = colormap[mdl->skins[n].data[i]][2];
-    }
-
     texture.width  = mdl->header.skinwidth;
     texture.height = mdl->header.skinheight;
+    texture.data   = (uint8_t *)malloc(sizeof(uint8_t) * mdl->header.skinwidth * mdl->header.skinheight);
+
     memcpy(texture.palette, colormap, sizeof(uint8_t)*256*3);
+    memcpy(texture.data, mdl->skins[n].data, sizeof(uint8_t) * mdl->header.skinwidth * mdl->header.skinheight);
 
     return texture;
 }
@@ -196,7 +188,8 @@ void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_d
     {
         gfx_Triangle mdlTriangle;
         mdlTriangle.color = 3;
-        mdlTriangle.texture = NULL;
+        mdlTriangle.texture = &mdl->skinTextures[mdl->iskin];
+
         /* Draw each vertex */
         for(j = 0; j < 3; ++j)
         {
