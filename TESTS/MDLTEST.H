@@ -23,7 +23,7 @@ void testMdl()
     ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
     ReadMDLModel("images/shambler.mdl", &mdl);
     buffer.drawOpts.drawMode = DM_WIREFRAME;
-    buffer.drawOpts.depthFunc = DF_ALWAYS;
+    buffer.drawOpts.depthFunc = DF_LESS;
     buffer.drawOpts.cullMode = FC_BACK;
 
     // setup 1ms timer interrupt
@@ -54,7 +54,7 @@ void testMdl()
 
 
         // clear buffers and render model!
-        gfx_clrBuffer(&buffer, DB_COLOR);
+        gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
         RenderFrame(i, &mdl, &modelViewProj, &buffer);
         gfx_updateScreen(&buffer);
         gfx_vSync();
