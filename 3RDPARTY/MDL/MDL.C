@@ -52,6 +52,9 @@ gfx_Bitmap MakeTextureFromSkin(int n, const mdl_model_t *mdl)
     memcpy(texture.palette, colormap, sizeof(uint8_t)*256*3);
     memcpy(texture.data, mdl->skins[n].data, sizeof(uint8_t) * mdl->header.skinwidth * mdl->header.skinheight);
 
+    // renderer currently supports only square textures, so resize it properly
+    texture = gfx_resizeBitmap(&texture, MAX(mdl->header.skinwidth, mdl->header.skinheight), 
+                                         MAX(mdl->header.skinwidth, mdl->header.skinheight));
     return texture;
 }
 
