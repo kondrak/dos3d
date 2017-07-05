@@ -40,6 +40,8 @@ void testMdl()
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
 
+    gfx_setPalette(mdl.skinTextures[0].palette);
+
     do
     {
         now = tmr_getMs();

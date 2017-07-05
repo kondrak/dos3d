@@ -42,20 +42,25 @@
 /**
  * Make a texture given a skin index 'n'.
  */
-uint8_t *MakeTextureFromSkin(int n, const mdl_model_t *mdl)
+gfx_Bitmap MakeTextureFromSkin(int n, const mdl_model_t *mdl)
 {
     int i;
-    uint8_t *pixels = (uint8_t *)malloc(mdl->header.skinwidth * mdl->header.skinheight * 3);
+    gfx_Bitmap texture;
+    texture.data = (uint8_t *)malloc(mdl->header.skinwidth * mdl->header.skinheight * 3);
 
     /* Convert indexed 8 bits texture to RGB 24 bits */
     for(i = 0; i < mdl->header.skinwidth * mdl->header.skinheight; ++i)
     {
-        pixels[(i * 3) + 0] = colormap[mdl->skins[n].data[i]][0];
-        pixels[(i * 3) + 1] = colormap[mdl->skins[n].data[i]][1];
-        pixels[(i * 3) + 2] = colormap[mdl->skins[n].data[i]][2];
+        texture.data[(i * 3) + 0] = colormap[mdl->skins[n].data[i]][0];
+        texture.data[(i * 3) + 1] = colormap[mdl->skins[n].data[i]][1];
+        texture.data[(i * 3) + 2] = colormap[mdl->skins[n].data[i]][2];
     }
 
-    return pixels;
+    texture.width  = mdl->header.skinwidth;
+    texture.height = mdl->header.skinheight;
+    memcpy(texture.palette, colormap, sizeof(uint8_t)*256*3);
+
+    return texture;
 }
 
 /**
@@ -87,7 +92,7 @@ int ReadMDLModel(const char *filename, mdl_model_t *mdl)
     mdl->texcoords = (mdl_texcoord_t *)malloc(sizeof(mdl_texcoord_t) * mdl->header.num_verts);
     mdl->triangles = (mdl_triangle_t *)malloc(sizeof(mdl_triangle_t) * mdl->header.num_tris);
     mdl->frames = (mdl_frame_t *)malloc(sizeof(mdl_frame_t) * mdl->header.num_frames);
-    mdl->skinTextures = (uint8_t **)malloc(sizeof(uint8_t *) * mdl->header.num_skins);
+    mdl->skinTextures = (gfx_Bitmap *)malloc(sizeof(gfx_Bitmap) * mdl->header.num_skins);
     mdl->iskin = 0;
 
     /* Read texture data */
@@ -154,10 +159,8 @@ void FreeModel(mdl_model_t *mdl)
     {
         int i = 0;
         for(i = 0; i < mdl->header.num_skins; ++i)
-        {
-            free(mdl->skinTextures[i]);
-            mdl->skinTextures[i] = NULL;
-        }
+            gfx_freeBitmap(&mdl->skinTextures[i]);
+
         free(mdl->skinTextures);
         mdl->skinTextures = NULL;
     }

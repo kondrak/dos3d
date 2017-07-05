@@ -29,6 +29,7 @@
  *
  */
 
+#include "src/bitmap.h"
 #include "src/graphics.h"
 #include <stdint.h>
  
@@ -119,7 +120,7 @@ extern "C" {
         mdl_triangle_t *triangles;
         mdl_frame_t    *frames;
 
-        uint8_t **skinTextures;
+        gfx_Bitmap     *skinTextures;
         int iskin;
     } mdl_model_t;
 
@@ -141,8 +142,6 @@ extern "C" {
     * interp will be reseted to 0.0 if the next frame is reached.
     */
     void Animate(int start, int end, int *frame, float *interp);
-    void reshape(int w, int h);
-    void display();
 
 #ifdef __cplusplus
 }
