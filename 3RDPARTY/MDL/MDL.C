@@ -190,7 +190,7 @@ void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_d
     for(i = 0; i < mdl->header.num_tris; ++i)
     {
         gfx_Triangle mdlTriangle;
-        mdlTriangle.color = 3;
+        mdlTriangle.color = 12;
         mdlTriangle.texture = &mdl->skinTextures[mdl->iskin];
 
         /* Draw each vertex */
