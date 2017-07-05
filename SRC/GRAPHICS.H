@@ -130,8 +130,11 @@ extern "C" {
     // fast copy buffer contents straight to VGA memory - buffer must be the same size as VGA screen buffer
     void gfx_updateScreen(gfx_drawBuffer *buffer);
 
-    // set current VGA palette
+    // set current VGA palette (standard VGA 6 bits per channel)
     void gfx_setPalette(const uint8_t *palette);
+
+    // set current VGA palette (8 bits per channel)
+    void gfx_setPalette8(const uint8_t *palette);
 
     // read current VGA palette
     void gfx_getPalette(uint8_t *outPalette);
