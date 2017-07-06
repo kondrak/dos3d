@@ -44,6 +44,7 @@ void testMdl()
     int drawMode = HALF_WIREFRAME;
     int freezeFrame = 0;
     int frameTimeSkew = 25;
+    int mdlAnimated = 0;
     float frameLerp = 0.f;
     float t = 0.f;
     gfx_Camera cam;
@@ -70,6 +71,7 @@ void testMdl()
     wireFrameBuffer.drawOpts.drawMode = DM_WIREFRAME;
     wireFrameBuffer.drawOpts.cullMode = FC_BACK;
     endFrame = mdl.header.num_frames;
+    mdlAnimated = mdl.header.num_frames > 1;
     // setup 1ms timer interrupt
     tmr_start();
 
@@ -92,8 +94,11 @@ void testMdl()
         t += 0.0005f * dt;
 
         // animate model frames
-        frameLerp += 0.0005f * dt * frameTimeSkew;
-        mdl_animate(startFrame, endFrame-1, &frameNum, &frameLerp);
+        if(mdlAnimated)
+        {
+            frameLerp += 0.0005f * dt * frameTimeSkew;
+            mdl_animate(startFrame, endFrame-1, &frameNum, &frameLerp);
+        }
 
         // circular rotation around the model
         modelMatrix.m[12] = ROUND(120 * sin(t));
