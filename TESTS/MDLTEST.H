@@ -197,8 +197,8 @@ void testMdl()
                 mdl_renderFrame(frameNum, &mdl, &modelViewProj, &fullBuffer);
         }
 
-        utl_printf(&fullBuffer, 0, 1, 15, 0, "[F]rame: %03d/%03d @ %dx [+/-]", frameNum+1, mdl.header.num_frames, frameTimeSkew);
-        utl_printf(&fullBuffer, 0, 10, 15, 0, "[A]nim : %s", animNames[currAnim]);
+        utl_printf(&fullBuffer, 0, 1, 15, 0, "Frame : %03d/%03d @ %dx [+/-]", frameNum+1, mdl.header.num_frames, frameTimeSkew);
+        utl_printf(&fullBuffer, 0, 10, 15, 0, "[A]nim: %s", animNames[currAnim]);
 
         gfx_updateScreen(&fullBuffer);
         gfx_vSync();
