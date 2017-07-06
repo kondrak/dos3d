@@ -33,19 +33,19 @@ void testMdl()
     const char *animNames[NUM_ANIMS+1] = { "Idle", "Walk", "Run", "Attack1", 
                                            "Attack2", "Attack3", "Thunderbolt", 
                                            "Hit", "Dead", "Cycle" };
-    const int animFrames[NUM_ANIMS][2] = {   {0, 17}, {18, 29}, {30, 35}, 
+    const int animFrames[NUM_ANIMS][2] = {   {0, 16}, {17, 29}, {30, 35}, 
                                             {36, 47}, {48, 58}, {59, 65},
                                             {66, 74}, {75, 82}, {83, 94} };
+    const uint16_t *keysPressed;
     uint32_t dt, now, last = 0;
     int freezeFlipped = 0, drawModeFlipped = 0, animFlipped = 0;
     int frameNum = 0, startFrame = 0, endFrame;
-    int frameDurationMs = 75;
     int currAnim = NUM_ANIMS;
     int drawMode = HALF_WIREFRAME;
     int freezeFrame = 0;
-    uint32_t frameTimer = 0;
-    float rotTime = 0.f;
-    const uint16_t *keysPressed;
+    int frameTimeSkew = 25;
+    float frameLerp = 0.f;
+    float t = 0.f;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     mth_Matrix4 modelMatrix;
@@ -62,7 +62,7 @@ void testMdl()
     ALLOC_DRAWBUFFER(wireFrameBuffer, SCREEN_WIDTH >> 1, SCREEN_HEIGHT, DB_COLOR);
     ASSERT(DRAWBUFFER_VALID(wireFrameBuffer, DB_COLOR), "Out of memory!\n");
 
-    ReadMDLModel("images/shambler.mdl", &mdl);
+    mdl_load("images/shambler.mdl", &mdl);
     fullBuffer.drawOpts.depthFunc = DF_LESS;
     fullBuffer.drawOpts.cullMode  = FC_BACK;
     halfBuffer.drawOpts.depthFunc = DF_LESS;
@@ -89,12 +89,15 @@ void testMdl()
         now = tmr_getMs();
         dt  = now - last;
         keysPressed = kbd_getInput();
-        frameTimer += dt;
-        rotTime    += 0.0005f * dt;
+        t += 0.0005f * dt;
+
+        // animate model frames
+        frameLerp += 0.0005f * dt * frameTimeSkew;
+        mdl_animate(startFrame, endFrame-1, &frameNum, &frameLerp);
 
         // circular rotation around the model
-        modelMatrix.m[12] = ROUND(120 * sin(rotTime));
-        modelMatrix.m[13] = ROUND(120 * cos(rotTime));
+        modelMatrix.m[12] = ROUND(120 * sin(t));
+        modelMatrix.m[13] = ROUND(120 * cos(t));
         cam.target.x = modelMatrix.m[12];
         cam.target.y = modelMatrix.m[13];
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
@@ -135,6 +138,7 @@ void testMdl()
             }
 
             frameNum = startFrame;
+            frameLerp = 0.f;
             animFlipped = 1;
         }
         else if(!keysPressed[KEY_A]) animFlipped = 0;
@@ -148,12 +152,12 @@ void testMdl()
 
         if(keysPressed[KEY_PLUS])
         {
-            frameDurationMs += frameDurationMs == 250 ? 0 : 1;
+            frameTimeSkew += frameTimeSkew >= 100 ? 0 : 1;
         }
 
         if(keysPressed[KEY_MINUS])
         {
-            frameDurationMs -= frameDurationMs == 1 ? 0 : 1;
+            frameTimeSkew -= frameTimeSkew <= 1 ? 0 : 1;
         }
 
         // clear buffers and render!
@@ -162,8 +166,8 @@ void testMdl()
             gfx_clrBufferColor(&wireFrameBuffer, 2);
             gfx_clrBufferColor(&halfBuffer, 3);
             gfx_clrBuffer(&halfBuffer, DB_DEPTH);
-            RenderFrame(frameNum, &mdl, &modelViewProj, &halfBuffer);
-            RenderFrame(frameNum, &mdl, &modelViewProj, &wireFrameBuffer);
+            mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &halfBuffer);
+            mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &wireFrameBuffer);
 
             gfx_blitBuffer(0, 0, &halfBuffer, &fullBuffer);
             gfx_blitBuffer(SCREEN_WIDTH >> 1, 0, &wireFrameBuffer, &fullBuffer);
@@ -172,29 +176,20 @@ void testMdl()
         {
             gfx_clrBufferColor(&fullBuffer, 3);
             gfx_clrBuffer(&fullBuffer, DB_DEPTH);
-            RenderFrame(frameNum, &mdl, &modelViewProj, &fullBuffer);
+            mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &fullBuffer);
         }
 
-        utl_printf(&fullBuffer, 0, 1, 0xE, 0, "[F]rame: %03d/%03d @ %dms [+/-]", frameNum+1, mdl.header.num_frames, frameDurationMs);
-        utl_printf(&fullBuffer, 0, 10, 0xE, 0, "[A]nim : %s", animNames[currAnim]);
+        utl_printf(&fullBuffer, 0, 1, 15, 0, "[F]rame: %03d/%03d @ %dx [+/-]", frameNum+1, mdl.header.num_frames, frameTimeSkew);
+        utl_printf(&fullBuffer, 0, 10, 15, 0, "[A]nim : %s", animNames[currAnim]);
+
         gfx_updateScreen(&fullBuffer);
         gfx_vSync();
+
         last = now;
-
-        if(frameTimer > frameDurationMs)
-        {
-            if(!freezeFrame)
-                frameNum++;
-
-            frameTimer = 0;
-        }
-
-        if(frameNum >= mdl.header.num_frames || frameNum >= endFrame)
-            frameNum = startFrame;
     } while(!keysPressed[KEY_ESC]);
 
     tmr_finish();
-    FreeModel(&mdl);
+    mdl_free(&mdl);
     FREE_DRAWBUFFER(fullBuffer);
     FREE_DRAWBUFFER(halfBuffer);
     FREE_DRAWBUFFER(wireFrameBuffer);

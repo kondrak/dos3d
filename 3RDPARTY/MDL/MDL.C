@@ -64,7 +64,7 @@ gfx_Bitmap MakeTextureFromSkin(int n, const mdl_model_t *mdl)
  * Note: MDL format stores model's data in little-endian ordering.  On
  * big-endian machines, you'll have to perform proper conversions.
  */
-int ReadMDLModel(const char *filename, mdl_model_t *mdl)
+void mdl_load(const char *filename, mdl_model_t *mdl)
 {
     FILE *fp;
     int i;
@@ -122,13 +122,12 @@ int ReadMDLModel(const char *filename, mdl_model_t *mdl)
     }
 
     fclose(fp);
-    return 1;
 }
 
 /**
  * Free resources allocated for the model.
  */
-void FreeModel(mdl_model_t *mdl)
+void mdl_free(mdl_model_t *mdl)
 {
     int i;
 
@@ -176,7 +175,7 @@ void FreeModel(mdl_model_t *mdl)
 /**
  * Render the model at frame n.
  */
-void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
+void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
 {
     int i, j;
     float s, t;
@@ -186,7 +185,7 @@ void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_d
     if((n < 0) || (n > mdl->header.num_frames - 1))
         return;
 
-    /* Draw each model triangle */
+    /* Draw all model triangles */
     for(i = 0; i < mdl->header.num_tris; ++i)
     {
         gfx_Triangle mdlTriangle;
@@ -212,9 +211,6 @@ void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_d
             mdlTriangle.vertices[j].uv.u = (s + 0.5) / mdl->header.skinwidth;
             mdlTriangle.vertices[j].uv.v = (t + 0.5) / mdl->header.skinheight;
 
-            /* Normal vector */
-            //glNormal3fv (anorms_table[pvert->normalIndex]);
-
             /* Calculate real vertex position */
             mdlTriangle.vertices[j].position.x = (mdl->header.scale[0] * pvert->v[0]) + mdl->header.translate[0];
             mdlTriangle.vertices[j].position.y = (mdl->header.scale[1] * pvert->v[1]) + mdl->header.translate[1];
@@ -230,24 +226,23 @@ void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_d
  * Render the model with interpolation between frame n and n+1.
  * interp is the interpolation percent. (from 0.0 to 1.0)
  */
-void RenderFrameItp(int n, float interp, const mdl_model_t *mdl)
+void mdl_renderFrameLerp(int n, float interp, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
 {
     int i, j;
     float s, t;
-    vec3_t norm, v;
-    float *n_curr, *n_next;
     mdl_vertex_t *pvert1, *pvert2;
 
     /* Check if n is in a valid range */
     if((n < 0) || (n > mdl->header.num_frames))
         return;
 
-  /* Enable model's texture */
-
-    /* Draw the model */
-    /* Draw each triangle */
+    /* Draw all model triangles */
     for(i = 0; i < mdl->header.num_tris; ++i)
     {
+        gfx_Triangle mdlTriangle;
+        mdlTriangle.color = 12;
+        mdlTriangle.texture = &mdl->skinTextures[mdl->iskin];
+
         /* Draw each vertex */
         for(j = 0; j < 3; ++j)
         {
@@ -265,32 +260,20 @@ void RenderFrameItp(int n, float interp, const mdl_model_t *mdl)
             }
 
             /* Scale s and t to range from 0.0 to 1.0 */
-            s = (s + 0.5) / mdl->header.skinwidth;
-            t = (t + 0.5) / mdl->header.skinheight;
-
-        /* Pass texture coordinates to OpenGL */
-        //glTexCoord2f (s, t);
-
-            /* Interpolate normals */
-            n_curr = anorms_table[pvert1->normalIndex];
-            n_next = anorms_table[pvert2->normalIndex];
-
-            norm[0] = n_curr[0] + interp * (n_next[0] - n_curr[0]);
-            norm[1] = n_curr[1] + interp * (n_next[1] - n_curr[1]);
-            norm[2] = n_curr[2] + interp * (n_next[2] - n_curr[2]);
-
-        //glNormal3fv (norm);
+            mdlTriangle.vertices[j].uv.u = (s + 0.5) / mdl->header.skinwidth;
+            mdlTriangle.vertices[j].uv.v = (t + 0.5) / mdl->header.skinheight;
 
             /* Interpolate vertices */
-            v[0] = mdl->header.scale[0] * (pvert1->v[0] + interp
-            * (pvert2->v[0] - pvert1->v[0])) + mdl->header.translate[0];
-            v[1] = mdl->header.scale[1] * (pvert1->v[1] + interp
-            * (pvert2->v[1] - pvert1->v[1])) + mdl->header.translate[1];
-            v[2] = mdl->header.scale[2] * (pvert1->v[2] + interp
-            * (pvert2->v[2] - pvert1->v[2])) + mdl->header.translate[2];
-
-        //glVertex3fv (v);
+            mdlTriangle.vertices[j].position.x = mdl->header.scale[0] * (pvert1->v[0] + interp
+                                                * (pvert2->v[0] - pvert1->v[0])) + mdl->header.translate[0];
+            mdlTriangle.vertices[j].position.y = mdl->header.scale[1] * (pvert1->v[1] + interp
+                                                * (pvert2->v[1] - pvert1->v[1])) + mdl->header.translate[1];
+            mdlTriangle.vertices[j].position.z = mdl->header.scale[2] * (pvert1->v[2] + interp
+                                                * (pvert2->v[2] - pvert1->v[2])) + mdl->header.translate[2];
+            mdlTriangle.vertices[j].position.w = 1.0;
         }
+
+        gfx_drawTriangle(&mdlTriangle, matrix, buffer);
     }
 }
 
@@ -299,7 +282,7 @@ void RenderFrameItp(int n, float interp, const mdl_model_t *mdl)
  * 'start' and ending at frame 'end', given interpolation percent.
  * interp will be reseted to 0.0 if the next frame is reached.
  */
-void Animate(int start, int end, int *frame, float *interp)
+void mdl_animate(int start, int end, int *frame, float *interp)
 {
     if((*frame < start) || (*frame > end))
         *frame = start;

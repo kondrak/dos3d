@@ -125,23 +125,23 @@ extern "C" {
     } mdl_model_t;
 
 
-    int ReadMDLModel(const char *filename, mdl_model_t *mdl);
-    void FreeModel (mdl_model_t *mdl);
+    void mdl_load(const char *filename, mdl_model_t *mdl);
+    void mdl_free(mdl_model_t *mdl);
     // Render the model at frame n.
-    void RenderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
+    void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
 
     /**
     * Render the model with interpolation between frame n and n+1.
     * interp is the interpolation percent. (from 0.0 to 1.0)
     */
-    void RenderFrameItp(int n, float interp, const mdl_model_t *mdl);
+    void mdl_renderFrameLerp(int n, float interp, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
 
     /**
     * Calculate the current frame in animation beginning at frame
     * 'start' and ending at frame 'end', given interpolation percent.
     * interp will be reseted to 0.0 if the next frame is reached.
     */
-    void Animate(int start, int end, int *frame, float *interp);
+    void mdl_animate(int start, int end, int *frame, float *interp);
 
 #ifdef __cplusplus
 }
