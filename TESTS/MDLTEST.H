@@ -171,8 +171,17 @@ void testMdl()
             gfx_clrBufferColor(&wireFrameBuffer, 2);
             gfx_clrBufferColor(&halfBuffer, 3);
             gfx_clrBuffer(&halfBuffer, DB_DEPTH);
-            mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &halfBuffer);
-            mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &wireFrameBuffer);
+
+            if(mdlAnimated)
+            {
+                mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &halfBuffer);
+                mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &wireFrameBuffer);
+            }
+            else
+            {
+                mdl_renderFrame(frameNum, &mdl, &modelViewProj, &halfBuffer);
+                mdl_renderFrame(frameNum, &mdl, &modelViewProj, &wireFrameBuffer);
+            }
 
             gfx_blitBuffer(0, 0, &halfBuffer, &fullBuffer);
             gfx_blitBuffer(SCREEN_WIDTH >> 1, 0, &wireFrameBuffer, &fullBuffer);
@@ -181,7 +190,11 @@ void testMdl()
         {
             gfx_clrBufferColor(&fullBuffer, 3);
             gfx_clrBuffer(&fullBuffer, DB_DEPTH);
-            mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &fullBuffer);
+
+            if(mdlAnimated)
+                mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &fullBuffer);
+            else
+                mdl_renderFrame(frameNum, &mdl, &modelViewProj, &fullBuffer);
         }
 
         utl_printf(&fullBuffer, 0, 1, 15, 0, "[F]rame: %03d/%03d @ %dx [+/-]", frameNum+1, mdl.header.num_frames, frameTimeSkew);
