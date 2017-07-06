@@ -41,7 +41,9 @@ extern "C" {
         KEY_RIGHT = 77,
         KEY_SPACE = 57,
         KEY_DOWN  = 80,
-        KEY_PGDN  = 81
+        KEY_PGDN  = 81,
+        KEY_MINUS = 12,
+        KEY_PLUS  = 13
     };
 
         // returns an integer array with each bit representing a keypress, mapped to KeyCode enum
