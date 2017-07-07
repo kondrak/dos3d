@@ -80,7 +80,7 @@ void testRotatingCube()
     // setup the cube
     setupTexCube(&cube, &bmp);
 
-    // save default palette and generate grayscale for depth buffer rendering
+    // save default palette and generate pseudo-grayscale color set for depth buffer rendering
     gfx_getPalette(defaultPalette);
     for(i = 0; i < 768; i += 3)
     {
