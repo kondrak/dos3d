@@ -36,9 +36,11 @@ void testMdl()
     const int animFrames[NUM_ANIMS][2] = {   {0, 16}, {17, 29}, {30, 35}, 
                                             {36, 47}, {48, 58}, {59, 65},
                                             {66, 74}, {75, 82}, {83, 94} };
+    const int distFromModel = 120;
     const uint16_t *keysPressed;
     uint32_t dt, now, last = 0;
     int freezeFlipped = 0, drawModeFlipped = 0, animFlipped = 0;
+    int rotating = 1, rotFlipped = 0;
     int frameNum = 0, startFrame = 0, endFrame;
     int currAnim = NUM_ANIMS;
     int drawMode = HALF_WIREFRAME;
@@ -102,13 +104,16 @@ void testMdl()
         }
 
         // circular rotation around the model
-        modelMatrix.m[12] = ROUND(120 * sin(t));
-        modelMatrix.m[13] = ROUND(120 * cos(t));
-        cam.target.x = modelMatrix.m[12];
-        cam.target.y = modelMatrix.m[13];
-        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-        modelViewProj = mth_matMul(&cam.view, &cam.projection);
-        modelViewProj = mth_matMul(&modelMatrix, &modelViewProj);
+        if(rotating)
+        {
+            modelMatrix.m[12] = distFromModel * sin(t);
+            modelMatrix.m[13] = distFromModel * cos(t);
+            cam.target.x = modelMatrix.m[12];
+            cam.target.y = modelMatrix.m[13];
+            mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+            modelViewProj = mth_matMul(&cam.view, &cam.projection);
+            modelViewProj = mth_matMul(&modelMatrix, &modelViewProj);
+        }
 
         if(keysPressed[KEY_SPACE] && !drawModeFlipped)
         {
@@ -121,6 +126,7 @@ void testMdl()
             else
                 mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)fullBuffer.width / fullBuffer.height, 0.1f, 500.f);
 
+            modelViewProj = mth_matMul(&cam.view, &cam.projection);
             drawModeFlipped = 1;
         }
         else if(!keysPressed[KEY_SPACE]) drawModeFlipped = 0;
@@ -155,6 +161,28 @@ void testMdl()
             freezeFlipped = 1;
         }
         else if(!keysPressed[KEY_F]) freezeFlipped = 0;
+
+        if(keysPressed[KEY_R] && !rotFlipped)
+        {
+            rotating = !rotating;
+            
+            if(!rotating)
+            {
+                mth_matIdentity(&modelMatrix);
+                VEC4(cam.position, distFromModel, 0, 30);
+                VEC4(cam.target, -1, 0, 0);
+                mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+                modelViewProj = mth_matMul(&cam.view, &cam.projection);
+            }
+            else
+            {
+                t = 0.f;
+                VEC4(cam.position, 0, 0, 30);
+            }
+
+            rotFlipped = 1;
+        }
+        else if(!keysPressed[KEY_R]) rotFlipped = 0;
 
         if(keysPressed[KEY_PLUS])
         {
