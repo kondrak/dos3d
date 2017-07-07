@@ -34,15 +34,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Table of precalculated normals */
-#include "anorms.h"
-/* Palette */
+/* Table of precalculated normals (currently unused) */
+//#include "anorms.h"
+/* Quake Palette */
 #include "colormap.h"
 
-/**
- * Make a texture given a skin index 'n'.
- */
-gfx_Bitmap MakeTextureFromSkin(int n, const mdl_model_t *mdl)
+// internal: create a bitmap texture using n-th skin's image data
+static gfx_Bitmap bitmapFromSkin(int n, const mdl_model_t *mdl)
 {
     gfx_Bitmap texture;
     texture.width  = mdl->header.skinwidth;
@@ -86,7 +84,7 @@ void mdl_load(const char *filename, mdl_model_t *mdl)
     mdl->skins = (mdl_skin_t *)malloc(sizeof(mdl_skin_t) * mdl->header.num_skins);
     mdl->texcoords = (mdl_texcoord_t *)malloc(sizeof(mdl_texcoord_t) * mdl->header.num_verts);
     mdl->triangles = (mdl_triangle_t *)malloc(sizeof(mdl_triangle_t) * mdl->header.num_tris);
-    mdl->frames = (mdl_frame_t *)malloc(sizeof(mdl_frame_t) * mdl->header.num_frames);
+    mdl->frames       = (mdl_frame_t *)malloc(sizeof(mdl_frame_t) * mdl->header.num_frames);
     mdl->skinTextures = (gfx_Bitmap *)malloc(sizeof(gfx_Bitmap) * mdl->header.num_skins);
     mdl->iskin = 0;
 
@@ -98,14 +96,14 @@ void mdl_load(const char *filename, mdl_model_t *mdl)
         fread(&mdl->skins[i].group, sizeof(int), 1, fp);
         fread(mdl->skins[i].data, sizeof(uint8_t), mdl->header.skinwidth * mdl->header.skinheight, fp);
 
-        mdl->skinTextures[i] = MakeTextureFromSkin(i, mdl);
+        mdl->skinTextures[i] = bitmapFromSkin(i, mdl);
 
         free(mdl->skins[i].data);
         mdl->skins[i].data = NULL;
     }
 
     fread(mdl->texcoords, sizeof(mdl_texcoord_t), mdl->header.num_verts, fp);
-    fread(mdl->triangles, sizeof(mdl_triangle_t), mdl->header.num_tris, fp);
+    fread(mdl->triangles, sizeof(mdl_triangle_t), mdl->header.num_tris,  fp);
 
     /* Read frames */
     for(i = 0; i < mdl->header.num_frames; ++i)
@@ -124,9 +122,7 @@ void mdl_load(const char *filename, mdl_model_t *mdl)
     fclose(fp);
 }
 
-/**
- * Free resources allocated for the model.
- */
+/* ***** */
 void mdl_free(mdl_model_t *mdl)
 {
     int i;
@@ -172,9 +168,7 @@ void mdl_free(mdl_model_t *mdl)
     }
 }
 
-/**
- * Render the model at frame n.
- */
+/* ***** */
 void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
 {
     int i, j;
@@ -212,21 +206,18 @@ void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, g
             mdlTriangle.vertices[j].uv.v = (t + 0.5) / mdl->header.skinheight;
 
             /* Calculate real vertex position */
-            mdlTriangle.vertices[j].position.x = (mdl->header.scale[0] * pvert->v[0]) + mdl->header.translate[0];
-            mdlTriangle.vertices[j].position.y = (mdl->header.scale[1] * pvert->v[1]) + mdl->header.translate[1];
-            mdlTriangle.vertices[j].position.z = (mdl->header.scale[2] * pvert->v[2]) + mdl->header.translate[2];
-            mdlTriangle.vertices[j].position.w = 1.0;
+            VEC4(mdlTriangle.vertices[j].position,
+                 mdl->header.scale[0] * pvert->v[0] + mdl->header.translate[0],
+                 mdl->header.scale[1] * pvert->v[1] + mdl->header.translate[1],
+                 mdl->header.scale[2] * pvert->v[2] + mdl->header.translate[2]);
         }
 
         gfx_drawTriangle(&mdlTriangle, matrix, buffer);
     }
 }
 
-/**
- * Render the model with interpolation between frame n and n+1.
- * interp is the interpolation percent. (from 0.0 to 1.0)
- */
-void mdl_renderFrameLerp(int n, float interp, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
+/* ***** */
+void mdl_renderFrameLerp(int n, float r, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
 {
     int i, j;
     float s, t;
@@ -264,33 +255,26 @@ void mdl_renderFrameLerp(int n, float interp, const mdl_model_t *mdl, const mth_
             mdlTriangle.vertices[j].uv.v = (t + 0.5) / mdl->header.skinheight;
 
             /* Interpolate vertices */
-            mdlTriangle.vertices[j].position.x = mdl->header.scale[0] * (pvert1->v[0] + interp
-                                                * (pvert2->v[0] - pvert1->v[0])) + mdl->header.translate[0];
-            mdlTriangle.vertices[j].position.y = mdl->header.scale[1] * (pvert1->v[1] + interp
-                                                * (pvert2->v[1] - pvert1->v[1])) + mdl->header.translate[1];
-            mdlTriangle.vertices[j].position.z = mdl->header.scale[2] * (pvert1->v[2] + interp
-                                                * (pvert2->v[2] - pvert1->v[2])) + mdl->header.translate[2];
-            mdlTriangle.vertices[j].position.w = 1.0;
+            VEC4(mdlTriangle.vertices[j].position,
+                 mdl->header.scale[0] * (pvert1->v[0] + r * (pvert2->v[0] - pvert1->v[0])) + mdl->header.translate[0],
+                 mdl->header.scale[1] * (pvert1->v[1] + r * (pvert2->v[1] - pvert1->v[1])) + mdl->header.translate[1],
+                 mdl->header.scale[2] * (pvert1->v[2] + r * (pvert2->v[2] - pvert1->v[2])) + mdl->header.translate[2]);
         }
 
         gfx_drawTriangle(&mdlTriangle, matrix, buffer);
     }
 }
 
-/**
- * Calculate the current frame in animation beginning at frame
- * 'start' and ending at frame 'end', given interpolation percent.
- * interp will be reseted to 0.0 if the next frame is reached.
- */
-void mdl_animate(int start, int end, int *frame, float *interp)
+/* ***** */
+void mdl_animate(int start, int end, int *frame, float *r)
 {
     if((*frame < start) || (*frame > end))
         *frame = start;
 
-    if(*interp >= 1.0f)
+    if(*r >= 1.0f)
     {
         /* Move to next frame */
-        *interp = 0.0f;
+        *r = 0.0f;
         (*frame)++;
 
         if(*frame >= end)

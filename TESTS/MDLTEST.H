@@ -70,7 +70,8 @@ void testMdl()
     halfBuffer.drawOpts.cullMode  = FC_BACK;
     wireFrameBuffer.drawOpts.drawMode = DM_WIREFRAME;
     wireFrameBuffer.drawOpts.cullMode = FC_BACK;
-    endFrame = mdl.header.num_frames;
+
+    endFrame    = mdl.header.num_frames;
     mdlAnimated = mdl.header.num_frames > 1;
     // setup 1ms timer interrupt
     tmr_start();
