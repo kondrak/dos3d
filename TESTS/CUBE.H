@@ -80,7 +80,7 @@ void testRotatingCube()
     // setup the cube
     setupTexCube(&cube, &bmp);
 
-    // save default palette and generate grayscale for depth buffer rendering
+    // save default palette and generate pseudo-grayscale color set for depth buffer rendering
     gfx_getPalette(defaultPalette);
     for(i = 0; i < 768; i += 3)
     {
@@ -90,7 +90,7 @@ void testRotatingCube()
     }
     gfx_setPalette(bmp.palette);
 
-    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / (float)buffer.height, 0.1f, 500.f);
+    mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / buffer.height, 0.1f, 500.f);
     mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
     modelViewProj = mth_matMul(&cam.view, &cam.projection);
 

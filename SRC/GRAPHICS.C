@@ -197,6 +197,19 @@ void gfx_setPalette(const uint8_t *palette)
 }
 
 /* ***** */
+void gfx_setPalette8(const uint8_t *palette)
+{
+    int i;
+    outp(0x03c8, 0);
+
+    for(i = 0; i < 256*3; ++i)
+    {
+        // convert to 6 bits per channel value
+        outp(0x03c9, palette[i] >> 2);
+    }
+}
+
+/* ***** */
 void gfx_getPalette(uint8_t *outPalette)
 {
     int i;
