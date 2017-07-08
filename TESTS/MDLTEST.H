@@ -40,7 +40,7 @@ void testMdl()
     const uint16_t *keysPressed;
     uint32_t dt, now, last = 0;
     int freezeFlipped = 0, drawModeFlipped = 0, animFlipped = 0;
-    int rotating = 1, rotFlipped = 0;
+    int rotDir, rotating = 1, rotFlipped = 0;
     int frameNum = 0, startFrame = 0, endFrame;
     int currAnim = NUM_ANIMS;
     int drawMode = HALF_WIREFRAME;
@@ -48,6 +48,7 @@ void testMdl()
     int frameTimeSkew = 25;
     int mdlAnimated = 0;
     float frameLerp = 0.f;
+    float distScale = 1.f;
     float t = 0.f;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
@@ -94,7 +95,6 @@ void testMdl()
         now = tmr_getMs();
         dt  = now - last;
         keysPressed = kbd_getInput();
-        t += 0.0005f * dt;
 
         // animate model frames
         if(mdlAnimated)
@@ -104,16 +104,17 @@ void testMdl()
         }
 
         // circular rotation around the model
-        if(rotating)
-        {
-            modelMatrix.m[12] = distFromModel * sin(t);
-            modelMatrix.m[13] = distFromModel * cos(t);
-            cam.target.x = modelMatrix.m[12];
-            cam.target.y = modelMatrix.m[13];
-            mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-            modelViewProj = mth_matMul(&cam.view, &cam.projection);
-            modelViewProj = mth_matMul(&modelMatrix, &modelViewProj);
-        }
+        rotDir     = keysPressed[KEY_RIGHT] ? -4 : keysPressed[KEY_LEFT] ? 4 : 0;
+        distScale += keysPressed[KEY_UP] ? -0.1f : keysPressed[KEY_DOWN] ? 0.1f : 0.f;
+        t += 0.0005f * dt * (rotating + !rotating * rotDir);
+        modelMatrix.m[12] = distScale * distFromModel * sin(t);
+        modelMatrix.m[13] = distScale * distFromModel * cos(t);
+        cam.target.x = modelMatrix.m[12];
+        cam.target.y = modelMatrix.m[13];
+        mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+
+        modelViewProj = mth_matMul(&cam.view, &cam.projection);
+        modelViewProj = mth_matMul(&modelMatrix, &modelViewProj);
 
         if(keysPressed[KEY_SPACE] && !drawModeFlipped)
         {
@@ -126,7 +127,7 @@ void testMdl()
             else
                 mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)fullBuffer.width / fullBuffer.height, 0.1f, 500.f);
 
-            modelViewProj = mth_matMul(&cam.view, &cam.projection);
+            mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
             drawModeFlipped = 1;
         }
         else if(!keysPressed[KEY_SPACE]) drawModeFlipped = 0;
@@ -165,24 +166,23 @@ void testMdl()
         if(keysPressed[KEY_R] && !rotFlipped)
         {
             rotating = !rotating;
-            
-            if(!rotating)
-            {
-                mth_matIdentity(&modelMatrix);
-                VEC4(cam.position, distFromModel, 0, 30);
-                VEC4(cam.target, -1, 0, 0);
-                mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-                modelViewProj = mth_matMul(&cam.view, &cam.projection);
-            }
-            else
-            {
-                t = 0.f;
-                VEC4(cam.position, 0, 0, 30);
-            }
-
             rotFlipped = 1;
         }
         else if(!keysPressed[KEY_R]) rotFlipped = 0;
+
+        // freeze the model in the front-facing position
+        if(keysPressed[KEY_T])
+        {
+            mth_matIdentity(&modelMatrix);
+            VEC4(cam.position, distFromModel, 0, 30);
+            VEC4(cam.target, -1, 0, 0);
+            mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
+            modelViewProj = mth_matMul(&cam.view, &cam.projection);
+        }
+        else
+        {
+            VEC4(cam.position, 0, 0, 30);
+        }
 
         if(keysPressed[KEY_PLUS])
         {
@@ -191,7 +191,7 @@ void testMdl()
 
         if(keysPressed[KEY_MINUS])
         {
-            frameTimeSkew -= frameTimeSkew <= 1 ? 0 : 1;
+            frameTimeSkew -= frameTimeSkew <= 0 ? 0 : 1;
         }
 
         // clear buffers and render!
@@ -221,7 +221,7 @@ void testMdl()
             gfx_clrBuffer(&fullBuffer, DB_DEPTH);
 
             if(mdlAnimated)
-                mdl_renderFrameLerp(frameNum, frameLerp, &mdl, &modelViewProj, &fullBuffer);
+                mdl_renderFrameLerp(frameNum, frameLerp * (frameTimeSkew > 0 ? 1 : 0), &mdl, &modelViewProj, &fullBuffer);
             else
                 mdl_renderFrame(frameNum, &mdl, &modelViewProj, &fullBuffer);
         }
