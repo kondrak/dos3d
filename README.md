@@ -1,6 +1,6 @@
 Software renderer for DOS (mode 13h)
 ================
-This is a triangle based renderer which utilizes the neat property of mode 13h allowing the programmer to access video memory in the same way one would write to an array of bytes. It is also an attempt to provide working DOS code to the public, since finding it on the Internet is getting increasingly more difficult due to the system's age. The goal of this project is to translate "modern day graphics" to a now forgotten platform. As such, there's little to no DOS-specific assembly utilized and the rendering code can be fairly quickly ported to any contemporary operating system.
+This is a triangle based renderer which utilizes the neat property of mode 13h allowing the programmer to access video memory in the same way one would write to an array of bytes. It is also an attempt to provide working DOS code to the public, since finding it on the Internet is getting increasingly more difficult due to the system's age. The idea behind this project is to translate "modern day graphics" to a now forgotten platform. As such, there's little to no DOS-specific assembly utilized and the rendering code can be fairly quickly ported to any contemporary operating system.
 
 The project can be built out of the box using the [Open Watcom](http://www.openwatcom.org/) compiler. This was chosen, since Watcom comes with easy to use memory extender for DOS.
 
