@@ -46,7 +46,7 @@ extern "C" {
         KEY_PLUS  = 13
     };
 
-        // checks state of pressed/released keys
+        // updates state of pressed/released keys
         // returns an integer array with each entry representing a keypress, mapped to KeyCode enum
         const uint16_t *kbd_updateInput();
 
