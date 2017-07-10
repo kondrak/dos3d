@@ -70,7 +70,7 @@ static void drawChar(const int x, const int y, char c, const uint8_t fgCol, cons
             {
                 if(x + xOffset < buffWidth) 
                 {
-                   if (*currChar & bitMask) 
+                   if(*currChar & bitMask) 
                         gfx_drawPixel(x + xOffset, y + yOffset, fgCol, buffer);
                     else
                         gfx_drawPixel(x + xOffset, y + yOffset, bgCol, buffer);

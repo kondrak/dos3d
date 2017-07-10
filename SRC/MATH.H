@@ -120,7 +120,9 @@ extern "C" {
     // normalize quaternion q
     void mth_quatNormalize(mth_Quaternion *q);
 
-    /* vector<->quaternion operations */
+    /*
+     * vector<->quaternion operations
+     */
 
     // rotate vector using axis and angle
     void mth_rotateVecAxisAngle(mth_Vector4 *v, const float angle, const float x, const float y, const float z);
