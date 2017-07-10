@@ -46,13 +46,9 @@ void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
 void testRotatingCube()
 {
     uint32_t dt, now, last = 0;
-    const uint16_t *keysPressed;
     uint8_t defaultPalette[256*3], grayScalePalette[256*3];
     TexCube cube;
-    int i, texMapFlipped = 0, cullModeFlipped = 0, depthFuncFlipped = 0;
-    int wireFrameFlipped = 0, drawModeFlipped = 0, rotFlipped = 0;
-    int drawMode = TEX_CUBE;
-    int rotating = 1;
+    int i, rotating = 1, drawMode = TEX_CUBE;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/wood.bmp");
@@ -99,7 +95,7 @@ void testRotatingCube()
         int j, k;
         now = tmr_getMs();
         dt  = now - last;
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
 
         // auto-rotation of the cube
         if(rotating)
@@ -108,57 +104,34 @@ void testRotatingCube()
             ROTATE_CUBE(-0.001f, 0.f, 1.f, 0.f);
         }
 
-        if(keysPressed[KEY_RIGHT])
+        if(kbd_keyDown(KEY_RIGHT))
             ROTATE_CUBE(0.002f, 0.f, 1.f, 0.f);
 
-        if(keysPressed[KEY_LEFT])
+        if(kbd_keyDown(KEY_LEFT))
             ROTATE_CUBE(-0.002f, 0.f, 1.f, 0.f);
 
-        if(keysPressed[KEY_UP])
+        if(kbd_keyDown(KEY_UP))
             ROTATE_CUBE(0.002f, 1.f, 0.f, 0.f);
 
-        if(keysPressed[KEY_DOWN])
+        if(kbd_keyDown(KEY_DOWN))
             ROTATE_CUBE(-0.002f, 1.f, 0.f, 0.f);
 
-        if(keysPressed[KEY_T] && !texMapFlipped)
-        {
+        if(kbd_keyPressed(KEY_T))
             buffer.drawOpts.drawMode ^= (DM_PERSPECTIVE | DM_AFFINE);
-            texMapFlipped = 1;
-            
-        }
-        else if(!keysPressed[KEY_T]) texMapFlipped = 0;
 
-        if(keysPressed[KEY_W] && !wireFrameFlipped)
-        {
+        if(kbd_keyPressed(KEY_W))
             buffer.drawOpts.drawMode ^= DM_WIREFRAME;
-            wireFrameFlipped = 1;
-            
-        }
-        else if(!keysPressed[KEY_W]) wireFrameFlipped = 0;
 
-        if(keysPressed[KEY_C] && !cullModeFlipped)
-        {
+        if(kbd_keyPressed(KEY_C))
             buffer.drawOpts.cullMode = buffer.drawOpts.cullMode == FC_NONE ? FC_BACK : FC_NONE;
-            cullModeFlipped = 1;
-            
-        }
-        else if(!keysPressed[KEY_C]) cullModeFlipped = 0;
 
-        if(keysPressed[KEY_D] && !depthFuncFlipped && drawMode != DEPTH_VALUES)
-        {
+        if(kbd_keyPressed(KEY_D) && drawMode != DEPTH_VALUES)
             buffer.drawOpts.depthFunc = buffer.drawOpts.depthFunc == DF_ALWAYS ? DF_LESS : DF_ALWAYS;
-            depthFuncFlipped = 1;
-        }
-        else if(!keysPressed[KEY_D]) depthFuncFlipped = 0;
 
-        if(keysPressed[KEY_R] && !rotFlipped)
-        {
-            rotating = ~rotating + 2;
-            rotFlipped = 1;
-        }
-        else if(!keysPressed[KEY_R]) rotFlipped = 0;
+        if(kbd_keyPressed(KEY_R))
+            rotating = !rotating;
 
-        if(keysPressed[KEY_SPACE] && !drawModeFlipped)
+        if(kbd_keyPressed(KEY_SPACE))
         {
             drawMode++;
             if(drawMode == DRAWMODE_CNT)
@@ -181,10 +154,7 @@ void testRotatingCube()
                 gfx_setPalette(defaultPalette);
                 buffer.drawOpts.drawMode |= DM_FLAT;
             }
-
-            drawModeFlipped = 1;
         }
-        else if(!keysPressed[KEY_SPACE]) drawModeFlipped = 0;
 
         // clear screen and render the cube!
         gfx_clrBuffer(&buffer, DB_COLOR | DB_DEPTH);
@@ -220,7 +190,7 @@ void testRotatingCube()
         gfx_vSync();
 
         last = now;
-    } while(!keysPressed[KEY_ESC]);
+    } while(!kbd_keyPressed(KEY_ESC));
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

@@ -8,7 +8,6 @@ void testRenderTargets()
 {
     int i;
     uint32_t dt, now, last = 0;
-    const uint16_t *keysPressed;
     gfx_Triangle triangle;
     gfx_Camera cam;
     mth_Matrix4 model;
@@ -48,7 +47,7 @@ void testRenderTargets()
     {
         now = tmr_getMs();
         dt  =  now - last;
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
 
         for(i = 0; i < 3; ++i)
         {
@@ -72,7 +71,7 @@ void testRenderTargets()
         gfx_vSync();
 
         last = now;
-    } while(!keysPressed[KEY_ESC]);
+    } while(!kbd_keyPressed(KEY_ESC));
 
     tmr_finish();
 

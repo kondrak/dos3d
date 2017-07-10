@@ -37,10 +37,8 @@ void testMdl()
                                             {36, 47}, {48, 58}, {59, 65},
                                             {66, 74}, {75, 82}, {83, 94} };
     const int distFromModel = 120;
-    const uint16_t *keysPressed;
     uint32_t dt, now, last = 0;
-    int freezeFlipped = 0, drawModeFlipped = 0, animFlipped = 0;
-    int rotDir, rotating = 1, rotFlipped = 0;
+    int rotDir, rotating = 1;
     int frameNum = 0, startFrame = 0, endFrame;
     int currAnim = NUM_ANIMS;
     int drawMode = HALF_WIREFRAME;
@@ -94,7 +92,7 @@ void testMdl()
     {
         now = tmr_getMs();
         dt  = now - last;
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
 
         // animate model frames
         if(mdlAnimated)
@@ -104,8 +102,8 @@ void testMdl()
         }
 
         // circular rotation around the model
-        rotDir     = keysPressed[KEY_RIGHT] ? -4 : keysPressed[KEY_LEFT] ? 4 : 0;
-        distScale += keysPressed[KEY_UP] ? -0.1f : keysPressed[KEY_DOWN] ? 0.1f : 0.f;
+        rotDir     = kbd_keyDown(KEY_RIGHT) ? -4 : kbd_keyDown(KEY_LEFT) ? 4 : 0;
+        distScale += kbd_keyDown(KEY_UP) ? -0.1f : kbd_keyDown(KEY_DOWN) ? 0.1f : 0.f;
         t += 0.0005f * dt * (rotating + !rotating * rotDir);
         modelMatrix.m[12] = distScale * distFromModel * sin(t);
         modelMatrix.m[13] = distScale * distFromModel * cos(t);
@@ -116,7 +114,7 @@ void testMdl()
         modelViewProj = mth_matMul(&cam.view, &cam.projection);
         modelViewProj = mth_matMul(&modelMatrix, &modelViewProj);
 
-        if(keysPressed[KEY_SPACE] && !drawModeFlipped)
+        if(kbd_keyPressed(KEY_SPACE))
         {
             drawMode++;
             if(drawMode == MDLDRAWMODE_CNT)
@@ -128,11 +126,9 @@ void testMdl()
                 mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)fullBuffer.width / fullBuffer.height, 0.1f, 500.f);
 
             mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
-            drawModeFlipped = 1;
         }
-        else if(!keysPressed[KEY_SPACE]) drawModeFlipped = 0;
 
-        if(keysPressed[KEY_A] && !animFlipped)
+        if(kbd_keyPressed(KEY_A))
         {
             if(currAnim == NUM_ANIMS)
                 currAnim = -1;
@@ -152,26 +148,16 @@ void testMdl()
 
             frameNum = startFrame;
             frameLerp = 0.f;
-            animFlipped = 1;
         }
-        else if(!keysPressed[KEY_A]) animFlipped = 0;
 
-        if(keysPressed[KEY_F] && !freezeFlipped)
-        {
+        if(kbd_keyPressed(KEY_F))
             freezeFrame = !freezeFrame;
-            freezeFlipped = 1;
-        }
-        else if(!keysPressed[KEY_F]) freezeFlipped = 0;
 
-        if(keysPressed[KEY_R] && !rotFlipped)
-        {
+        if(kbd_keyPressed(KEY_R))
             rotating = !rotating;
-            rotFlipped = 1;
-        }
-        else if(!keysPressed[KEY_R]) rotFlipped = 0;
 
         // freeze the model in the front-facing position
-        if(keysPressed[KEY_T])
+        if(kbd_keyDown(KEY_T))
         {
             mth_matIdentity(&modelMatrix);
             VEC4(cam.position, distFromModel, 0, 30);
@@ -184,15 +170,11 @@ void testMdl()
             VEC4(cam.position, 0, 0, 30);
         }
 
-        if(keysPressed[KEY_PLUS])
-        {
+        if(kbd_keyDown(KEY_PLUS))
             frameTimeSkew += frameTimeSkew >= 100 ? 0 : 1;
-        }
 
-        if(keysPressed[KEY_MINUS])
-        {
+        if(kbd_keyDown(KEY_MINUS))
             frameTimeSkew -= frameTimeSkew <= 0 ? 0 : 1;
-        }
 
         // clear buffers and render!
         if(drawMode == HALF_WIREFRAME)
@@ -233,7 +215,7 @@ void testMdl()
         gfx_vSync();
 
         last = now;
-    } while(!keysPressed[KEY_ESC]);
+    } while(!kbd_keyPressed(KEY_ESC));
 
     tmr_finish();
     mdl_free(&mdl);

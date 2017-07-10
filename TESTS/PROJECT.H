@@ -9,10 +9,8 @@ void setupCube(mth_Vector4 *c);
 // Perspective projection test: render a rotating wireframe cube
 void testPerspective()
 {
-    const uint16_t *keysPressed;
     uint32_t dt, now, last = 0;
     float t = 0.f;
-    int projectionFlipped = 0;
     int isPerspective = 1;
     mth_Vector4 cube[16];
     gfx_Camera cam;
@@ -42,14 +40,10 @@ void testPerspective()
         mth_Vector4 screenCube[16];
         now = tmr_getMs();
         dt  = now - last;
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
 
-        if(keysPressed[KEY_P] && !projectionFlipped)
-        {
+        if(kbd_keyPressed(KEY_P))
             isPerspective = !isPerspective;
-            projectionFlipped = 1;
-        }
-        else if(!keysPressed[KEY_P]) projectionFlipped = 0;
 
         if(isPerspective)
             mth_matPerspective(&cam.projection, 75.f * M_PI /180.f, (float)buffer.width / buffer.height, 0.1f, 500.f);
@@ -91,7 +85,7 @@ void testPerspective()
         gfx_vSync();
 
         last = now;
-    } while(!keysPressed[KEY_ESC]);
+    } while(!kbd_keyPressed(KEY_ESC));
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

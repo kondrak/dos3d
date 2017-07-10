@@ -6,7 +6,6 @@
 // Triangle rendering test
 void testTriangles()
 {
-    const uint16_t *keysPressed;
     gfx_Camera cam;
     int numTris = 0;
     gfx_Triangle triangle;
@@ -24,7 +23,7 @@ void testTriangles()
     VEC4(cam.target, 0, 0, -1);
 
     // translate view to screen center
-    mth_matIdentity(&model);    
+    mth_matIdentity(&model);
     model.m[12] = -160.f;
     model.m[13] = -100.f;
 
@@ -38,7 +37,7 @@ void testTriangles()
 
     do
     {
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
         // render randomly scattered triangles of arbitrary size
         triangle.color = rand() % 103 + 1;
         VEC4(triangle.vertices[0].position, rand() % 320, rand() % 200, 0);
@@ -46,7 +45,7 @@ void testTriangles()
         VEC4(triangle.vertices[2].position, rand() % 320, rand() % 200, 0);
 
         // pause rendering when holding down space bar
-        if(!keysPressed[KEY_SPACE])
+        if(!kbd_keyDown(KEY_SPACE))
         {
             gfx_drawTriangle(&triangle, &modelViewProj, &buffer);
             utl_printf(&buffer, 1, 1, 15, 0, "Triangles rendered: %d", ++numTris);
@@ -54,7 +53,7 @@ void testTriangles()
             delay(50);
         }
 
-    } while(!keysPressed[KEY_ESC]);
+    } while(!kbd_keyPressed(KEY_ESC));
 
     FREE_DRAWBUFFER(buffer);
 }

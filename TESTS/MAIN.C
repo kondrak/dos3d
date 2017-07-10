@@ -38,71 +38,69 @@ void printMenu()
 int main(int argc, char **argv)
 {
     int demoFinished = 0;
-    const uint16_t *keysPressed = kbd_getInput();
-
     printMenu();
-  
+
     while(1)
     {
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
 
         if (!demoFinished)
         {
-            if(keysPressed[KEY_1])
+            if(kbd_keyPressed(KEY_1))
             {
                 gfx_setMode(0x13);
                 testBresenham(160, 103, 90);
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_2])
+            if(kbd_keyPressed(KEY_2))
             {
                 gfx_setMode(0x13);
                 testPerspective();
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_3])
+            if(kbd_keyPressed(KEY_3))
             {
                 gfx_setMode(0x13);
                 testTriangles();
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_4])
+            if(kbd_keyPressed(KEY_4))
             {
                 gfx_setMode(0x13);
                 testRenderTargets();
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_5])
+            if(kbd_keyPressed(KEY_5))
             {
                 gfx_setMode(0x13);
                 testTextureMapping();
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_6])
+            if(kbd_keyPressed(KEY_6))
             {
                 gfx_setMode(0x13);
                 testRotatingCube();
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_7])
+            if(kbd_keyPressed(KEY_7))
             {
                 gfx_setMode(0x13);
                 test3DScene();
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_8])
+            if(kbd_keyPressed(KEY_8))
             {
                 gfx_setMode(0x13);
                 testMdl();
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_9])
+            if(kbd_keyPressed(KEY_9))
             {
                 gfx_setMode(0x13);
                 testFirstPerson();
                 demoFinished = 1;
             }
-            if(keysPressed[KEY_Q])
+            if(kbd_keyPressed(KEY_Q))
             {
                 gfx_setMode(0x03);
                 break;

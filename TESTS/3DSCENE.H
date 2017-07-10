@@ -31,9 +31,7 @@ void freeScene(Scene *s);
 void test3DScene()
 {
     uint32_t dt, now, last = 0;
-    const uint16_t *keysPressed;
     Scene scene;
-    int texMapFlipped = 0;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     gfx_drawBuffer buffer;
@@ -63,14 +61,10 @@ void test3DScene()
     {
         now = tmr_getMs();
         dt  = now - last;
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
 
-        if(keysPressed[KEY_T] && !texMapFlipped)
-        {
+        if(kbd_keyPressed(KEY_T))
             buffer.drawOpts.drawMode = buffer.drawOpts.drawMode == DM_AFFINE ? DM_PERSPECTIVE : DM_AFFINE;
-            texMapFlipped = 1;
-        }
-        else if(!keysPressed[KEY_T]) texMapFlipped = 0;
 
         // clear depth buffer
         gfx_clrBuffer(&buffer, DB_DEPTH);
@@ -79,7 +73,7 @@ void test3DScene()
         drawScene(&scene, &modelViewProj, &buffer);
 
         last = now;
-    }  while(!keysPressed[KEY_ESC]);
+    }  while(!kbd_keyPressed(KEY_ESC));
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

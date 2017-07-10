@@ -32,11 +32,9 @@ void testTextureMapping()
     const int quadW =  25;
     const int quadH =  25;
     uint32_t dt, now, last = 0;
-    const uint16_t *keysPressed;
     float t = 0.f;
     TexQuad quad;
-    int texMapFlipped = 0;
-    int manualMode = 0, modeFlipped = 0;
+    int manualMode = 0;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
     gfx_Bitmap bmp = gfx_loadBitmap("images/quake.bmp");
@@ -69,43 +67,34 @@ void testTextureMapping()
         now = tmr_getMs();
         dt  = now - last;
         t  += 0.003f * dt;
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
 
         if(manualMode)
         {
-            if(keysPressed[KEY_RIGHT])
+            if(kbd_keyDown(KEY_RIGHT))
                 ROTATE_QUAD(0.002f, 0.f, 1.f, 0.f);
 
-            if(keysPressed[KEY_LEFT])
+            if(kbd_keyDown(KEY_LEFT))
                 ROTATE_QUAD(-0.002f, 0.f, 1.f, 0.f);
 
-            if(keysPressed[KEY_UP])
+            if(kbd_keyDown(KEY_UP))
                 ROTATE_QUAD(0.002f, 1.f, 0.f, 0.f);
 
-            if(keysPressed[KEY_DOWN])
+            if(kbd_keyDown(KEY_DOWN))
                 ROTATE_QUAD(-0.002f, 1.f, 0.f, 0.f);
         }
         else
-        {
             ROTATE_QUAD(0.002f * cos(t), 0.f, 1.f, 0.f);
-        }
 
-        if(keysPressed[KEY_T] && !texMapFlipped)
-        {
+        if(kbd_keyPressed(KEY_T))
             buffer.drawOpts.drawMode = buffer.drawOpts.drawMode == DM_AFFINE ? DM_PERSPECTIVE : DM_AFFINE;
-            texMapFlipped = 1;
-            
-        }
-        else if(!keysPressed[KEY_T]) texMapFlipped = 0;
 
-        if(keysPressed[KEY_SPACE] && !modeFlipped)
+        if(kbd_keyPressed(KEY_SPACE))
         {
             setupTexQuad(&quad, quadX, quadY, quadW, quadH, &bmp);
             manualMode = ~manualMode;
-            modeFlipped = 1;
             t = 0;
         }
-        else if(!keysPressed[KEY_SPACE]) modeFlipped = 0;
 
         // clear buffers and draw the quad!
         gfx_clrBuffer(&buffer, DB_COLOR);
@@ -116,7 +105,7 @@ void testTextureMapping()
         gfx_vSync();
 
         last = now;
-    } while(!keysPressed[KEY_ESC]);
+    } while(!kbd_keyPressed(KEY_ESC));
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

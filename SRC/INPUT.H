@@ -46,8 +46,15 @@ extern "C" {
         KEY_PLUS  = 13
     };
 
-        // returns an integer array with each bit representing a keypress, mapped to KeyCode enum
-        const uint16_t *kbd_getInput();
+        // checks state of pressed/released keys
+        // returns an integer array with each entry representing a keypress, mapped to KeyCode enum
+        const uint16_t *kbd_updateInput();
+
+        // check if key was pressed - will return 0 on second check
+        int kbd_keyPressed(enum kbd_KeyCode key);
+
+        // check if key is held down - will return 0 only if key is not being pressed
+        int kbd_keyDown(enum kbd_KeyCode key);
 
         // clear pressed key states
         void kbd_flush();

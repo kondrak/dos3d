@@ -6,7 +6,6 @@
 void testFirstPerson()
 {
     uint32_t dt, now, last = 0;
-    const uint16_t *keysPressed;
     mth_Vector4 ts, rs;
     gfx_Camera cam;
     gfx_Triangle triangle;
@@ -38,7 +37,7 @@ void testFirstPerson()
     {
         now = tmr_getMs();
         dt  = now - last;
-        keysPressed = kbd_getInput();
+        kbd_updateInput();
 
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         viewProj = mth_matMul(&cam.view, &cam.projection);
@@ -47,42 +46,40 @@ void testFirstPerson()
         gfx_drawTriangle(&triangle, &viewProj, &buffer);
         gfx_updateScreen(&buffer);
 
-        keysPressed = kbd_getInput();
-
         ts = mth_vecScale(&cam.target, 0.05f*dt);
         rs = mth_vecScale(&cam.right, 0.05f*dt);
 
-        if(keysPressed[KEY_W])
+        if(kbd_keyDown(KEY_W))
             cam.position = mth_vecAdd(&cam.position, &ts);
 
-        if(keysPressed[KEY_S])
+        if(kbd_keyDown(KEY_S))
             cam.position = mth_vecSub(&cam.position, &ts);
 
-        if(keysPressed[KEY_A])
+        if(kbd_keyDown(KEY_A))
             cam.position = mth_vecSub(&cam.position, &rs);
 
-        if(keysPressed[KEY_D])
+        if(kbd_keyDown(KEY_D))
             cam.position = mth_vecAdd(&cam.position, &rs);
 
-        if(keysPressed[KEY_LEFT])
+        if(kbd_keyDown(KEY_LEFT))
         {
             mth_rotateVecAxisAngle(&cam.target, 0.002f*dt, cam.up.x, cam.up.y, cam.up.z);
             cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
-        if(keysPressed[KEY_RIGHT])
+        if(kbd_keyDown(KEY_RIGHT))
         {
             mth_rotateVecAxisAngle(&cam.target, -0.002f*dt, cam.up.x, cam.up.y, cam.up.z);
             cam.right = mth_crossProduct(&cam.target, &cam.up);
         }
 
-        if(keysPressed[KEY_R])
+        if(kbd_keyDown(KEY_R))
         {
             mth_rotateVecAxisAngle(&cam.target, -0.002f*dt, cam.right.x, cam.right.y, cam.right.z);
             cam.up = mth_crossProduct(&cam.right, &cam.target);
         }
 
-        if(keysPressed[KEY_F])
+        if(kbd_keyDown(KEY_F))
         {
             mth_rotateVecAxisAngle(&cam.target, 0.002f*dt, cam.right.x, cam.right.y, cam.right.z);
             cam.up = mth_crossProduct(&cam.right, &cam.target);
@@ -91,7 +88,7 @@ void testFirstPerson()
         gfx_vSync();
 
         last = now;
-    } while(!keysPressed[KEY_ESC]);
+    } while(!kbd_keyPressed(KEY_ESC));
 
     tmr_finish();
     FREE_DRAWBUFFER(buffer);

@@ -9,7 +9,6 @@ void testBresenham(int ox, int oy, int r)
 {
     double l;
     uint32_t startTime, numLines = 0;
-    const uint16_t *keysPressed = kbd_getInput();
 
     tmr_start();
     utl_printf(NULL, 1, 1, 15, 0, "Bresenham drawing: please wait...");
@@ -24,6 +23,6 @@ void testBresenham(int ox, int oy, int r)
 
     utl_printf(NULL, 1, 1, 15, 0, "Bresenham drawing: %ums (%u lines)", tmr_getMs() - startTime, numLines);
 
-    while(!keysPressed[KEY_ESC]) keysPressed = kbd_getInput();
+    while(!kbd_keyPressed(KEY_ESC)) kbd_updateInput();
     tmr_finish();
 }
