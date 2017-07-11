@@ -74,8 +74,6 @@ void testMdl()
 
     endFrame    = mdl.header.num_frames;
     mdlAnimated = mdl.header.num_frames > 1;
-    // setup 1ms timer interrupt
-    tmr_start();
 
     // setup camera
     VEC4(cam.position, 0, 0, 30);
@@ -92,7 +90,6 @@ void testMdl()
     {
         now = tmr_getMs();
         dt  = now - last;
-        kbd_updateInput();
 
         // animate model frames
         if(mdlAnimated)
@@ -217,7 +214,6 @@ void testMdl()
         last = now;
     } while(!kbd_keyPressed(KEY_ESC));
 
-    tmr_finish();
     mdl_free(&mdl);
     FREE_DRAWBUFFER(fullBuffer);
     FREE_DRAWBUFFER(halfBuffer);

@@ -21,9 +21,6 @@ void testPerspective()
     ALLOC_DRAWBUFFER(buffer, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
     ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR), "Out of memory!\n");
 
-    // setup 1ms timer interrupt
-    tmr_start();
-
     // setup camera
     VEC4(cam.position, 0, 0, 150);
     VEC4(cam.up, 0, 1, 0);
@@ -40,7 +37,6 @@ void testPerspective()
         mth_Vector4 screenCube[16];
         now = tmr_getMs();
         dt  = now - last;
-        kbd_updateInput();
 
         if(kbd_keyPressed(KEY_P))
             isPerspective = !isPerspective;
@@ -87,7 +83,6 @@ void testPerspective()
         last = now;
     } while(!kbd_keyPressed(KEY_ESC));
 
-    tmr_finish();
     FREE_DRAWBUFFER(buffer);
 }
 

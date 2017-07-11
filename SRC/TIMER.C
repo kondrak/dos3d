@@ -6,25 +6,25 @@
 
 typedef void (__interrupt __far *intFuncPtr)();
 
-static intFuncPtr oldTimerInterrupt; // Original interrupt handler
+static intFuncPtr oldTimerInterrupt; // original timer interrupt handler
 
-volatile uint32_t milliseconds = 0; // Elapsed time in milliseconds
+volatile uint32_t milliseconds = 0; // elapsed time in milliseconds
 
 // internal: 1ms timer interrupt handler function
-void __interrupt __far timerHandler()
+static void __interrupt __far timerHandler()
 {
-    static uint32_t count = 0; // To keep track of original timer ticks
+    static uint32_t count = 0; // to keep track of original timer ticks
     
     ++milliseconds;
     count += 1103;
-    if(count >= 65536) // It is now time to call the original handler
+    if(count >= 65536) // it is now time to call the original handler
     {
         count -= 65536;
         _chain_intr(oldTimerInterrupt);
     }
     else
     {
-        // Acknowledge interrupt
+        // acknowledge interrupt
 #ifdef ASM_TIMER
         __asm
         {
@@ -45,21 +45,21 @@ void tmr_start()
     _disable();
     segread(&s);
 
-    /* Save old interrupt vector: */
+    // save old interrupt vector (irq 08h)
     r.h.al = 0x08;
     r.h.ah = 0x35;
     int386x(0x21, &r, &r, &s);
     oldTimerInterrupt = (intFuncPtr)MK_FP(s.es, r.x.ebx);
 
-    /* Install new interrupt handler: */
+    // install new interrupt handler
     milliseconds = 0;
     r.h.al = 0x08;
     r.h.ah = 0x25;
-    s.ds = FP_SEG(timerHandler);
+    s.ds    = FP_SEG(timerHandler);
     r.x.edx = FP_OFF(timerHandler);
     int386x(0x21, &r, &r, &s);
 
-    /* Set resolution of timer chip to 1ms: */
+    // Set resolution of timer chip to 1ms
 #ifdef ASM_TIMER
     __asm
     {
@@ -83,17 +83,20 @@ void tmr_finish()
 {
     union REGS r;
     struct SREGS s;
+
+    if(!oldTimerInterrupt) return;
+
     _disable();
     segread(&s);
  
- /* Re-install original interrupt handler: */
+    // restore original interrupt handler
     r.h.al = 0x08;
     r.h.ah = 0x25;
-    s.ds = FP_SEG(oldTimerInterrupt);
+    s.ds    = FP_SEG(oldTimerInterrupt);
     r.x.edx = FP_OFF(oldTimerInterrupt);
     int386x(0x21, &r, &r, &s);
  
- /* Reset timer chip resolution to 18.2...ms: */
+    // reset timer chip resolution to 18.2...ms
 #ifdef ASM_TIMER
     __asm
     {

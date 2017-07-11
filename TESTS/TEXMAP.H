@@ -45,9 +45,6 @@ void testTextureMapping()
     // use proper palette
     gfx_setPalette(bmp.palette);
 
-    // setup 1ms timer interrupt
-    tmr_start();
-
     // setup camera
     VEC4(cam.position, 0, 0, 60);
     VEC4(cam.up, 0, 1, 0);
@@ -67,7 +64,6 @@ void testTextureMapping()
         now = tmr_getMs();
         dt  = now - last;
         t  += 0.003f * dt;
-        kbd_updateInput();
 
         if(manualMode)
         {
@@ -92,8 +88,8 @@ void testTextureMapping()
         if(kbd_keyPressed(KEY_SPACE))
         {
             setupTexQuad(&quad, quadX, quadY, quadW, quadH, &bmp);
-            manualMode = ~manualMode;
-            t = 0;
+            manualMode = !manualMode;
+            t = 0.f;
         }
 
         // clear buffers and draw the quad!
@@ -107,7 +103,6 @@ void testTextureMapping()
         last = now;
     } while(!kbd_keyPressed(KEY_ESC));
 
-    tmr_finish();
     FREE_DRAWBUFFER(buffer);
     gfx_freeBitmap(&bmp);
 }

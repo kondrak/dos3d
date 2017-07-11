@@ -40,10 +40,13 @@ int main(int argc, char **argv)
     int demoFinished = 0;
     printMenu();
 
+    // setup 1ms timer interrupt
+    tmr_start();
+    // setup keyboard interrupt
+    kbd_start();
+
     while(1)
     {
-        kbd_updateInput();
-
         if (!demoFinished)
         {
             if(kbd_keyPressed(KEY_1))
@@ -105,8 +108,6 @@ int main(int argc, char **argv)
                 gfx_setMode(0x03);
                 break;
             }
-
-            kbd_flush();
         }
         else
         {
@@ -114,6 +115,11 @@ int main(int argc, char **argv)
             demoFinished = 0;
         }
     }
+
+    // reset original keyboard interrupt
+    kbd_finish();
+    // reset original timer interrupt
+    tmr_finish();
 
     return 0;
 }

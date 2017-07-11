@@ -64,9 +64,6 @@ void testRotatingCube()
     ALLOC_DRAWBUFFER(depthDebug, SCREEN_WIDTH, SCREEN_HEIGHT, DB_COLOR);
     ASSERT(DRAWBUFFER_VALID(depthDebug, DB_COLOR), "Out of memory!\n");
 
-    // setup 1ms timer interrupt
-    tmr_start();
-
     // setup camera
     VEC4(cam.position, 0, 0, 60);
     VEC4(cam.up, 0, 1, 0);
@@ -95,7 +92,6 @@ void testRotatingCube()
         int j, k;
         now = tmr_getMs();
         dt  = now - last;
-        kbd_updateInput();
 
         // auto-rotation of the cube
         if(rotating)
@@ -192,7 +188,6 @@ void testRotatingCube()
         last = now;
     } while(!kbd_keyPressed(KEY_ESC));
 
-    tmr_finish();
     FREE_DRAWBUFFER(buffer);
     FREE_DRAWBUFFER(depthDebug);
     gfx_freeBitmap(&bmp);

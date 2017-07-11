@@ -21,9 +21,6 @@ void testRenderTargets()
         ASSERT(DRAWBUFFER_VALID(renderTargets[i], DB_COLOR), "Out of memory!\n");
     }
 
-    // setup 1ms timer interrupt
-    tmr_start();
-
     // setup camera
     VEC4(cam.position, 0, 0, 60);
     VEC4(cam.up, 0, 1, 0);
@@ -47,7 +44,6 @@ void testRenderTargets()
     {
         now = tmr_getMs();
         dt  =  now - last;
-        kbd_updateInput();
 
         for(i = 0; i < 3; ++i)
         {
@@ -72,8 +68,6 @@ void testRenderTargets()
 
         last = now;
     } while(!kbd_keyPressed(KEY_ESC));
-
-    tmr_finish();
 
     for(i = 0; i < 4; ++i)
         FREE_DRAWBUFFER(renderTargets[i]);

@@ -2,6 +2,8 @@
 #define UTILS_H
 
 #include "src/graphics.h"
+#include "src/input.h"
+#include "src/timer.h"
 #include <assert.h>
 #include <stdio.h>
 
@@ -10,7 +12,15 @@ extern "C" {
 #endif
 
 #ifndef NDEBUG
-#   define ASSERT(x, ...) if(!(x)) { gfx_setMode(0x03); fprintf(stderr, __VA_ARGS__); assert(x); }
+#   define ASSERT(x, ...) if(!(x)) \
+                          { \
+                              gfx_setMode(0x03); \
+                              /* Clean up interrupt handlers */ \
+                              kbd_finish(); \
+                              tmr_finish(); \
+                              fprintf(stderr, __VA_ARGS__); \
+                              assert(x); \
+                          }
 #else
 #   define ASSERT(x, ...)
 #endif

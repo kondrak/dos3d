@@ -46,7 +46,13 @@ extern "C" {
         KEY_PLUS  = 13
     };
 
-        // updates state of pressed/released keys
+        // initiate keyboard interrupt handler (irq 09h)
+        void kbd_start();
+
+        // restore the original keyboard irq handler - required if kbd_start() was called
+        void kbd_finish();
+
+        // updates state of pressed/released keys - call this directly if you don't use custom irq handler
         // returns an integer array with each entry representing a keypress, mapped to KeyCode enum
         const uint16_t *kbd_updateInput();
 
@@ -56,7 +62,7 @@ extern "C" {
         // check if key is held down - will return 0 only if key is not being pressed
         int kbd_keyDown(enum kbd_KeyCode key);
 
-        // clear pressed key states
+        // clear pressed key states - not needed if using custom irq handler
         void kbd_flush();
 
 #ifdef __cplusplus

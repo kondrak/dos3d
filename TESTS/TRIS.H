@@ -37,7 +37,6 @@ void testTriangles()
 
     do
     {
-        kbd_updateInput();
         // render randomly scattered triangles of arbitrary size
         triangle.color = rand() % 103 + 1;
         VEC4(triangle.vertices[0].position, rand() % 320, rand() % 200, 0);

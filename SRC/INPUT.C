@@ -1,11 +1,67 @@
 #include "src/input.h"
 #include <conio.h>
+#include <dos.h>
 #include <memory.h>
 
 static uint16_t keysDown[0x81];
 static uint16_t keysPressed[0x81];
 
-// faster keyhit detector than kbhit()
+typedef void (__interrupt __far *kbdIntFuncPtr)();
+
+static kbdIntFuncPtr oldKbdInterrupt; // original keyboard interrupt handler
+
+// internal: interrupt handler for the keyboard - update key state tables
+static void __interrupt __far keyboardHandler()
+{
+    (void)kbd_updateInput();
+}
+
+/* ***** */
+void kbd_start()
+{
+    union REGS r;
+    struct SREGS s;
+    _disable();
+    segread(&s);
+
+    // save old interrupt vector (irq 09h)
+    r.h.al = 0x09;
+    r.h.ah = 0x35;
+    int386x(0x21, &r, &r, &s);
+    oldKbdInterrupt = (kbdIntFuncPtr)MK_FP(s.es, r.x.ebx);
+
+    // install new interrupt handler
+    r.h.al = 0x09;
+    r.h.ah = 0x25;
+    s.ds    = FP_SEG(keyboardHandler);
+    r.x.edx = FP_OFF(keyboardHandler);
+    int386x(0x21, &r, &r, &s);
+
+    _enable();
+}
+
+/* ***** */
+void kbd_finish()
+{
+    union REGS r;
+    struct SREGS s;
+
+    if(!oldKbdInterrupt) return;
+
+    _disable();
+    segread(&s);
+ 
+    // restore original interrupt handler
+    r.h.al = 0x09;
+    r.h.ah = 0x25;
+    s.ds    = FP_SEG(oldKbdInterrupt);
+    r.x.edx = FP_OFF(oldKbdInterrupt);
+    int386x(0x21, &r, &r, &s);
+
+    _enable();
+}
+
+/* ***** */
 const uint16_t *kbd_updateInput()
 {
     uint8_t key = 0;
@@ -27,14 +83,13 @@ const uint16_t *kbd_updateInput()
         int 21h
     }
 
-    if(key >= 0x80)
+    if(key < 0x80)
+        keysDown[key] = 1;
+    else
     {
         keysDown[key - 0x80]    = 0;
         keysPressed[key - 0x80] = 0;
     }
-
-    if(key < 0x80)
-        keysDown[key] = 1;
 
     return &keysDown[0];
 }

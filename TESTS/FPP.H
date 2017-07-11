@@ -16,9 +16,6 @@ void testFirstPerson()
     ASSERT(DRAWBUFFER_VALID(buffer, DB_COLOR | DB_DEPTH), "Out of memory!\n");
     buffer.drawOpts.depthFunc = DF_LESS;
 
-    // setup 1ms timer interrupt
-    tmr_start();
-
     // setup camera
     VEC4(cam.position, 0, 0, 40);
     VEC4(cam.up, 0, 1, 0);
@@ -37,7 +34,6 @@ void testFirstPerson()
     {
         now = tmr_getMs();
         dt  = now - last;
-        kbd_updateInput();
 
         mth_matView(&cam.view, &cam.position, &cam.target, &cam.up);
         viewProj = mth_matMul(&cam.view, &cam.projection);
@@ -90,6 +86,5 @@ void testFirstPerson()
         last = now;
     } while(!kbd_keyPressed(KEY_ESC));
 
-    tmr_finish();
     FREE_DRAWBUFFER(buffer);
 }

@@ -41,9 +41,6 @@ void test3DScene()
     buffer.drawOpts.colorKey  = COLOR_MAGENTA;
     buffer.drawOpts.depthFunc = DF_LESS;   
 
-    // setup 1ms timer interrupt
-    tmr_start();
-
     // setup entire scene
     setupScene(&scene);
 
@@ -61,7 +58,6 @@ void test3DScene()
     {
         now = tmr_getMs();
         dt  = now - last;
-        kbd_updateInput();
 
         if(kbd_keyPressed(KEY_T))
             buffer.drawOpts.drawMode = buffer.drawOpts.drawMode == DM_AFFINE ? DM_PERSPECTIVE : DM_AFFINE;
@@ -75,7 +71,6 @@ void test3DScene()
         last = now;
     }  while(!kbd_keyPressed(KEY_ESC));
 
-    tmr_finish();
     FREE_DRAWBUFFER(buffer);
     freeScene(&scene);
 }
