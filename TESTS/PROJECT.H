@@ -9,7 +9,7 @@ void setupCube(mth_Vector4 *c);
 // Perspective projection test: render a rotating wireframe cube
 void testPerspective()
 {
-    uint32_t dt, now, last = 0;
+    uint32_t dt, now, last = tmr_getMs();
     float t = 0.f;
     int isPerspective = 1;
     mth_Vector4 cube[16];

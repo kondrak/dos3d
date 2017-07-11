@@ -45,7 +45,7 @@ void drawTexCube(const TexCube *c, const mth_Matrix4 *mvp, gfx_drawBuffer *buffe
 // Rotating cube test
 void testRotatingCube()
 {
-    uint32_t dt, now, last = 0;
+    uint32_t dt, now, last = tmr_getMs();
     uint8_t defaultPalette[256*3], grayScalePalette[256*3];
     TexCube cube;
     int i, rotating = 1, drawMode = TEX_CUBE;

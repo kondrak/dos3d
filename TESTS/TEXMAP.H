@@ -31,7 +31,7 @@ void testTextureMapping()
     const int quadY = -25;
     const int quadW =  25;
     const int quadH =  25;
-    uint32_t dt, now, last = 0;
+    uint32_t dt, now, last = tmr_getMs();
     float t = 0.f;
     TexQuad quad;
     int manualMode = 0;

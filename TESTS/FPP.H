@@ -5,7 +5,7 @@
 // First person WASD camera (warning: a bit faulty with z-clipping until proper clipping is implemented!)
 void testFirstPerson()
 {
-    uint32_t dt, now, last = 0;
+    uint32_t dt, now, last = tmr_getMs();
     mth_Vector4 ts, rs;
     gfx_Camera cam;
     gfx_Triangle triangle;

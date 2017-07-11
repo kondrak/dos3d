@@ -37,7 +37,7 @@ void testMdl()
                                             {36, 47}, {48, 58}, {59, 65},
                                             {66, 74}, {75, 82}, {83, 94} };
     const int distFromModel = 120;
-    uint32_t dt, now, last = 0;
+    uint32_t dt, now, last = tmr_getMs();
     int rotDir, rotating = 1;
     int frameNum = 0, startFrame = 0, endFrame;
     int currAnim = NUM_ANIMS;

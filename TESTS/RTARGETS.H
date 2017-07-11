@@ -7,7 +7,7 @@
 void testRenderTargets()
 {
     int i;
-    uint32_t dt, now, last = 0;
+    uint32_t dt, now, last = tmr_getMs();
     gfx_Triangle triangle;
     gfx_Camera cam;
     mth_Matrix4 model;

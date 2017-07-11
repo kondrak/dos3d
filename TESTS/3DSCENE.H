@@ -30,7 +30,7 @@ void freeScene(Scene *s);
 // Render a simple Doom scene
 void test3DScene()
 {
-    uint32_t dt, now, last = 0;
+    uint32_t dt, now, last = tmr_getMs();
     Scene scene;
     gfx_Camera cam;
     mth_Matrix4 modelViewProj;
