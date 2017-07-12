@@ -24,23 +24,23 @@ enum ShamblerAnimations
     THUNDERBOLT,
     HIT,
     DEAD,
-    NUM_ANIMS
+    ALL_ANIMS // cycling all animations in order
 };
 
 // MDL rendering test
 void testMdl()
 {
-    const char *animNames[NUM_ANIMS+1] = { "Idle", "Walk", "Run", "Attack1", 
+    const char *animNames[ALL_ANIMS+1] = { "Idle", "Walk", "Run", "Attack1", 
                                            "Attack2", "Attack3", "Thunderbolt", 
                                            "Hit", "Dead", "Cycle" };
-    const int animFrames[NUM_ANIMS][2] = {   {0, 16}, {17, 29}, {30, 35}, 
+    const int animFrames[ALL_ANIMS][2] = {   {0, 16}, {17, 29}, {30, 35}, 
                                             {36, 47}, {48, 58}, {59, 65},
                                             {66, 74}, {75, 82}, {83, 94} };
     const int distFromModel = 120;
     uint32_t dt, now, last = tmr_getMs();
     int rotDir, rotating = 1;
     int frameNum = 0, startFrame = 0, endFrame;
-    int currAnim = NUM_ANIMS;
+    int currAnim = ALL_ANIMS;
     int drawMode = HALF_WIREFRAME;
     int freezeFrame = 0;
     int frameTimeSkew = 25;
@@ -127,12 +127,12 @@ void testMdl()
 
         if(kbd_keyPressed(KEY_A))
         {
-            if(currAnim == NUM_ANIMS)
+            if(currAnim == ALL_ANIMS)
                 currAnim = -1;
 
             currAnim++;
 
-            if(currAnim != NUM_ANIMS)
+            if(currAnim != ALL_ANIMS)
             {
                 startFrame = animFrames[currAnim][0];
                 endFrame   = animFrames[currAnim][1];

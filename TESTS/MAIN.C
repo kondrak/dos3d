@@ -22,7 +22,7 @@ void printMenu()
     gfx_setMode(0x03);
     printf("*** DOS3D software renderer test suite ***\n");
     printf("1. Bresenham line drawing\n");
-    printf("2. Perspective projection\n");
+    printf("2. Projection test\n");
     printf("3. Triangle rendering\n");
     printf("4. Render targets\n");
     printf("5. Texture mapping\n");
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
             if(kbd_keyPressed(KEY_2))
             {
                 gfx_setMode(0x13);
-                testPerspective();
+                testProjection();
                 demoFinished = 1;
             }
             if(kbd_keyPressed(KEY_3))
@@ -103,11 +103,9 @@ int main(int argc, char **argv)
                 testFirstPerson();
                 demoFinished = 1;
             }
+            // exit
             if(kbd_keyPressed(KEY_Q))
-            {
-                gfx_setMode(0x03);
                 break;
-            }
         }
         else
         {
@@ -116,6 +114,7 @@ int main(int argc, char **argv)
         }
     }
 
+    gfx_setMode(0x03);
     // reset original keyboard interrupt
     kbd_finish();
     // reset original timer interrupt
