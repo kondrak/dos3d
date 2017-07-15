@@ -33,4 +33,5 @@ TODO
 
 - switch from floats and doubles to fixed point for stable precision
 - add proper polygon clipping
+- perspective texture mapping doesn't have to interpolate every pixel
 - ???
