@@ -4,9 +4,9 @@ This is a triangle based renderer which utilizes the neat property of mode 13h a
 
 The project can be built out of the box using the [Open Watcom](http://www.openwatcom.org/) compiler. This was chosen, since Watcom comes with easy to use memory extender for DOS.
 
-Minimum specs: 75Mhz CPU, 4MB RAM, MSDOS 5.0 or higher
+Minimum specs: 75Mhz CPU, 4MB RAM, MS-DOS 5.0 or higher
 
-Recommended specs: 100Mhz CPU, 8MB RAM, MSDOS 5.0 or higher
+Recommended specs: 100Mhz CPU, 8MB RAM, MS-DOS 5.0 or higher
 
 Features
 -------
