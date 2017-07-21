@@ -26,7 +26,7 @@ void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *buffer)
     int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
 
     // DF_NEVER - don't draw anything, abort
-    if(buffer->drawOpts.depthFunc == DF_NEVER)
+    if(buffer && buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
     // naive "clipping"
@@ -45,7 +45,7 @@ void gfx_drawPixelWithDepth(int x, int y, float invZ, const uint8_t color, gfx_d
     int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
 
     // DF_NEVER - don't draw anything, abort
-    if(buffer->drawOpts.depthFunc == DF_NEVER)
+    if(buffer && buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
     // naive "clipping"
@@ -97,7 +97,7 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t 
     float endInvZ   = z1 ? 1.f / z1 : 1.f;
 
     // DF_NEVER - don't draw anything, abort
-    if(buffer->drawOpts.depthFunc == DF_NEVER)
+    if(buffer && buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
     if(ax <= ay)
@@ -112,7 +112,7 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t 
     while(i++ <= ax)
     {
         // interpolate and store 1/z for pixel if depth testing is enabled
-        if(buffer->drawOpts.depthFunc != DF_ALWAYS)
+        if(buffer && buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
             float r = (x0 - startX) * invLineLength;
             float lerpInvZ = LERP(startInvZ, endInvZ, r);

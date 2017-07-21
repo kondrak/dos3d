@@ -30,6 +30,8 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
     gfx_Vertex v0, v1, v2;
     gfx_Triangle sortedTriangle = *t;
 
+    ASSERT(buffer, "Attempting to render triangle to a NULL buffer!\n");
+
     // DF_NEVER - don't draw anything, abort
     if(buffer->drawOpts.depthFunc == DF_NEVER)
         return;
