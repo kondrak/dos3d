@@ -7,6 +7,7 @@
 
 /*
  * Triangle color fillers.
+ * These functions are meant to be called by triangle rasterizer only.
  */
 
 #ifdef __cplusplus

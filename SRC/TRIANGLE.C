@@ -25,8 +25,10 @@ static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum
 /* ***** */
 void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
 {
-    int bufferHalfWidth  = buffer->width >> 1;
-    int bufferHalfHeight = buffer->height >> 1;
+    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
+    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
+    int bufferHalfWidth  = bufferWidth  >> 1;
+    int bufferHalfHeight = bufferHeight >> 1;
     gfx_Vertex v0, v1, v2;
     gfx_Triangle sortedTriangle = *t;
 
@@ -65,12 +67,12 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
     }
 
     // transform x and y of each vertex to screen coordinates
-    v0.position.x = (v0.position.x * buffer->width)  / (2.0 * v0.position.w) + bufferHalfWidth;
-    v0.position.y = (v0.position.y * buffer->height) / (2.0 * v0.position.w) + bufferHalfHeight;
-    v1.position.x = (v1.position.x * buffer->width)  / (2.0 * v1.position.w) + bufferHalfWidth;
-    v1.position.y = (v1.position.y * buffer->height) / (2.0 * v1.position.w) + bufferHalfHeight;
-    v2.position.x = (v2.position.x * buffer->width)  / (2.0 * v2.position.w) + bufferHalfWidth;
-    v2.position.y = (v2.position.y * buffer->height) / (2.0 * v2.position.w) + bufferHalfHeight;
+    v0.position.x = (v0.position.x * bufferWidth)  / (2.0 * v0.position.w) + bufferHalfWidth;
+    v0.position.y = (v0.position.y * bufferHeight) / (2.0 * v0.position.w) + bufferHalfHeight;
+    v1.position.x = (v1.position.x * bufferWidth)  / (2.0 * v1.position.w) + bufferHalfWidth;
+    v1.position.y = (v1.position.y * bufferHeight) / (2.0 * v1.position.w) + bufferHalfHeight;
+    v2.position.x = (v2.position.x * bufferWidth)  / (2.0 * v2.position.w) + bufferHalfWidth;
+    v2.position.y = (v2.position.y * bufferHeight) / (2.0 * v2.position.w) + bufferHalfHeight;
 
     // sort vertices so that v0 is topmost, then v2, then v1
     if(v2.position.y > v1.position.y)

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 // pointer to VGA memory
-static uint8_t *VGA = (uint8_t *)0xA0000;
+uint8_t *VGA = (uint8_t *)0xA0000;
 
 /* ***** */
 void gfx_setMode(const uint8_t mode)
@@ -22,15 +22,15 @@ void gfx_setMode(const uint8_t mode)
 /* ***** */
 void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *buffer)
 {
-    int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
-    int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
+    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
+    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
 
     // DF_NEVER - don't draw anything, abort
     if(buffer && buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
     // naive "clipping"
-    if(x >= bufferW || x < 0 || y >= bufferH || y < 0) return;
+    if(x >= bufferWidth || x < 0 || y >= bufferHeight || y < 0) return;
 
     if(!buffer)
         VGA[(y << 8) + (y << 6) + x] = color;
@@ -41,15 +41,15 @@ void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *buffer)
 /* ***** */
 void gfx_drawPixelWithDepth(int x, int y, float invZ, const uint8_t color, gfx_drawBuffer *buffer)
 {
-    int bufferW = buffer ? buffer->width : SCREEN_WIDTH;
-    int bufferH = buffer ? buffer->height : SCREEN_HEIGHT;
+    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
+    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
 
     // DF_NEVER - don't draw anything, abort
     if(buffer && buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
     // naive "clipping"
-    if(x >= bufferW || x < 0 || y >= bufferH || y < 0) return;
+    if(x >= bufferWidth || x < 0 || y >= bufferHeight || y < 0) return;
 
     // no depth info for VGA array, so ignore invZ
     if(!buffer)
