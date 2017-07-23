@@ -4,6 +4,8 @@
 
 #define VERTEX_SWAP(v1, v2) { gfx_Vertex s = v2; v2 = v1; v1 = s; }
 
+extern gfx_drawBuffer VGA_BUFFER;
+
 // internal: perform triangle rendering based on its type
 static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
 
@@ -23,16 +25,13 @@ static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum
                                          Y_CLIPPED(v0.position, v1.position, v2.position) || \
                                          Z_CLIPPED(v0.position, v1.position, v2.position) )
 /* ***** */
-void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
+void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *target)
 {
-    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
-    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
-    int bufferHalfWidth  = bufferWidth  >> 1;
-    int bufferHalfHeight = bufferHeight >> 1;
+    gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
+    int bufferHalfWidth  = buffer->width  >> 1;
+    int bufferHalfHeight = buffer->height >> 1;
     gfx_Vertex v0, v1, v2;
     gfx_Triangle sortedTriangle = *t;
-
-    ASSERT(buffer, "Attempting to render triangle to a NULL buffer!\n");
 
     // DF_NEVER - don't draw anything, abort
     if(buffer->drawOpts.depthFunc == DF_NEVER)
@@ -67,12 +66,12 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
     }
 
     // transform x and y of each vertex to screen coordinates
-    v0.position.x = (v0.position.x * bufferWidth)  / (2.0 * v0.position.w) + bufferHalfWidth;
-    v0.position.y = (v0.position.y * bufferHeight) / (2.0 * v0.position.w) + bufferHalfHeight;
-    v1.position.x = (v1.position.x * bufferWidth)  / (2.0 * v1.position.w) + bufferHalfWidth;
-    v1.position.y = (v1.position.y * bufferHeight) / (2.0 * v1.position.w) + bufferHalfHeight;
-    v2.position.x = (v2.position.x * bufferWidth)  / (2.0 * v2.position.w) + bufferHalfWidth;
-    v2.position.y = (v2.position.y * bufferHeight) / (2.0 * v2.position.w) + bufferHalfHeight;
+    v0.position.x = (v0.position.x * buffer->width)  / (2.0 * v0.position.w) + bufferHalfWidth;
+    v0.position.y = (v0.position.y * buffer->height) / (2.0 * v0.position.w) + bufferHalfHeight;
+    v1.position.x = (v1.position.x * buffer->width)  / (2.0 * v1.position.w) + bufferHalfWidth;
+    v1.position.y = (v1.position.y * buffer->height) / (2.0 * v1.position.w) + bufferHalfHeight;
+    v2.position.x = (v2.position.x * buffer->width)  / (2.0 * v2.position.w) + bufferHalfWidth;
+    v2.position.y = (v2.position.y * buffer->height) / (2.0 * v2.position.w) + bufferHalfHeight;
 
     // sort vertices so that v0 is topmost, then v2, then v1
     if(v2.position.y > v1.position.y)
@@ -199,15 +198,15 @@ void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_draw
  * |     \    |/
  * v2-----v1  v2
  */
-static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type)
+static void drawTriangleType(const gfx_Triangle *t, gfx_drawBuffer *target, enum TriangleType type)
 {
-    if(!t->texture || buffer->drawOpts.drawMode & DM_FLAT)
-        gfx_flatFill(t, buffer, type);
+    if(!t->texture || target->drawOpts.drawMode & DM_FLAT)
+        gfx_flatFill(t, target, type);
     else
     {
-        if(buffer->drawOpts.drawMode & DM_AFFINE)
-            gfx_affineTextureMap(t, buffer, type);
+        if(target->drawOpts.drawMode & DM_AFFINE)
+            gfx_affineTextureMap(t, target, type);
         else
-            gfx_perspectiveTextureMap(t, buffer, type);
+            gfx_perspectiveTextureMap(t, target, type);
     }
 }

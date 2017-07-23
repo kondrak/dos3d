@@ -169,7 +169,7 @@ void mdl_free(mdl_model_t *mdl)
 }
 
 /* ***** */
-void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
+void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *target)
 {
     int i, j;
     float s, t;
@@ -212,12 +212,12 @@ void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, g
                  mdl->header.scale[2] * pvert->v[2] + mdl->header.translate[2]);
         }
 
-        gfx_drawTriangle(&mdlTriangle, matrix, buffer);
+        gfx_drawTriangle(&mdlTriangle, matrix, target);
     }
 }
 
 /* ***** */
-void mdl_renderFrameLerp(int n, float r, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer)
+void mdl_renderFrameLerp(int n, float r, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *target)
 {
     int i, j;
     float s, t;
@@ -261,7 +261,7 @@ void mdl_renderFrameLerp(int n, float r, const mdl_model_t *mdl, const mth_Matri
                  mdl->header.scale[2] * (pvert1->v[2] + r * (pvert2->v[2] - pvert1->v[2])) + mdl->header.translate[2]);
         }
 
-        gfx_drawTriangle(&mdlTriangle, matrix, buffer);
+        gfx_drawTriangle(&mdlTriangle, matrix, target);
     }
 }
 

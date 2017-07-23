@@ -28,8 +28,8 @@ extern "C" {
 
     /* *** Interface *** */
 
-    // draw triangle to buffer using a transformation matrix
-    void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
+    // render triangle to target buffer using a transformation matrix
+    void gfx_drawTriangle(const gfx_Triangle *t, const mth_Matrix4 *matrix, gfx_drawBuffer *target);
 
 #ifdef __cplusplus
 }

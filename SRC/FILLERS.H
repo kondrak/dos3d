@@ -15,14 +15,14 @@ extern "C" {
 #endif
 
     // wireframe
-    void gfx_wireFrame(const gfx_Triangle *t, gfx_drawBuffer *buffer);
+    void gfx_wireFrame(const gfx_Triangle *t, gfx_drawBuffer *target);
 
     // flat color fill
-    void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
+    void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *target, enum TriangleType type);
 
     // texture mapping
-    void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
-    void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *buffer, enum TriangleType type);
+    void gfx_perspectiveTextureMap(const gfx_Triangle *t, gfx_drawBuffer *target, enum TriangleType type);
+    void gfx_affineTextureMap(const gfx_Triangle *t, gfx_drawBuffer *target, enum TriangleType type);
 
 #ifdef __cplusplus
 }

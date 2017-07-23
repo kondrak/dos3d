@@ -30,14 +30,14 @@ extern "C" {
     // return a resized bitmap, the original image data will be freed
     gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h);
 
-    // draw bitmap to buffer (no color keying)
-    void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer);
+    // draw bitmap to target buffer (no color keying)
+    void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *target);
 
-    // draw bitmap to buffer with offsets (no color keying)
-    void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer);
+    // draw bitmap to target buffer with offsets (no color keying)
+    void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *target);
 
-    // draw bitmap to buffer with colorKey as the transparent color
-    void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const uint8_t colorKey);
+    // draw bitmap to target buffer with colorKey as the transparent color
+    void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *target, const uint8_t colorKey);
 
     // release bitmap image data
     void gfx_freeBitmap(gfx_Bitmap *bmp);

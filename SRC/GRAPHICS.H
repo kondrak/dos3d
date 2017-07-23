@@ -94,6 +94,15 @@ extern "C" {
                 b.depthBuffer = (f) & DB_DEPTH ? (float *)malloc(sizeof(float) * (w) * (h)) : NULL; \
             }
 
+    // draw buffer pointing directly to VGA memory - no depth information
+    #define VGA_DRAWBUFFER(b) {\
+                b.width  = SCREEN_WIDTH; \
+                b.height = SCREEN_HEIGHT; \
+                DRAWOPTS_DEFAULT(b.drawOpts); \
+                b.colorBuffer = (uint8_t *)0xA0000; /* pointer to VGA memory */ \
+                b.depthBuffer = NULL; \
+            }
+
     // check pre-allocated buffer validity
     #define DRAWBUFFER_VALID(b, f) ( ((f) & DB_COLOR ? b.colorBuffer != NULL : 1) && \
                                      ((f) & DB_DEPTH ? b.depthBuffer != NULL : 1) )
@@ -106,29 +115,29 @@ extern "C" {
     // set graphics mode
     void gfx_setMode(const uint8_t mode);
 
-    // draw pixel to buffer (ignore depth)
-    void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *buffer);
+    // draw pixel to target buffer (ignore depth)
+    void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *target);
 
     // draw pixel and take depth into account
-    void gfx_drawPixelWithDepth(int x, int y, float invZ, const uint8_t color, gfx_drawBuffer *buffer);
+    void gfx_drawPixelWithDepth(int x, int y, float invZ, const uint8_t color, gfx_drawBuffer *target);
 
     // Bresenham line drawing
-    void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t color, gfx_drawBuffer *buffer);
+    void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t color, gfx_drawBuffer *target);
 
     // Bresenham line drawing - using mth_Vector4 structs
-    void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const uint8_t color, gfx_drawBuffer *buffer);
+    void gfx_drawLineVec(const mth_Vector4 *from, const mth_Vector4 *to, const uint8_t color, gfx_drawBuffer *target);
 
-    // clears buffer to 0
-    void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType);
+    // clears draw buffer to 0
+    void gfx_clrBuffer(gfx_drawBuffer *target, const enum BufferType bType);
 
-    // fills color buffer to specific color (depth buffer is untouched)
-    void gfx_clrBufferColor(gfx_drawBuffer *buffer, const uint8_t color);
+    // fills target color buffer to specific color (depth buffer is untouched)
+    void gfx_clrBufferColor(gfx_drawBuffer *target, const uint8_t color);
 
     // copy contents of one buffer to another (at x,y offset), if target is NULL - blits to VGA
     void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target);
 
-    // fast copy buffer contents straight to VGA memory - buffer must be the same size as VGA screen buffer
-    void gfx_updateScreen(gfx_drawBuffer *buffer);
+    // fast copy buffer contents straight to VGA memory - source buffer must be the same size as VGA screen buffer
+    void gfx_updateScreen(gfx_drawBuffer *src);
 
     // set current VGA palette (standard VGA 6 bits per channel)
     void gfx_setPalette(const uint8_t *palette);

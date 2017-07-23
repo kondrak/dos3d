@@ -6,12 +6,14 @@
 #include <memory.h>
 #include <stdlib.h>
 
-// pointer to VGA memory
-uint8_t *VGA = (uint8_t *)0xA0000;
+// global buffer pointing directly to VGA screen memory
+gfx_drawBuffer VGA_BUFFER;
 
 /* ***** */
 void gfx_setMode(const uint8_t mode)
 {
+    VGA_DRAWBUFFER(VGA_BUFFER);
+
     _asm {
         mov ah, 0x00
         mov al, mode
@@ -20,70 +22,61 @@ void gfx_setMode(const uint8_t mode)
 }
 
 /* ***** */
-void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *buffer)
+void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *target)
 {
-    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
-    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
+    gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
 
     // DF_NEVER - don't draw anything, abort
-    if(buffer && buffer->drawOpts.depthFunc == DF_NEVER)
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
     // naive "clipping"
-    if(x >= bufferWidth || x < 0 || y >= bufferHeight || y < 0) return;
+    if(x >= buffer->width || x < 0 || y >= buffer->height || y < 0) return;
 
-    if(!buffer)
-        VGA[(y << 8) + (y << 6) + x] = color;
-    else
-        buffer->colorBuffer[x + y * buffer->width] = color;
+    buffer->colorBuffer[x + y * buffer->width] = color;
 }
 
 /* ***** */
-void gfx_drawPixelWithDepth(int x, int y, float invZ, const uint8_t color, gfx_drawBuffer *buffer)
+void gfx_drawPixelWithDepth(int x, int y, float invZ, const uint8_t color, gfx_drawBuffer *target)
 {
-    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
-    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
+    gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
+    size_t idx = x + y * buffer->width;
+    int drawPixel = 1;
+
+    ASSERT(buffer->depthBuffer, "Attempting to write depth to a NULL depth buffer!\n");
 
     // DF_NEVER - don't draw anything, abort
-    if(buffer && buffer->drawOpts.depthFunc == DF_NEVER)
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
     // naive "clipping"
-    if(x >= bufferWidth || x < 0 || y >= bufferHeight || y < 0) return;
+    if(x >= buffer->width || x < 0 || y >= buffer->height || y < 0) return;
 
-    // no depth info for VGA array, so ignore invZ
-    if(!buffer)
-        VGA[(y << 8) + (y << 6) + x] = color;
-    else
+    // check condition for 1/z and determine whether the pixel should be drawn
+    // note that this is *opposite* to how modern APIs make checks (since we store 1/z)
+    switch(buffer->drawOpts.depthFunc)
     {
-        size_t idx = x + y * buffer->width;
-        int drawPixel = 1;
+        case DF_LESS:     drawPixel = buffer->depthBuffer[idx] <  invZ; break;
+        case DF_LEQUAL:   drawPixel = buffer->depthBuffer[idx] <= invZ; break;
+        case DF_GEQUAL:   drawPixel = buffer->depthBuffer[idx] >= invZ; break;
+        case DF_GREATER:  drawPixel = buffer->depthBuffer[idx] >  invZ; break;
+        case DF_NOTEQUAL: drawPixel = buffer->depthBuffer[idx] != invZ; break;
+        default:
+        break;
+    }
 
-        // check condition for 1/z and determine whether the pixel should be drawn
-        // note that this is *opposite* to how modern APIs make checks (since we store 1/z)
-        switch(buffer->drawOpts.depthFunc)
-        {
-            case DF_LESS:     drawPixel = buffer->depthBuffer[idx] < invZ; break;
-            case DF_LEQUAL:   drawPixel = buffer->depthBuffer[idx] <= invZ; break;
-            case DF_GEQUAL:   drawPixel = buffer->depthBuffer[idx] >= invZ; break;
-            case DF_GREATER:  drawPixel = buffer->depthBuffer[idx] > invZ; break;
-            case DF_NOTEQUAL: drawPixel = buffer->depthBuffer[idx] != invZ; break;
-            default:
-            break;
-        }
-
-        if(drawPixel)
-        {
-            buffer->colorBuffer[idx] = color;
-            buffer->depthBuffer[idx] = invZ;
-        }
+    if(drawPixel)
+    {
+        buffer->colorBuffer[idx] = color;
+        buffer->depthBuffer[idx] = invZ;
     }
 }
 
 /* ***** */
-void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t color, gfx_drawBuffer *buffer)
+void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t color, gfx_drawBuffer *target)
 {
     // Bresenham line drawing
+    gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
     int startX = x0;
     float invLineLength = x1 - x0 ? 1.f / (x1 - x0) : 1.f;
     int x = x1 - x0;
@@ -97,7 +90,7 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t 
     float endInvZ   = z1 ? 1.f / z1 : 1.f;
 
     // DF_NEVER - don't draw anything, abort
-    if(buffer && buffer->drawOpts.depthFunc == DF_NEVER)
+    if(buffer->drawOpts.depthFunc == DF_NEVER)
         return;
 
     if(ax <= ay)
@@ -112,7 +105,7 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t 
     while(i++ <= ax)
     {
         // interpolate and store 1/z for pixel if depth testing is enabled
-        if(buffer && buffer->drawOpts.depthFunc != DF_ALWAYS)
+        if(buffer->drawOpts.depthFunc != DF_ALWAYS)
         {
             float r = (x0 - startX) * invLineLength;
             float lerpInvZ = LERP(startInvZ, endInvZ, r);
@@ -147,41 +140,38 @@ void gfx_clrBuffer(gfx_drawBuffer *buffer, const enum BufferType bType)
 }
 
 /* ***** */
-void gfx_clrBufferColor(gfx_drawBuffer *buffer, const uint8_t color)
+void gfx_clrBufferColor(gfx_drawBuffer *target, const uint8_t color)
 {
-    if(!buffer)
-        memset(VGA, color, sizeof(uint8_t) * SCREEN_WIDTH * SCREEN_HEIGHT);
-    else
-        memset(buffer->colorBuffer, color, sizeof(uint8_t) * buffer->width * buffer->height);
+    gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
+    memset(buffer->colorBuffer, color, sizeof(uint8_t) * buffer->width * buffer->height);
 }
 
 /* ***** */
-void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *target)
+void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *dst)
 {
     int i;
+    gfx_drawBuffer *buffer = dst ? dst : &VGA_BUFFER;
     // adjust for offscreen positioning
     int startX = x < 0 ? -x : 0;
     int startY = y < 0 ? -y : 0;
-    int targetWidth  = target ? target->width : SCREEN_WIDTH;
-    int targetHeight = target ? target->height : SCREEN_HEIGHT;
-    int width  = MIN(src->width - startX, targetWidth - (x < 0 ? startX : x));
-    int height = MIN(src->height, targetHeight - y);
-    uint8_t *dstBuff = target != NULL ? target->colorBuffer : VGA;
+    int width  = MIN(src->width - startX, buffer->width - (x < 0 ? startX : x));
+    int height = MIN(src->height, buffer->height - y);
+    uint8_t *dstBuff = buffer->colorBuffer;
     uint8_t *srcBuff = src->colorBuffer;
 
-    if(width < 0 || x > targetWidth) return;
+    if(width < 0 || x > buffer->width) return;
 
     for(i = 0; i < height - startY; ++i)
     {
-        memcpy(&dstBuff[startX + x + (startY + i + y) * targetWidth], 
+        memcpy(&dstBuff[startX + x + (startY + i + y) * buffer->width], 
                &srcBuff[startX     + (startY + i    ) * src->width], width);
     }
 }
 
 /* ***** */
-void gfx_updateScreen(gfx_drawBuffer *buffer)
+void gfx_updateScreen(gfx_drawBuffer *src)
 {
-    memcpy(VGA, buffer->colorBuffer, SCREEN_WIDTH * SCREEN_HEIGHT);
+    memcpy(VGA_BUFFER.colorBuffer, src->colorBuffer, VGA_BUFFER.width * VGA_BUFFER.height);
 }
 
 /* ***** */

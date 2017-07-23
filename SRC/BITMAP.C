@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-extern uint8_t *VGA;
+extern gfx_drawBuffer VGA_BUFFER;
 
 // internal: skips file sections when loading a bitmap
 static void fskip(FILE *fp, int num_bytes)
@@ -128,48 +128,46 @@ gfx_Bitmap gfx_resizeBitmap(gfx_Bitmap *bmp, int w, int h)
 }
 
 /* ***** */
-void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer)
+void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *target)
 {
     int j;
+    gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
     // adjust for offscreen positioning
     int offscreenX = x < 0 ? -x : 0;
     int offscreenY = y < 0 ? -y : 0;
-    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
-    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
-    int screenOffset = x + offscreenX + (y + offscreenY) * bufferWidth;
-    int width  = MIN(bmp->width - offscreenX, bufferWidth - (x < 0 ? offscreenX : x));
-    int height = MIN(bmp->height, bufferHeight - y);
-    uint8_t *dstBuff = buffer ? buffer->colorBuffer : VGA;
+    int screenOffset = x + offscreenX + (y + offscreenY) * buffer->width;
+    int width  = MIN(bmp->width - offscreenX, buffer->width - (x < 0 ? offscreenX : x));
+    int height = MIN(bmp->height, buffer->height - y);
+    uint8_t *dstBuff = buffer->colorBuffer;
     uint8_t *bmpBuff = bmp->data;
 
     // attempting to write offscreen
-    if(width < 0 || x > bufferWidth) return;
+    if(width < 0 || x > buffer->width) return;
 
     for(j = 0; j < height - offscreenY; ++j)
     {
-        memcpy(&dstBuff[screenOffset + j * bufferWidth], 
+        memcpy(&dstBuff[screenOffset + j * buffer->width], 
                &bmpBuff[offscreenX + (j + offscreenY) * bmp->width], width);
     }
 }
 
 /* ***** */
-void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *buffer)
+void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int yOffset, gfx_drawBuffer *target)
 {
     int j, scanlineLength;
+    gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
     // adjust for offscreen positioning
     int offscreenX = x < 0 ? -x : 0;
     int offscreenY = y < 0 ? -y : 0;
-    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
-    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
-    int screenOffset = x + offscreenX + (y + offscreenY) * bufferWidth;
+    int screenOffset = x + offscreenX + (y + offscreenY) * buffer->width;
     int texArea = bmp->width * bmp->height;
-    int height  = MIN(bmp->height, bufferHeight - y);
-    int targetWidth = bufferWidth - (x < 0 ? offscreenX : x);
+    int height  = MIN(bmp->height, buffer->height - y);
+    int drawWidth = buffer->width - (x < 0 ? offscreenX : x);
     uint8_t *dstBuff = buffer->colorBuffer;
     uint8_t *bmpBuff = bmp->data;
 
     // attemtping to write offscreen
-    if(targetWidth < 0 || x > bufferWidth) return;
+    if(drawWidth < 0 || x > buffer->width) return;
 
     xOffset += xOffset > 0 ? -offscreenX : offscreenX;
     if(xOffset < 0) xOffset += bmp->width;
@@ -178,33 +176,32 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
     for(j = 0; j < height - offscreenY; ++j)
     {
         scanlineLength = bmp->width - xOffset;
-        if(scanlineLength > bmp->width)  scanlineLength -= bmp->width;
-        if(scanlineLength > targetWidth) scanlineLength = targetWidth;
+        if(scanlineLength > bmp->width) scanlineLength -= bmp->width;
+        if(scanlineLength > drawWidth)  scanlineLength = drawWidth;
 
-        memcpy(&dstBuff[screenOffset + j * bufferWidth], 
+        memcpy(&dstBuff[screenOffset + j * buffer->width], 
                &bmpBuff[(xOffset + (j + yOffset + offscreenY) * bmp->width) % texArea], scanlineLength);
 
-        if(targetWidth > scanlineLength)
-            memcpy(&dstBuff[screenOffset + j * bufferWidth + scanlineLength], 
-                   &bmpBuff[(j + yOffset + offscreenY) * bmp->width % texArea], targetWidth - scanlineLength);
+        if(drawWidth > scanlineLength)
+            memcpy(&dstBuff[screenOffset + j * buffer->width + scanlineLength], 
+                   &bmpBuff[(j + yOffset + offscreenY) * bmp->width % texArea], drawWidth - scanlineLength);
     }
 }
 
 /* ***** */
-void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *buffer, const uint8_t colorKey)
+void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *target, const uint8_t colorKey)
 {
     int i,j;
+    gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
     // adjust for offscreen positioning
     int offscreenX = x < 0 ? -x : 0;
     int offscreenY = y < 0 ? -y : 0;
-    int bufferWidth  = buffer ? buffer->width : SCREEN_WIDTH;
-    int bufferHeight = buffer ? buffer->height : SCREEN_HEIGHT;
-    int screenOffset = (y + offscreenY) * bufferWidth;
-    int width  = MIN(bmp->width - offscreenX, bufferWidth - (x < 0 ? offscreenX : x));
-    int height = MIN(bmp->height, bufferHeight - y);
+    int screenOffset = (y + offscreenY) * buffer->width;
+    int width  = MIN(bmp->width - offscreenX, buffer->width - (x < 0 ? offscreenX : x));
+    int height = MIN(bmp->height, buffer->height - y);
 
     // attemtping to write offscreen
-    if(width < 0 || x > bufferWidth) return;
+    if(width < 0 || x > buffer->width) return;
 
     for(j = 0; j < height - offscreenY; ++j)
     {
@@ -213,7 +210,7 @@ void gfx_drawBitmapColorKey(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer 
             uint8_t data = bmp->data[i + offscreenX + (j + offscreenY) * bmp->height];
             // skip a pixel if it's the same color as colorKey
             if(data != colorKey)
-                buffer->colorBuffer[screenOffset + x + i + j * bufferWidth] = data;
+                buffer->colorBuffer[screenOffset + x + i + j * buffer->width] = data;
         }
     }
 }

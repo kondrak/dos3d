@@ -132,10 +132,10 @@ extern "C" {
     void mdl_free(mdl_model_t *mdl);
 
     // render the model at frame 'n'
-    void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
+    void mdl_renderFrame(int n, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *target);
 
     // render the model with interpolation between frame 'n' and 'n+1' using 'r' (ranged 0.f - 1.f)
-    void mdl_renderFrameLerp(int n, float r, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *buffer);
+    void mdl_renderFrameLerp(int n, float r, const mdl_model_t *mdl, const mth_Matrix4 *matrix, gfx_drawBuffer *target);
 
     /**
     * Calculate current frame in animation beginning at frame
