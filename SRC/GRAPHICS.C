@@ -26,10 +26,6 @@ void gfx_drawPixel(int x, int y, const uint8_t color, gfx_drawBuffer *target)
 {
     gfx_drawBuffer *buffer = target ? target : &VGA_BUFFER;
 
-    // DF_NEVER - don't draw anything, abort
-    if(buffer->drawOpts.depthFunc == DF_NEVER)
-        return;
-
     // naive "clipping"
     if(x >= buffer->width || x < 0 || y >= buffer->height || y < 0) return;
 
