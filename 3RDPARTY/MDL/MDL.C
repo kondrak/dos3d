@@ -46,6 +46,7 @@ static gfx_Bitmap bitmapFromSkin(int n, const mdl_model_t *mdl)
     texture.width  = mdl->header.skinwidth;
     texture.height = mdl->header.skinheight;
     texture.data   = (uint8_t *)malloc(sizeof(uint8_t) * mdl->header.skinwidth * mdl->header.skinheight);
+    ASSERT(texture.data, "Error allocating memory for MDL texture!\n");
 
     memcpy(texture.palette, colormap, sizeof(uint8_t)*256*3);
     memcpy(texture.data, mdl->skins[n].data, sizeof(uint8_t) * mdl->header.skinwidth * mdl->header.skinheight);
@@ -82,16 +83,22 @@ void mdl_load(const char *filename, mdl_model_t *mdl)
 
     /* Memory allocations */
     mdl->skins = (mdl_skin_t *)malloc(sizeof(mdl_skin_t) * mdl->header.num_skins);
+    ASSERT(mdl->skins, "Error allocating memory for MDL skins!\n");
     mdl->texcoords = (mdl_texcoord_t *)malloc(sizeof(mdl_texcoord_t) * mdl->header.num_verts);
+    ASSERT(mdl->texcoords, "Error allocating memory for MDL texcoords!\n");
     mdl->triangles = (mdl_triangle_t *)malloc(sizeof(mdl_triangle_t) * mdl->header.num_tris);
-    mdl->frames       = (mdl_frame_t *)malloc(sizeof(mdl_frame_t) * mdl->header.num_frames);
+    ASSERT(mdl->triangles, "Error allocating memory for MDL triangles!\n");
+    mdl->frames = (mdl_frame_t *)malloc(sizeof(mdl_frame_t) * mdl->header.num_frames);
+    ASSERT(mdl->frames, "Error allocating memory for MDL frames!\n");
     mdl->skinTextures = (gfx_Bitmap *)malloc(sizeof(gfx_Bitmap) * mdl->header.num_skins);
+    ASSERT(mdl->skinTextures, "Error allocating memory for MDL skin textures!\n");
     mdl->iskin = 0;
 
     /* Read texture data */
     for(i = 0; i < mdl->header.num_skins; ++i)
     {
         mdl->skins[i].data = (uint8_t *)malloc(sizeof(uint8_t) * mdl->header.skinwidth * mdl->header.skinheight);
+        ASSERT(mdl->skins[i].data, "Error allocating memory for MDL skin data!\n");
 
         fread(&mdl->skins[i].group, sizeof(int), 1, fp);
         fread(mdl->skins[i].data, sizeof(uint8_t), mdl->header.skinwidth * mdl->header.skinheight, fp);
@@ -110,6 +117,7 @@ void mdl_load(const char *filename, mdl_model_t *mdl)
     {
         /* Memory allocation for vertices of this frame */
         mdl->frames[i].frame.verts = (mdl_vertex_t *)malloc(sizeof(mdl_vertex_t) * mdl->header.num_verts);
+        ASSERT(mdl->frames[i].frame.verts, "Error allocating memory for MDL frame verts!\n");
 
         /* Read frame data */
         fread(&mdl->frames[i].type, sizeof(int), 1, fp);
