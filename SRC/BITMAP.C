@@ -73,24 +73,19 @@ gfx_Bitmap gfx_loadBitmap(const char *filename)
 /* ***** */
 gfx_Bitmap gfx_bitmapFromAtlas(const gfx_Bitmap *atlas, int x, int y, int w, int h)
 {
-    int cx, cy, p;
+    int cy, p;
     gfx_Bitmap subImage;
     subImage.width  = w;
     subImage.height = h;
     // retain the palette of the atlas
     memcpy(subImage.palette, atlas->palette, sizeof(uint8_t)*256*3);
-    
+
     subImage.data = (uint8_t *)malloc(sizeof(uint8_t) * w * h);
     ASSERT(subImage.data, "Error allocating memory for atlas sub image bitmap!\n");
-    
-    for(p = 0, cy = y; cy < y+h; ++cy)
-    {
-        for(cx = x; cx < x+w; ++cx, ++p)
-        {
-            subImage.data[p] = atlas->data[cy * atlas->width + cx];
-        }
-    }
-    
+
+    for(p = 0, cy = y; cy < y + h && p < w * (h - 1); ++cy, p += w)
+        memcpy(subImage.data + p, atlas->data + x + cy * atlas->width, sizeof(uint8_t) * (x + w));
+
     return subImage;
 }
 
