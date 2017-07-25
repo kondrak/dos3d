@@ -27,9 +27,10 @@ extern "C" {
 
 #define DBG(b, ...) utl_printf((b), 1, 1, 15, 0, __VA_ARGS__)
 #define LERP(start, end, r) ( (start) * (1.0 - (r)) + (end) * (r) )
-#define MIN(a, b) ( (a) > (b) ? (b) : (a) )
-#define MAX(a, b) ( (a) > (b) ? (a) : (b) )
-#define ROUND(a)  ( (a) < 0 ? (int)((a) - 0.5) : (int)((a) + 0.5) )
+#define MIN(a, b)  ( (a) > (b) ? (b) : (a) )
+#define MAX(a, b)  ( (a) > (b) ? (a) : (b) )
+#define ROUND(a)   ( (a) < 0 ? (int)((a) - 0.5) : (int)((a) + 0.5) )
+#define SWAP(a, b) { (a) ^= (b); (b) ^= (a); (a) ^= (b); }
 
     // debug text printing to target buffer using standard mode 13h font glyphs
     void utl_printf(gfx_drawBuffer *target, const int x, const int y, const uint8_t fgCol, const uint8_t bgCol, const char *format, ...);

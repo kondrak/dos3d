@@ -91,8 +91,7 @@ void gfx_drawLine(int x0, int y0, int z0, int x1, int y1, int z1, const uint8_t 
 
     if(ax <= ay)
     {
-        // swap ax <=> ay
-        ax ^= ay; ay ^= ax; ax ^= ay;
+        SWAP(ax, ay);
         dx2 = 0; dy2 = dy1;
     }
 
