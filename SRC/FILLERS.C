@@ -1,5 +1,6 @@
 #include "src/fillers.h"
 #include "src/utils.h"
+#include <memory.h>
 
 /* ***** */
 void gfx_wireFrame(const gfx_Triangle *t, gfx_drawBuffer *target)
@@ -69,7 +70,7 @@ void gfx_flatFill(const gfx_Triangle *t, gfx_drawBuffer *target, enum TriangleTy
             gfx_drawLine(x0, y, 1.f/startInvZ, x1, y, 1.f/endInvZ, t->color, target);
         }
         else
-            gfx_drawLine(x0, y, 0.f, x1, y, 0.f, t->color, target);
+            memset(target->colorBuffer + x0 + (int)y * target->width, t->color, sizeof(uint8_t) * (x1 - x0 + 1));
 
         if(++currLine < numScanlines)
         {
