@@ -142,7 +142,7 @@ void gfx_drawBitmap(const gfx_Bitmap *bmp, int x, int y, gfx_drawBuffer *target)
     for(j = 0; j < height - offscreenY; ++j)
     {
         memcpy(&dstBuff[screenOffset + j * buffer->width], 
-               &bmpBuff[offscreenX + (j + offscreenY) * bmp->width], width);
+               &bmpBuff[offscreenX + (j + offscreenY) * bmp->width], sizeof(uint8_t) * width);
     }
 }
 
@@ -175,11 +175,11 @@ void gfx_drawBitmapOffset(const gfx_Bitmap *bmp, int x, int y, int xOffset, int 
         if(scanlineLength > drawWidth)  scanlineLength = drawWidth;
 
         memcpy(&dstBuff[screenOffset + j * buffer->width], 
-               &bmpBuff[(xOffset + (j + yOffset + offscreenY) * bmp->width) % texArea], scanlineLength);
+               &bmpBuff[(xOffset + (j + yOffset + offscreenY) * bmp->width) % texArea], sizeof(uint8_t) * scanlineLength);
 
         if(drawWidth > scanlineLength)
             memcpy(&dstBuff[screenOffset + j * buffer->width + scanlineLength], 
-                   &bmpBuff[(j + yOffset + offscreenY) * bmp->width % texArea], drawWidth - scanlineLength);
+                   &bmpBuff[(j + yOffset + offscreenY) * bmp->width % texArea], sizeof(uint8_t) * (drawWidth - scanlineLength));
     }
 }
 

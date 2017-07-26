@@ -159,14 +159,14 @@ void gfx_blitBuffer(int x, int y, const gfx_drawBuffer *src, gfx_drawBuffer *dst
     for(i = 0; i < height - startY; ++i)
     {
         memcpy(&dstBuff[startX + x + (startY + i + y) * buffer->width], 
-               &srcBuff[startX     + (startY + i    ) * src->width], width);
+               &srcBuff[startX     + (startY + i    ) * src->width], sizeof(uint8_t) * width);
     }
 }
 
 /* ***** */
 void gfx_updateScreen(gfx_drawBuffer *src)
 {
-    memcpy(VGA_BUFFER.colorBuffer, src->colorBuffer, VGA_BUFFER.width * VGA_BUFFER.height);
+    memcpy(VGA_BUFFER.colorBuffer, src->colorBuffer, sizeof(uint8_t) * VGA_BUFFER.width * VGA_BUFFER.height);
 }
 
 /* ***** */
