@@ -25,12 +25,12 @@ Features
 
 The executable is a set of pre-made tests that demonstrate each feature.
 
-![Screenshot](http://kondrak.info/images/dos3d/1.png?raw=true)
-![Screenshot](http://kondrak.info/images/dos3d/2.png?raw=true)
-![Screenshot](http://kondrak.info/images/dos3d/3.png?raw=true)
-![Screenshot](http://kondrak.info/images/dos3d/q_shambler.gif?raw=true)
-![Screenshot](http://kondrak.info/images/dos3d/4.png?raw=true)
-![Screenshot](http://kondrak.info/images/dos3d/5.png?raw=true)
+![Screenshot](images/1.png?raw=true)
+![Screenshot](images/2.png?raw=true)
+![Screenshot](images/3.png?raw=true)
+![Screenshot](images/q_shambler.gif?raw=true)
+![Screenshot](images/4.png?raw=true)
+![Screenshot](images/5.png?raw=true)
 
 TODO
 -------
