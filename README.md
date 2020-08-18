@@ -25,12 +25,12 @@ Features
 
 The executable is a set of pre-made tests that demonstrate each feature.
 
-![Screenshot](images/1.png?raw=true)
-![Screenshot](images/2.png?raw=true)
-![Screenshot](images/3.png?raw=true)
-![Screenshot](images/q_shambler.gif?raw=true)
-![Screenshot](images/4.png?raw=true)
-![Screenshot](images/5.png?raw=true)
+![Screenshot](IMAGES/1.png?raw=true)
+![Screenshot](IMAGES/2.png?raw=true)
+![Screenshot](IMAGES/3.png?raw=true)
+![Screenshot](IMAGES/q_shambler.gif?raw=true)
+![Screenshot](IMAGES/4.png?raw=true)
+![Screenshot](IMAGES/5.png?raw=true)
 
 TODO
 -------
